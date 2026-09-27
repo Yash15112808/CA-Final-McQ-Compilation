@@ -96,7 +96,6 @@ const Auth = {
 
     users.push(newUser);
     this.saveUsers(users);
-    this.setCurrentUser(newUser);
 
     return newUser;
   },

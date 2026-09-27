@@ -1425,11 +1425,29 @@ const App = {
 
     try {
       const newUser = await Auth.register({ name, regNo, phone, email, dob, attempt, password });
-      this.showAuthAlert("Account created successfully! Welcome, " + newUser.name, "success");
-      setTimeout(() => {
-        this.checkAuthStatus();
-        this.switchTab("dashboard");
-      }, 500);
+      
+      // Reset the registration form
+      const regForm = document.getElementById("authRegisterForm");
+      if (regForm) regForm.reset();
+
+      // Switch to Login tab directly (do NOT grant direct access yet)
+      this.switchAuthTab('login');
+
+      // Pre-fill the login registration number with the newly created account's regNo
+      const loginReg = document.getElementById("loginRegNo");
+      if (loginReg) {
+        loginReg.value = newUser.regNo;
+      }
+
+      // Show clear message on login tab prompting the user to login with their credentials
+      this.showAuthAlert(`Account for ${newUser.name} (${newUser.regNo}) created successfully! Please enter your Password to login and access the portal.`, "success");
+
+      // Focus password field on login form
+      const pwdInput = document.getElementById("loginPassword");
+      if (pwdInput) {
+        pwdInput.value = "";
+        pwdInput.focus();
+      }
     } catch (err) {
       this.showAuthAlert(err.message, "error");
     }
