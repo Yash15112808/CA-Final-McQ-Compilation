@@ -10,7 +10,10 @@ const App = {
     allMCQs: [],
     allWritingQuestions: [],
     activeTrackerSubject: "FR",
-    currentTab: "dashboard",
+    currentTab: "study",
+    studySubtab: "countdown-calendar",
+    comparisonPeriod: "today",
+    editingChapter: null,
     theme: "light",
     repositoryFilter: {
       search: "",
@@ -49,16 +52,26 @@ const App = {
     const sessionBadge = document.getElementById("userSessionBadge");
     const headerName = document.getElementById("headerStudentName");
     const headerAttempt = document.getElementById("headerStudentAttempt");
+    const sidebarCard = document.getElementById("sidebarStudentCard");
+    const sidebarName = document.getElementById("sidebarStudentName");
+    const sidebarAttempt = document.getElementById("sidebarStudentAttempt");
+    const sidebarLogout = document.getElementById("sidebarLogoutBtn");
 
     if (user) {
       if (overlay) overlay.style.display = "none";
       if (sessionBadge) sessionBadge.style.display = "flex";
       if (headerName) headerName.textContent = user.name;
       if (headerAttempt) headerAttempt.textContent = `${user.regNo} • ${user.attempt}`;
-      this.switchTab("dashboard");
+      if (sidebarCard) sidebarCard.style.display = "flex";
+      if (sidebarName) sidebarName.textContent = user.name;
+      if (sidebarAttempt) sidebarAttempt.textContent = user.attempt;
+      if (sidebarLogout) sidebarLogout.style.display = "block";
+      this.switchTab(this.state.currentTab || "study");
     } else {
       if (overlay) overlay.style.display = "flex";
       if (sessionBadge) sessionBadge.style.display = "none";
+      if (sidebarCard) sidebarCard.style.display = "none";
+      if (sidebarLogout) sidebarLogout.style.display = "none";
     }
   },
 
@@ -272,6 +285,8 @@ const App = {
 
   switchTab(tabId) {
     this.state.currentTab = tabId;
+    this.toggleSidebar(false);
+
     document.querySelectorAll(".nav-link").forEach(link => {
       link.classList.toggle("active", link.dataset.tab === tabId);
     });
@@ -283,7 +298,68 @@ const App = {
     const activePane = document.getElementById(`tab-${tabId}`);
     if (activePane) activePane.classList.add("active");
 
+    const titleEl = document.getElementById("activeTabHeading");
+    if (titleEl) {
+      const titles = {
+        study: "Study Management Hub",
+        dashboard: "Analytics & Performance Dashboard",
+        repository: "Official ICAI MCQ Master Bank",
+        writing: "Descriptive & Practical Writing Problems",
+        practice: "Active Recall Practice Mode",
+        exam: "Timed ICAI Exam Simulator (30 Marks)",
+        cases: "Integrated Case Scenario Studies",
+        mistakes: "Mistakes Notebook Drill",
+        importer: "Add & Import Questions"
+      };
+      titleEl.textContent = titles[tabId] || "ICAI CA Final Portal";
+    }
+
     this.renderCurrentView();
+  },
+
+  toggleSidebar(open) {
+    const sidebar = document.getElementById("appSidebar");
+    const backdrop = document.getElementById("sidebarBackdrop");
+    if (!sidebar) return;
+
+    if (open) {
+      document.body.classList.add("sidebar-open");
+      sidebar.classList.add("open");
+      if (backdrop) backdrop.classList.add("active");
+    } else {
+      document.body.classList.remove("sidebar-open");
+      sidebar.classList.remove("open");
+      if (backdrop) backdrop.classList.remove("active");
+    }
+  },
+
+  switchStudySubtab(subtabId) {
+    this.state.studySubtab = subtabId;
+    document.querySelectorAll(".study-subnav-pill").forEach(pill => {
+      pill.classList.toggle("active", pill.dataset.subtab === subtabId);
+    });
+
+    document.querySelectorAll(".study-subpane").forEach(pane => {
+      pane.style.display = "none";
+      pane.classList.remove("active");
+    });
+
+    const activePane = document.getElementById(`study-subtab-${subtabId}`);
+    if (activePane) {
+      activePane.style.display = "block";
+      activePane.classList.add("active");
+    }
+
+    if (subtabId === "countdown-calendar") {
+      this.renderStudyCountdown();
+      this.renderCalendar();
+    } else if (subtabId === "pomodoro-todo") {
+      this.renderPomodoro();
+      this.renderTasksList();
+      this.renderComparisonAnalytics();
+    } else if (subtabId === "subject-tracker") {
+      this.renderChapterTracker();
+    }
   },
 
   renderCurrentView() {
@@ -1606,10 +1682,12 @@ const App = {
 
   // ================= STUDY MANAGEMENT CONTROLLER =================
   renderStudyView() {
+    this.switchStudySubtab(this.state.studySubtab || "countdown-calendar");
     this.renderStudyCountdown();
+    this.renderCalendar();
     this.renderPomodoro();
     this.renderTasksList();
-    this.renderCalendar();
+    this.renderComparisonAnalytics();
     this.renderChapterTracker();
   },
 
@@ -1656,18 +1734,61 @@ const App = {
     }
   },
 
+  // Historical Comparison Analytics (Today vs Yesterday vs Week vs Month)
+  setComparisonPeriod(period) {
+    this.state.comparisonPeriod = period;
+    document.querySelectorAll(".comp-pill").forEach(p => {
+      p.classList.toggle("active", p.dataset.period === period);
+    });
+    this.renderComparisonAnalytics();
+  },
+
+  renderComparisonAnalytics() {
+    const period = this.state.comparisonPeriod || "today";
+    const data = StudyEngine.getComparisonData(period);
+
+    const titleEl = document.getElementById("compActivePeriodTitle");
+    const tasksDoneEl = document.getElementById("compTasksCompleted");
+    const tasksPendingEl = document.getElementById("compTasksPending");
+    const pomoCountEl = document.getElementById("compPomoCount");
+    const pomoMinutesEl = document.getElementById("compPomoMinutes");
+
+    if (titleEl) titleEl.textContent = data.periodLabel;
+    if (tasksDoneEl) tasksDoneEl.textContent = data.tasksDone;
+    if (tasksPendingEl) tasksPendingEl.textContent = data.tasksPending;
+    if (pomoCountEl) pomoCountEl.textContent = `${data.pomoCount} Sessions`;
+    if (pomoMinutesEl) pomoMinutesEl.textContent = `${data.focusMinutes} Mins`;
+  },
+
   // Pomodoro
   renderPomodoro() {
     const clock = document.getElementById("pomodoroClockDisplay");
     const sessionsBadge = document.getElementById("pomodoroSessionsToday");
     const toggleBtn = document.getElementById("pomodoroToggleBtn");
+    const targetBarFill = document.getElementById("pomoTargetBarFill");
+    const targetSummary = document.getElementById("pomoTargetSummary");
+    const subjectSelect = document.getElementById("pomoActiveSubject");
+    const logsList = document.getElementById("pomoLogsList");
+    const logsCount = document.getElementById("pomoLogsCount");
+
+    const settings = StudyEngine.loadPomodoroSettings();
+    const todayCount = StudyEngine.getPomodoroTotalToday();
+    const target = settings.dailyTarget || 8;
+    const targetPct = Math.min(100, Math.round((todayCount / target) * 100));
 
     const rem = Math.max(0, StudyEngine.pomodoro.remainingSeconds);
     const m = Math.floor(rem / 60);
     const s = rem % 60;
 
     if (clock) clock.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-    if (sessionsBadge) sessionsBadge.textContent = `${StudyEngine.getPomodoroTotalToday()} Sessions Today`;
+    if (sessionsBadge) sessionsBadge.textContent = `${todayCount} / ${target} Sessions Today`;
+    if (targetBarFill) targetBarFill.style.width = `${targetPct}%`;
+    if (targetSummary) targetSummary.textContent = `${todayCount} of ${target} Target Sessions Completed (${targetPct}%)`;
+
+    if (subjectSelect) {
+      subjectSelect.value = settings.currentSubject || "FR";
+    }
+
     if (toggleBtn) {
       toggleBtn.innerHTML = StudyEngine.pomodoro.isRunning
         ? '<i class="fa-solid fa-pause"></i> Pause Focus'
@@ -1679,6 +1800,23 @@ const App = {
     document.querySelectorAll(".pomo-mode-btn").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.mode === StudyEngine.pomodoro.mode);
     });
+
+    // Render timestamped session logs drawer
+    const logs = StudyEngine.getPomodoroLogs();
+    if (logsCount) logsCount.textContent = logs.length;
+    if (logsList) {
+      if (logs.length === 0) {
+        logsList.innerHTML = `<p class="text-muted" style="font-size: 0.8rem; padding: 10px 0;">No completed focus sessions logged yet today.</p>`;
+      } else {
+        logsList.innerHTML = logs.slice(0, 15).map(log => `
+          <div class="pomo-log-item">
+            <span class="pomo-log-time"><i class="fa-regular fa-clock"></i> ${log.timeStr || new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <span class="badge badge-primary" style="font-size: 0.7rem;">${log.subjectId || 'GENERAL'}</span>
+            <span class="pomo-log-duration">${log.durationMinutes || 25} Mins Focused</span>
+          </div>
+        `).join("");
+      }
+    }
   },
 
   setPomodoroMode(mode) {
@@ -1697,6 +1835,7 @@ const App = {
       (completedMode) => {
         alert(`🔔 Pomodoro session completed! Great work on your CA Final study goal! Time for ${completedMode === 'study' ? 'a break' : 'focused study'}.`);
         App.renderPomodoro();
+        App.renderComparisonAnalytics();
       }
     );
     this.renderPomodoro();
@@ -1707,7 +1846,51 @@ const App = {
     this.renderPomodoro();
   },
 
-  // Task Manager
+  handlePomodoroSubjectChange(val) {
+    const settings = StudyEngine.loadPomodoroSettings();
+    settings.currentSubject = val;
+    StudyEngine.savePomodoroSettings(settings);
+  },
+
+  openPomodoroSettingsModal() {
+    const settings = StudyEngine.loadPomodoroSettings();
+    const studyInput = document.getElementById("pomoStudyMins");
+    const shortInput = document.getElementById("pomoShortMins");
+    const longInput = document.getElementById("pomoLongMins");
+    const targetInput = document.getElementById("pomoDailyTarget");
+    const subjectInput = document.getElementById("pomoDefaultSubject");
+
+    if (studyInput) studyInput.value = settings.study;
+    if (shortInput) shortInput.value = settings.short_break;
+    if (longInput) longInput.value = settings.long_break;
+    if (targetInput) targetInput.value = settings.dailyTarget;
+    if (subjectInput) subjectInput.value = settings.currentSubject;
+
+    const modal = document.getElementById("pomodoroSettingsModal");
+    if (modal) modal.style.display = "flex";
+  },
+
+  closePomodoroSettingsModal() {
+    const modal = document.getElementById("pomodoroSettingsModal");
+    if (modal) modal.style.display = "none";
+  },
+
+  savePomodoroSettings(event) {
+    if (event) event.preventDefault();
+    const study = parseInt(document.getElementById("pomoStudyMins")?.value) || 25;
+    const short_break = parseInt(document.getElementById("pomoShortMins")?.value) || 5;
+    const long_break = parseInt(document.getElementById("pomoLongMins")?.value) || 15;
+    const dailyTarget = parseInt(document.getElementById("pomoDailyTarget")?.value) || 8;
+    const currentSubject = document.getElementById("pomoDefaultSubject")?.value || "FR";
+
+    StudyEngine.savePomodoroSettings({ study, short_break, long_break, dailyTarget, currentSubject });
+    this.closePomodoroSettingsModal();
+    this.renderPomodoro();
+    this.renderComparisonAnalytics();
+    alert("Pomodoro focus settings and daily target saved successfully!");
+  },
+
+  // Task Manager (To-Do List)
   handleAddTask(event) {
     if (event) event.preventDefault();
     const titleInput = document.getElementById("taskTitleInput");
@@ -1724,16 +1907,19 @@ const App = {
 
     titleInput.value = "";
     this.renderTasksList();
+    this.renderComparisonAnalytics();
   },
 
   handleToggleTask(taskId) {
     StudyEngine.toggleTask(taskId);
     this.renderTasksList();
+    this.renderComparisonAnalytics();
   },
 
   handleDeleteTask(taskId) {
     StudyEngine.deleteTask(taskId);
     this.renderTasksList();
+    this.renderComparisonAnalytics();
   },
 
   renderTasksList() {
@@ -1756,11 +1942,19 @@ const App = {
 
     container.innerHTML = tasks.map(t => {
       const priorityColor = t.priority === "High" ? "var(--danger)" : t.priority === "Medium" ? "var(--warning)" : "var(--success)";
+      const createdDate = t.createdAt ? new Date(t.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : '';
+      const completedInfo = t.isCompleted && t.completedAt ? ` • Done ${new Date(t.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '';
+
       return `
         <div class="task-item ${t.isCompleted ? 'completed' : ''}" style="border-left-color: ${priorityColor};">
           <div class="task-left">
             <input type="checkbox" class="task-checkbox" ${t.isCompleted ? 'checked' : ''} onchange="App.handleToggleTask('${t.id}')">
-            <span class="task-title-text">${t.title}</span>
+            <div>
+              <span class="task-title-text">${t.title}</span>
+              <div class="task-time-meta" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                <i class="fa-regular fa-clock"></i> Added ${createdDate}${completedInfo}
+              </div>
+            </div>
           </div>
           <div class="task-meta-tags">
             <span class="badge badge-outline" style="font-size: 0.65rem;">${t.subjectId}</span>
@@ -1854,7 +2048,7 @@ const App = {
     this.renderCalendar();
   },
 
-  // Chapter & Lecture Tracker
+  // Chapter & Lecture Tracker (Custom Faculty Lecture Count, Recorded/Live Modes, Revisions)
   renderChapterTracker() {
     const tabsContainer = document.getElementById("subjectTrackerTabs");
     const summaryContainer = document.getElementById("activeSubSummary");
@@ -1887,7 +2081,7 @@ const App = {
           <h4 style="font-size: 1rem; margin-bottom: 2px;">${currentSubMeta.paper}: ${currentSubMeta.name}</h4>
           <small class="text-muted">Lectures Completed: ${curMetrics.completedLectures} / ${curMetrics.totalLectures} (${curMetrics.lecturePct}%)</small>
         </div>
-        <div style="display: flex; gap: 14px; font-size: 0.85rem;">
+        <div style="display: flex; gap: 14px; font-size: 0.85rem; flex-wrap: wrap;">
           <span><strong>R1:</strong> ${curMetrics.r1Pct}%</span>
           <span><strong>R2:</strong> ${curMetrics.r2Pct}%</span>
           <span><strong>R3:</strong> ${curMetrics.r3Pct}%</span>
@@ -1906,8 +2100,19 @@ const App = {
         tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No pre-imported chapters for this subject.</td></tr>`;
       } else {
         tableBody.innerHTML = defaultChapters.map(ch => {
-          const prog = chProgress[ch.id] || { completedLectures: 0, totalLectures: ch.totalLectures, lectureDone: false, r1Done: false, r2Done: false, r3Done: false };
-          const isDone = prog.completedLectures >= prog.totalLectures;
+          const prog = chProgress[ch.id] || { 
+            completedLectures: 0, 
+            totalLectures: ch.totalLectures || 10, 
+            deliveryMode: 'recorded', 
+            liveCompleted: false, 
+            lectureDone: false, 
+            r1Done: false, 
+            r2Done: false, 
+            r3Done: false 
+          };
+          const isLive = prog.deliveryMode === 'live';
+          const isRecDone = prog.completedLectures >= prog.totalLectures;
+          const escapedName = (ch.name || '').replace(/'/g, "\\'");
 
           return `
             <tr>
@@ -1916,16 +2121,42 @@ const App = {
                 <small class="text-muted"><i class="fa-solid fa-chart-simple"></i> ICAI Weightage: ${ch.defaultWeightage || 'Standard'}</small>
               </td>
               <td style="text-align: center;">
-                <div class="lecture-stepper">
-                  <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', -1)" title="Decrement Lecture">-</button>
-                  <span class="stepper-text">${prog.completedLectures} / ${prog.totalLectures}</span>
-                  <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', 1)" title="Increment Lecture">+</button>
+                <div class="batch-mode-toggle">
+                  <button type="button" class="batch-toggle-pill ${!isLive ? 'active' : ''}" onclick="App.handleDeliveryModeChange('${activeSub}', '${ch.id}', 'recorded')" title="Recorded Lectures Mode">
+                    <i class="fa-solid fa-video"></i> Rec
+                  </button>
+                  <button type="button" class="batch-toggle-pill ${isLive ? 'active' : ''}" onclick="App.handleDeliveryModeChange('${activeSub}', '${ch.id}', 'live')" title="Live Batch Mode">
+                    <i class="fa-solid fa-satellite-dish"></i> Live
+                  </button>
                 </div>
               </td>
               <td style="text-align: center;">
-                <span class="badge ${isDone ? 'badge-success' : 'badge-outline'}" style="font-size: 0.75rem;">
-                  ${isDone ? '<i class="fa-solid fa-check"></i> Done' : Math.round((prog.completedLectures / prog.totalLectures) * 100) + '%'}
-                </span>
+                ${isLive ? `
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                    <button type="button" class="live-done-btn ${prog.liveCompleted ? 'completed' : ''}" onclick="App.handleLiveToggle('${activeSub}', '${ch.id}')" title="Click to toggle Live batch completion">
+                      <i class="fa-solid ${prog.liveCompleted ? 'fa-circle-check' : 'fa-circle'}"></i> ${prog.liveCompleted ? 'Live Batch Done' : 'Mark Live Done'}
+                    </button>
+                    <small class="text-muted" style="font-size: 0.72rem;">Live Streaming / Physical</small>
+                  </div>
+                ` : `
+                  <div class="recorded-tracking-container">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                      <div class="lecture-stepper">
+                        <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', -1)" title="Decrement Lecture" ${prog.completedLectures <= 0 ? 'disabled' : ''}>-</button>
+                        <span class="stepper-text">${prog.completedLectures} / ${prog.totalLectures}</span>
+                        <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', 1)" title="Increment Lecture" ${prog.completedLectures >= prog.totalLectures ? 'disabled' : ''}>+</button>
+                      </div>
+                      <button type="button" class="lecture-edit-btn" onclick="App.openEditLectureModal('${activeSub}', '${ch.id}', '${escapedName}', ${prog.totalLectures})" title="Change faculty total lectures">
+                        <i class="fa-solid fa-pen"></i> Total: ${prog.totalLectures}
+                      </button>
+                    </div>
+                    <div style="margin-top: 6px; display: flex; align-items: center; justify-content: center;">
+                      <button type="button" class="stepper-quick-done-btn ${isRecDone ? 'done' : ''}" onclick="App.handleMarkChapterComplete('${activeSub}', '${ch.id}')" title="Mark all lectures watched">
+                        <i class="fa-solid ${isRecDone ? 'fa-check-double' : 'fa-check'}"></i> ${isRecDone ? 'All Watched' : 'Mark All Done'}
+                      </button>
+                    </div>
+                  </div>
+                `}
               </td>
               <td style="text-align: center;">
                 <button type="button" class="rev-check-btn ${prog.r1Done ? 'checked' : ''}" onclick="App.handleRevisionToggle('${activeSub}', '${ch.id}', 'r1')" title="Toggle Revision 1">
@@ -1957,11 +2188,63 @@ const App = {
   handleLectureStep(subId, chId, delta) {
     StudyEngine.updateLectureCount(subId, chId, delta);
     this.renderChapterTracker();
+    this.renderComparisonAnalytics();
+  },
+
+  handleDeliveryModeChange(subId, chId, mode) {
+    StudyEngine.setDeliveryMode(subId, chId, mode);
+    this.renderChapterTracker();
+    this.renderComparisonAnalytics();
+  },
+
+  handleLiveToggle(subId, chId) {
+    StudyEngine.toggleLiveCompletion(subId, chId);
+    this.renderChapterTracker();
+    this.renderComparisonAnalytics();
+  },
+
+  handleMarkChapterComplete(subId, chId) {
+    StudyEngine.markChapterLecturesComplete(subId, chId);
+    this.renderChapterTracker();
+    this.renderComparisonAnalytics();
   },
 
   handleRevisionToggle(subId, chId, stage) {
     StudyEngine.toggleRevision(subId, chId, stage);
     this.renderChapterTracker();
+    this.renderComparisonAnalytics();
+  },
+
+  openEditLectureModal(subId, chId, chName, currentTotal) {
+    this.state.editingChapter = { subId, chId };
+    const nameEl = document.getElementById("editFacultyLectureChName");
+    const inputEl = document.getElementById("editFacultyLectureInput");
+
+    if (nameEl) nameEl.textContent = chName;
+    if (inputEl) inputEl.value = currentTotal || 10;
+
+    const modal = document.getElementById("editFacultyLecturesModal");
+    if (modal) modal.style.display = "flex";
+  },
+
+  closeEditLectureModal() {
+    this.state.editingChapter = null;
+    const modal = document.getElementById("editFacultyLecturesModal");
+    if (modal) modal.style.display = "none";
+  },
+
+  saveFacultyLectureTotal(event) {
+    if (event) event.preventDefault();
+    if (!this.state.editingChapter) return;
+
+    const { subId, chId } = this.state.editingChapter;
+    const inputEl = document.getElementById("editFacultyLectureInput");
+    const total = parseInt(inputEl?.value) || 10;
+
+    StudyEngine.setLectureTotal(subId, chId, total);
+    this.closeEditLectureModal();
+    this.renderChapterTracker();
+    this.renderComparisonAnalytics();
   },
 
   // ================= WRITING QUESTIONS CONTROLLER =================

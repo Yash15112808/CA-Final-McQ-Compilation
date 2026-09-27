@@ -1,21 +1,22 @@
 /**
  * Study Management Engine
  * Features:
- * 1. Remaining Days to Exam Countdown
- * 2. Pomodoro Study Timer with Session Logger
- * 3. Pre-Imported Subject Chapters with Multi-Lecture Tracking and 3-Tier Revisions (R1, R2, R3)
- * 4. Indian Calendar with Festivals & ICAI Schedule
- * 5. Task Manager / Study To-Do List
+ * 1. Remaining Days to Exam Countdown & Indian Calendar
+ * 2. Focus Pomodoro Timer with Timestamped Logging & Customizable Settings
+ * 3. Daily Goals / Tasks with Historical Comparison (Today vs Yesterday vs Week vs Month)
+ * 4. Chapter & Lecture Tracker with Faculty Customization, Live vs Recorded Modes, and R1/R2/R3 Revisions
  */
 
 const StudyEngine = {
   // Pomodoro State
   pomodoro: {
-    mode: "study", // study (25m), short_break (5m), long_break (15m)
+    mode: "study", // study, short_break, long_break
     remainingSeconds: 25 * 60,
     isRunning: false,
     timerInterval: null,
     sessionsCompleted: 0,
+    dailyTarget: 8,
+    currentSubject: "FR",
     customMinutes: {
       study: 25,
       short_break: 5,
@@ -32,6 +33,10 @@ const StudyEngine = {
   getStoragePrefix() {
     const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
     return user ? user.regNo : "GUEST";
+  },
+
+  init() {
+    this.loadPomodoroSettings();
   },
 
   // ---------------- REMAINING DAYS TO EXAM ----------------
@@ -60,7 +65,7 @@ const StudyEngine = {
     const diffMs = target - now;
 
     if (diffMs <= 0) {
-      return { totalDays: 0, weeks: 0, remainingDaysAfterWeeks: 0, isPast: true };
+      return { totalDays: 0, weeks: 0, remainingDaysAfterWeeks: 0, isPast: true, targetDate: target };
     }
 
     const totalDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
@@ -73,28 +78,41 @@ const StudyEngine = {
   // ---------------- CHAPTER & LECTURE TRACKER ----------------
   getStudyProgress() {
     const key = `ICAI_CHAPTER_PROGRESS_${this.getStoragePrefix()}`;
+    let storedProgress = {};
     try {
       const stored = localStorage.getItem(key);
-      if (stored) return JSON.parse(stored);
+      if (stored) storedProgress = JSON.parse(stored);
     } catch (e) {
       console.error("Error reading study progress", e);
     }
 
-    // Default structure initialized from STUDY_CHAPTERS_DATA
+    // Merge defaults from STUDY_CHAPTERS_DATA with user overrides
     const initial = {};
     if (typeof STUDY_CHAPTERS_DATA !== 'undefined') {
       Object.entries(STUDY_CHAPTERS_DATA).forEach(([subId, chapters]) => {
         initial[subId] = {};
+        const savedSub = storedProgress[subId] || {};
+
         chapters.forEach(ch => {
+          const savedCh = savedSub[ch.id] || {};
           initial[subId][ch.id] = {
-            completedLectures: 0,
-            totalLectures: ch.totalLectures || 10,
-            lectureDone: false,
-            r1Done: false,
-            r2Done: false,
-            r3Done: false,
-            notes: ""
+            completedLectures: typeof savedCh.completedLectures === 'number' ? savedCh.completedLectures : 0,
+            totalLectures: typeof savedCh.totalLectures === 'number' ? savedCh.totalLectures : (ch.totalLectures || 10),
+            deliveryMode: savedCh.deliveryMode || "recorded", // "recorded" or "live"
+            liveCompleted: Boolean(savedCh.liveCompleted),
+            lectureDone: Boolean(savedCh.lectureDone),
+            r1Done: Boolean(savedCh.r1Done),
+            r2Done: Boolean(savedCh.r2Done),
+            r3Done: Boolean(savedCh.r3Done),
+            notes: savedCh.notes || ""
           };
+
+          // Synchronize lectureDone flag
+          if (initial[subId][ch.id].deliveryMode === "live") {
+            initial[subId][ch.id].lectureDone = Boolean(initial[subId][ch.id].liveCompleted);
+          } else {
+            initial[subId][ch.id].lectureDone = (initial[subId][ch.id].completedLectures >= initial[subId][ch.id].totalLectures);
+          }
         });
       });
     }
@@ -108,6 +126,54 @@ const StudyEngine = {
     } catch (e) {
       console.error("Error saving study progress", e);
     }
+  },
+
+  setDeliveryMode(subjectId, chapterId, mode) {
+    const progress = this.getStudyProgress();
+    if (!progress[subjectId] || !progress[subjectId][chapterId]) return;
+
+    const ch = progress[subjectId][chapterId];
+    ch.deliveryMode = mode === "live" ? "live" : "recorded";
+    if (ch.deliveryMode === "live") {
+      ch.lectureDone = Boolean(ch.liveCompleted);
+      if (ch.liveCompleted) ch.completedLectures = ch.totalLectures;
+    } else {
+      ch.lectureDone = (ch.completedLectures >= ch.totalLectures);
+    }
+
+    this.saveStudyProgress(progress);
+    return ch;
+  },
+
+  toggleLiveCompletion(subjectId, chapterId) {
+    const progress = this.getStudyProgress();
+    if (!progress[subjectId] || !progress[subjectId][chapterId]) return;
+
+    const ch = progress[subjectId][chapterId];
+    ch.liveCompleted = !ch.liveCompleted;
+    if (ch.liveCompleted) {
+      ch.completedLectures = ch.totalLectures;
+      ch.lectureDone = true;
+    } else {
+      ch.completedLectures = 0;
+      ch.lectureDone = false;
+    }
+
+    this.saveStudyProgress(progress);
+    return ch;
+  },
+
+  markChapterLecturesComplete(subjectId, chapterId) {
+    const progress = this.getStudyProgress();
+    if (!progress[subjectId] || !progress[subjectId][chapterId]) return;
+
+    const ch = progress[subjectId][chapterId];
+    ch.completedLectures = ch.totalLectures;
+    ch.lectureDone = true;
+    if (ch.deliveryMode === "live") ch.liveCompleted = true;
+
+    this.saveStudyProgress(progress);
+    return ch;
   },
 
   updateLectureCount(subjectId, chapterId, delta) {
@@ -169,10 +235,15 @@ const StudyEngine = {
       Object.values(chapters).forEach(c => {
         subChCount++;
         totalChapters++;
-        subLecturesTotal += c.totalLectures;
-        totalLecturesGlobal += c.totalLectures;
-        subLecturesDone += c.completedLectures;
-        completedLecturesGlobal += c.completedLectures;
+        const totalL = c.totalLectures || 10;
+        subLecturesTotal += totalL;
+        totalLecturesGlobal += totalL;
+
+        const isDone = (c.deliveryMode === "live") ? Boolean(c.liveCompleted) : (c.completedLectures >= totalL);
+        const compL = isDone ? totalL : Math.min(totalL, c.completedLectures || 0);
+
+        subLecturesDone += compL;
+        completedLecturesGlobal += compL;
 
         if (c.r1Done) { subR1++; r1Count++; }
         if (c.r2Done) { subR2++; r2Count++; }
@@ -225,6 +296,50 @@ const StudyEngine = {
   },
 
   // ---------------- POMODORO TIMER ----------------
+  loadPomodoroSettings() {
+    const key = `ICAI_POMO_SETTINGS_${this.getStoragePrefix()}`;
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const s = JSON.parse(stored);
+        this.pomodoro.customMinutes.study = parseInt(s.study) || 25;
+        this.pomodoro.customMinutes.short_break = parseInt(s.short_break) || 5;
+        this.pomodoro.customMinutes.long_break = parseInt(s.long_break) || 15;
+        this.pomodoro.dailyTarget = parseInt(s.dailyTarget) || 8;
+        this.pomodoro.currentSubject = s.currentSubject || "FR";
+      }
+    } catch (e) {}
+
+    if (!this.pomodoro.isRunning) {
+      const mins = this.pomodoro.customMinutes[this.pomodoro.mode] || 25;
+      this.pomodoro.remainingSeconds = mins * 60;
+    }
+  },
+
+  savePomodoroSettings(settings) {
+    const key = `ICAI_POMO_SETTINGS_${this.getStoragePrefix()}`;
+    this.pomodoro.customMinutes.study = Math.max(1, parseInt(settings.study) || 25);
+    this.pomodoro.customMinutes.short_break = Math.max(1, parseInt(settings.short_break) || 5);
+    this.pomodoro.customMinutes.long_break = Math.max(1, parseInt(settings.long_break) || 15);
+    this.pomodoro.dailyTarget = Math.max(1, parseInt(settings.dailyTarget) || 8);
+    this.pomodoro.currentSubject = settings.currentSubject || "FR";
+
+    try {
+      localStorage.setItem(key, JSON.stringify({
+        study: this.pomodoro.customMinutes.study,
+        short_break: this.pomodoro.customMinutes.short_break,
+        long_break: this.pomodoro.customMinutes.long_break,
+        dailyTarget: this.pomodoro.dailyTarget,
+        currentSubject: this.pomodoro.currentSubject
+      }));
+    } catch (e) {}
+
+    if (!this.pomodoro.isRunning) {
+      const mins = this.pomodoro.customMinutes[this.pomodoro.mode] || 25;
+      this.pomodoro.remainingSeconds = mins * 60;
+    }
+  },
+
   setPomodoroMode(mode) {
     if (this.pomodoro.timerInterval) {
       clearInterval(this.pomodoro.timerInterval);
@@ -274,21 +389,56 @@ const StudyEngine = {
     this.pomodoro.remainingSeconds = mins * 60;
   },
 
-  recordPomodoroSession() {
-    const key = `ICAI_POMODORO_STATS_${this.getStoragePrefix()}`;
-    const today = new Date().toISOString().slice(0, 10);
+  recordPomodoroSession(subjectId = null) {
+    const keyLogs = `ICAI_POMODORO_LOGS_${this.getStoragePrefix()}`;
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const sub = subjectId || this.pomodoro.currentSubject || "FR";
+    const duration = this.pomodoro.customMinutes[this.pomodoro.mode] || 25;
+
+    const sessionEntry = {
+      id: `POMO-${Date.now().toString(36)}`,
+      timestamp: now.toISOString(),
+      dateStr,
+      timeStr,
+      mode: this.pomodoro.mode,
+      durationMinutes: duration,
+      subjectId: sub
+    };
+
     try {
-      let stats = JSON.parse(localStorage.getItem(key) || "{}");
-      stats[today] = (stats[today] || 0) + 1;
-      localStorage.setItem(key, JSON.stringify(stats));
+      let logs = JSON.parse(localStorage.getItem(keyLogs) || "[]");
+      logs.unshift(sessionEntry);
+      if (logs.length > 500) logs = logs.slice(0, 500);
+      localStorage.setItem(keyLogs, JSON.stringify(logs));
     } catch (e) {}
+
+    // Update stats tally map
+    const keyStats = `ICAI_POMODORO_STATS_${this.getStoragePrefix()}`;
+    try {
+      let stats = JSON.parse(localStorage.getItem(keyStats) || "{}");
+      stats[dateStr] = (stats[dateStr] || 0) + 1;
+      localStorage.setItem(keyStats, JSON.stringify(stats));
+    } catch (e) {}
+
+    return sessionEntry;
+  },
+
+  getPomodoroLogs() {
+    const keyLogs = `ICAI_POMODORO_LOGS_${this.getStoragePrefix()}`;
+    try {
+      return JSON.parse(localStorage.getItem(keyLogs) || "[]");
+    } catch (e) {
+      return [];
+    }
   },
 
   getPomodoroTotalToday() {
-    const key = `ICAI_POMODORO_STATS_${this.getStoragePrefix()}`;
+    const keyStats = `ICAI_POMODORO_STATS_${this.getStoragePrefix()}`;
     const today = new Date().toISOString().slice(0, 10);
     try {
-      let stats = JSON.parse(localStorage.getItem(key) || "{}");
+      let stats = JSON.parse(localStorage.getItem(keyStats) || "{}");
       return stats[today] || 0;
     } catch (e) {
       return 0;
@@ -324,7 +474,7 @@ const StudyEngine = {
     return days;
   },
 
-  // ---------------- TASK MANAGER (TO-DO LIST) ----------------
+  // ---------------- TASK MANAGER & COMPARATIVE ANALYTICS ----------------
   getTasks() {
     const key = `ICAI_TASKS_${this.getStoragePrefix()}`;
     try {
@@ -342,17 +492,19 @@ const StudyEngine = {
     } catch (e) {}
   },
 
-  addTask({ title, subjectId, targetDate, priority }) {
+  addTask({ title, subjectId, priority, targetDate }) {
     if (!title || !title.trim()) return;
     const tasks = this.getTasks();
+    const now = new Date();
     const newTask = {
       id: `TASK-${Date.now().toString(36)}`,
       title: title.trim(),
       subjectId: subjectId || "GENERAL",
-      targetDate: targetDate || new Date().toISOString().slice(0, 10),
+      targetDate: targetDate || now.toISOString().slice(0, 10),
       priority: priority || "Medium",
       isCompleted: false,
-      createdAt: new Date().toISOString()
+      createdAt: now.toISOString(),
+      completedAt: null
     };
     tasks.unshift(newTask);
     this.saveTasks(tasks);
@@ -364,6 +516,7 @@ const StudyEngine = {
     const t = tasks.find(x => x.id === taskId);
     if (t) {
       t.isCompleted = !t.isCompleted;
+      t.completedAt = t.isCompleted ? new Date().toISOString() : null;
       this.saveTasks(tasks);
     }
     return t;
@@ -374,8 +527,121 @@ const StudyEngine = {
     tasks = tasks.filter(x => x.id !== taskId);
     this.saveTasks(tasks);
     return tasks;
+  },
+
+  // Comparative Analytics for Tasks & Pomodoros
+  getComparisonData(period = "today") {
+    const tasks = this.getTasks();
+    const pomoLogs = this.getPomodoroLogs();
+
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    const isToday = (dStr) => dStr && dStr.slice(0, 10) === todayStr;
+    const isYesterday = (dStr) => dStr && dStr.slice(0, 10) === yesterdayStr;
+
+    // Last 7 days vs previous 7 days
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    // Current Month vs Previous Month
+    const curMonthPrefix = todayStr.slice(0, 7);
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevMonthPrefix = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}`;
+
+    let currentTasks = [];
+    let prevTasks = [];
+    let currentPomos = [];
+    let prevPomos = [];
+    let currentLabel = "Today";
+    let prevLabel = "Yesterday";
+
+    if (period === "today") {
+      currentLabel = "Today";
+      prevLabel = "Yesterday";
+      currentTasks = tasks.filter(t => isToday(t.createdAt) || (t.isCompleted && isToday(t.completedAt)));
+      prevTasks = tasks.filter(t => isYesterday(t.createdAt) || (t.isCompleted && isYesterday(t.completedAt)));
+      currentPomos = pomoLogs.filter(p => p.dateStr === todayStr);
+      prevPomos = pomoLogs.filter(p => p.dateStr === yesterdayStr);
+    } else if (period === "yesterday") {
+      currentLabel = "Yesterday";
+      prevLabel = "Day Before Yesterday";
+      const dayBefore = new Date(now);
+      dayBefore.setDate(now.getDate() - 2);
+      const dayBeforeStr = dayBefore.toISOString().slice(0, 10);
+      currentTasks = tasks.filter(t => isYesterday(t.createdAt) || (t.isCompleted && isYesterday(t.completedAt)));
+      prevTasks = tasks.filter(t => t.createdAt?.slice(0, 10) === dayBeforeStr || (t.isCompleted && t.completedAt?.slice(0, 10) === dayBeforeStr));
+      currentPomos = pomoLogs.filter(p => p.dateStr === yesterdayStr);
+      prevPomos = pomoLogs.filter(p => p.dateStr === dayBeforeStr);
+    } else if (period === "week") {
+      currentLabel = "This Week";
+      prevLabel = "Last Week";
+      currentTasks = tasks.filter(t => {
+        const d = new Date(t.createdAt);
+        return d >= sevenDaysAgo && d <= now;
+      });
+      prevTasks = tasks.filter(t => {
+        const d = new Date(t.createdAt);
+        return d >= fourteenDaysAgo && d < sevenDaysAgo;
+      });
+      currentPomos = pomoLogs.filter(p => {
+        const d = new Date(p.timestamp);
+        return d >= sevenDaysAgo && d <= now;
+      });
+      prevPomos = pomoLogs.filter(p => {
+        const d = new Date(p.timestamp);
+        return d >= fourteenDaysAgo && d < sevenDaysAgo;
+      });
+    } else if (period === "month") {
+      currentLabel = "This Month";
+      prevLabel = "Last Month";
+      currentTasks = tasks.filter(t => t.createdAt && t.createdAt.startsWith(curMonthPrefix));
+      prevTasks = tasks.filter(t => t.createdAt && t.createdAt.startsWith(prevMonthPrefix));
+      currentPomos = pomoLogs.filter(p => p.dateStr && p.dateStr.startsWith(curMonthPrefix));
+      prevPomos = pomoLogs.filter(p => p.dateStr && p.dateStr.startsWith(prevMonthPrefix));
+    }
+
+    const curCompletedTasks = currentTasks.filter(t => t.isCompleted).length;
+    const prevCompletedTasks = prevTasks.filter(t => t.isCompleted).length;
+    const curPomoCount = currentPomos.length;
+    const prevPomoCount = prevPomos.length;
+    const curFocusMinutes = currentPomos.reduce((acc, p) => acc + (p.durationMinutes || 25), 0);
+    const prevFocusMinutes = prevPomos.reduce((acc, p) => acc + (p.durationMinutes || 25), 0);
+
+    return {
+      period,
+      currentLabel,
+      prevLabel,
+      current: {
+        totalTasks: currentTasks.length,
+        completedTasks: curCompletedTasks,
+        pendingTasks: currentTasks.length - curCompletedTasks,
+        pomoCount: curPomoCount,
+        focusMinutes: curFocusMinutes,
+        tasks: currentTasks,
+        pomos: currentPomos
+      },
+      previous: {
+        totalTasks: prevTasks.length,
+        completedTasks: prevCompletedTasks,
+        pomoCount: prevPomoCount,
+        focusMinutes: prevFocusMinutes
+      },
+      diffTasks: curCompletedTasks - prevCompletedTasks,
+      diffPomos: curPomoCount - prevPomoCount,
+      diffMinutes: curFocusMinutes - prevFocusMinutes
+    };
   }
 };
+
+// Auto-initialize settings on load
+if (typeof window !== 'undefined') {
+  StudyEngine.init();
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = StudyEngine;

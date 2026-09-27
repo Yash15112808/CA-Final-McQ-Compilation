@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ICAI CA Final MCQ Master Compilation | SM • PYQ • RTP • MTP • Booklet</title>
-  <meta name="description" content="Comprehensive ICAI CA Final MCQ portal covering Study Material, Past Year Questions (PYQs), Revision Test Papers (RTP), Mock Test Papers (MTP), and ICAI MCQ Booklets.">
+  <title>ICAI CA Final Study Management & MCQ Master Compilation</title>
+  <meta name="description" content="Comprehensive ICAI CA Final Study Management Portal: Target Countdown, Pomodoro Focus, Daily Goals, Syllabus & Lecture Tracker, and MCQ Compilation.">
   
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -14,631 +14,731 @@
 </head>
 <body>
 
-  <!-- Top App Header -->
-  <header class="app-header">
-    <div class="header-top">
-      <div class="brand-section">
+  <!-- Master App Layout Container with Vertical Sidebar -->
+  <div class="app-layout">
+    
+    <!-- VERTICAL SIDEBAR MENU -->
+    <aside class="app-sidebar" id="appSidebar">
+      <!-- Sidebar Brand -->
+      <div class="sidebar-brand">
         <div class="brand-logo-badge">
           <i class="fa-solid fa-graduation-cap"></i>
         </div>
-        <div>
-          <h1>ICAI CA Final MCQ Portal</h1>
-          <p class="brand-tagline">Master 30:70 MCQ Section • Study Material • PYQ • RTP • MTP • Booklet</p>
+        <div class="brand-text">
+          <h2 class="brand-title">CA Study Hub</h2>
+          <span class="brand-tagline">ICAI Final Management</span>
         </div>
+        <button class="mobile-sidebar-close" id="mobileSidebarCloseBtn" onclick="App.toggleSidebar(false)" title="Close Navigation">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
 
-      <div class="header-controls">
-        <select id="globalSubjectFilter" class="subject-select" title="Switch Global Subject">
-          <option value="ALL">All CA Final Subjects</option>
-        </select>
+      <!-- Student Session Info in Sidebar -->
+      <div class="sidebar-student-card" id="sidebarStudentCard" style="display: none;">
+        <div class="student-avatar-circle">
+          <i class="fa-solid fa-user-graduate"></i>
+        </div>
+        <div class="student-details">
+          <strong id="sidebarStudentName">Student</strong>
+          <span class="badge badge-primary" id="sidebarStudentAttempt">Nov 2026</span>
+        </div>
+        <button class="icon-btn" onclick="App.openProfileModal()" title="View Student Profile">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
 
-        <button id="themeToggleBtn" class="btn btn-sm btn-secondary" title="Toggle Theme">
+      <!-- Vertical Navigation Menu -->
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">STUDY MANAGEMENT</div>
+        <a href="#" class="nav-link active" data-tab="study">
+          <i class="fa-solid fa-compass"></i> <span>Study Management</span>
+        </a>
+        <a href="#" class="nav-link" data-tab="dashboard">
+          <i class="fa-solid fa-chart-line"></i> <span>Analytics & Coverage</span>
+        </a>
+
+        <div class="nav-group-label">PRACTICE & QUESTIONS</div>
+        <a href="#" class="nav-link" data-tab="repository">
+          <i class="fa-solid fa-book-open"></i> <span>MCQ Master Bank</span>
+        </a>
+        <a href="#" class="nav-link" data-tab="writing">
+          <i class="fa-solid fa-pen-to-square"></i> <span>Descriptive Writing</span>
+        </a>
+        <a href="#" class="nav-link" data-tab="practice">
+          <i class="fa-solid fa-circle-question"></i> <span>Practice Mode</span>
+        </a>
+        <a href="#" class="nav-link" data-tab="exam">
+          <i class="fa-solid fa-stopwatch"></i> <span>Exam Simulator (30M)</span>
+        </a>
+        <a href="#" class="nav-link" data-tab="cases">
+          <i class="fa-solid fa-layer-group"></i> <span>Case Scenarios</span>
+        </a>
+        <a href="#" class="nav-link" data-tab="mistakes">
+          <i class="fa-solid fa-triangle-exclamation"></i> <span>Mistakes Notebook</span>
+        </a>
+        <a href="#" class="nav-link" data-tab="importer">
+          <i class="fa-solid fa-file-import"></i> <span>Add & Import</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer Controls -->
+      <div class="sidebar-footer">
+        <button id="themeToggleBtn" class="btn btn-secondary sidebar-theme-btn" title="Toggle Theme">
           <i class="fa-solid fa-moon"></i> <span>Dark Mode</span>
         </button>
-
-        <div class="user-session-badge" id="userSessionBadge" style="display: none;">
-          <button class="btn btn-sm btn-outline student-badge-btn" onclick="App.openProfileModal()" title="View Student Profile">
-            <i class="fa-solid fa-user-graduate"></i>
-            <span id="headerStudentName">Student</span>
-            <span class="badge badge-primary" id="headerStudentAttempt" style="font-size: 0.65rem; margin-left: 4px;">Nov 2026</span>
-          </button>
-          <button class="btn btn-sm btn-danger logout-btn" onclick="App.handleLogout()" title="Logout to lock portal">
-            <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Navigation Tabs -->
-    <nav class="nav-bar">
-      <a href="#" class="nav-link active" data-tab="dashboard">
-        <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="study">
-        <i class="fa-solid fa-graduation-cap"></i> <span>Study Management</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="repository">
-        <i class="fa-solid fa-book-open"></i> <span>MCQ Bank</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="writing">
-        <i class="fa-solid fa-pen-to-square"></i> <span>Writing Questions</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="practice">
-        <i class="fa-solid fa-circle-question"></i> <span>Practice Mode</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="exam">
-        <i class="fa-solid fa-stopwatch"></i> <span>Exam Simulator (30M)</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="cases">
-        <i class="fa-solid fa-layer-group"></i> <span>Case Scenarios</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="mistakes">
-        <i class="fa-solid fa-triangle-exclamation"></i> <span>Mistakes</span>
-      </a>
-      <a href="#" class="nav-link" data-tab="importer">
-        <i class="fa-solid fa-file-import"></i> <span>Add & Import</span>
-      </a>
-    </nav>
-  </header>
-
-  <!-- Main Container -->
-  <main class="main-content">
-
-    <!-- TAB 1: DASHBOARD -->
-    <section id="tab-dashboard" class="tab-pane active">
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-icon" style="background-color: var(--primary-light); color: var(--primary);">
-            <i class="fa-solid fa-database"></i>
-          </div>
-          <div class="metric-data">
-            <h3 id="statTotalMCQs">0</h3>
-            <p>Total MCQs Stored</p>
-          </div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background-color: var(--info-light); color: var(--info);">
-            <i class="fa-solid fa-pen-nib"></i>
-          </div>
-          <div class="metric-data">
-            <h3 id="statAttempted">0</h3>
-            <p>MCQs Attempted</p>
-          </div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background-color: var(--success-light); color: var(--success);">
-            <i class="fa-solid fa-bullseye"></i>
-          </div>
-          <div class="metric-data">
-            <h3 id="statAccuracy">0%</h3>
-            <p>Overall Accuracy</p>
-          </div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background-color: var(--danger-light); color: var(--danger);">
-            <i class="fa-solid fa-xmark"></i>
-          </div>
-          <div class="metric-data">
-            <h3 id="statMistakes">0</h3>
-            <p>Mistakes Logged</p>
-          </div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background-color: var(--warning-light); color: var(--warning);">
-            <i class="fa-solid fa-star"></i>
-          </div>
-          <div class="metric-data">
-            <h3 id="statStarred">0</h3>
-            <p>Starred for Revision</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-split">
-        <div class="section-box">
-          <h3><i class="fa-solid fa-bars-progress"></i> Subject-Wise Coverage & Accuracy</h3>
-          <div id="dashboardSubjectList"></div>
-        </div>
-
-        <div class="section-box">
-          <h3><i class="fa-solid fa-tags"></i> Official ICAI Sources Bank</h3>
-          <div id="dashboardSourceList" class="sources-grid"></div>
-        </div>
-      </div>
-
-      <div class="section-box">
-        <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Simulated Exam Attempts</h3>
-        <div style="overflow-x: auto;">
-          <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-            <thead>
-              <tr style="text-align: left; border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
-                <th style="padding: 10px;">Date & Time</th>
-                <th style="padding: 10px;">Score</th>
-                <th style="padding: 10px;">Percentage</th>
-                <th style="padding: 10px;">Duration</th>
-                <th style="padding: 10px;">Questions</th>
-              </tr>
-            </thead>
-            <tbody id="dashboardRecentExams"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB: STUDY MANAGEMENT -->
-    <section id="tab-study" class="tab-pane">
-      <!-- Study Management Header / Countdown Banner -->
-      <div class="study-countdown-banner">
-        <div class="countdown-main">
-          <div class="countdown-badge-icon">
-            <i class="fa-solid fa-hourglass-half"></i>
-          </div>
-          <div>
-            <span class="countdown-label">Target Examination Countdown</span>
-            <h2 id="studyTargetAttemptTitle">CA Final Examination</h2>
-            <p id="studyTargetDateText" class="text-muted">Loading target exam timeline...</p>
-          </div>
-        </div>
-        <div class="countdown-digits-wrapper">
-          <div class="countdown-unit">
-            <span id="countdownDays" class="count-num">--</span>
-            <span class="count-label">Days Left</span>
-          </div>
-          <div class="countdown-unit">
-            <span id="countdownWeeks" class="count-num">--</span>
-            <span class="count-label">Weeks Left</span>
-          </div>
-          <button class="btn btn-sm btn-outline" onclick="App.openCustomDateModal()" title="Customize Target Exam Date">
-            <i class="fa-solid fa-calendar-check"></i> Set Date
-          </button>
-        </div>
-      </div>
-
-      <!-- Study Tools Grid: Pomodoro Timer + Task Manager -->
-      <div class="study-tools-grid">
-        <!-- Focus Pomodoro Timer -->
-        <div class="section-box pomodoro-card">
-          <div class="box-header-row">
-            <h3><i class="fa-solid fa-stopwatch"></i> Focus Pomodoro Timer</h3>
-            <span class="badge badge-primary" id="pomodoroSessionsToday">0 Sessions Today</span>
-          </div>
-          
-          <div class="pomodoro-modes">
-            <button class="pomo-mode-btn active" data-mode="study" onclick="App.setPomodoroMode('study')">Study (25m)</button>
-            <button class="pomo-mode-btn" data-mode="short_break" onclick="App.setPomodoroMode('short_break')">Short Break (5m)</button>
-            <button class="pomo-mode-btn" data-mode="long_break" onclick="App.setPomodoroMode('long_break')">Long Break (15m)</button>
-          </div>
-
-          <div class="pomodoro-clock" id="pomodoroClockDisplay">25:00</div>
-
-          <div class="pomodoro-controls">
-            <button id="pomodoroToggleBtn" class="btn btn-primary btn-lg" onclick="App.togglePomodoro()">
-              <i class="fa-solid fa-play"></i> Start Focus
-            </button>
-            <button class="btn btn-outline" onclick="App.resetPomodoro()">
-              <i class="fa-solid fa-rotate-left"></i> Reset
-            </button>
-          </div>
-        </div>
-
-        <!-- Task Manager (To-Do List) -->
-        <div class="section-box task-manager-card">
-          <div class="box-header-row">
-            <h3><i class="fa-solid fa-list-check"></i> Study Tasks & Daily Goals</h3>
-            <span class="text-muted" style="font-size: 0.8rem;" id="tasksCountSummary">0 Pending Tasks</span>
-          </div>
-          
-          <form id="addTaskForm" class="add-task-form" onsubmit="App.handleAddTask(event)">
-            <input type="text" id="taskTitleInput" class="form-control" placeholder="Add study goal (e.g. Ind AS 115 Lecture 3 + TYQ)..." required>
-            <div class="task-form-subrow">
-              <select id="taskSubjectSelect" class="form-control" style="width: auto;">
-                <option value="FR">FR</option>
-                <option value="AFM">AFM</option>
-                <option value="AUDIT">Audit</option>
-                <option value="DT">DT</option>
-                <option value="IDT">IDT</option>
-                <option value="IBS">IBS</option>
-                <option value="GENERAL">General</option>
-              </select>
-              <select id="taskPrioritySelect" class="form-control" style="width: auto;">
-                <option value="High">High Priority</option>
-                <option value="Medium" selected>Medium</option>
-                <option value="Low">Low</option>
-              </select>
-              <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Add Task
-              </button>
-            </div>
-          </form>
-
-          <div id="tasksListContainer" class="tasks-list"></div>
-        </div>
-      </div>
-
-      <!-- Indian Calendar & Festivals -->
-      <div class="section-box calendar-section-box">
-        <div class="calendar-header-bar">
-          <div>
-            <h3><i class="fa-solid fa-calendar-day"></i> Indian Calendar, Auspicious Festivals & Exam Windows</h3>
-            <p class="text-muted" style="font-size: 0.85rem;">Track national holidays, festivals (Diwali, Holi, Eid, Navratri) & official ICAI examination periods.</p>
-          </div>
-          <div class="calendar-nav-controls">
-            <button class="btn btn-sm btn-outline" onclick="App.prevCalendarMonth()"><i class="fa-solid fa-chevron-left"></i> Prev</button>
-            <span id="calendarCurrentMonthTitle" style="font-weight: 700; font-size: 1.05rem; min-width: 160px; text-align: center;">Month Year</span>
-            <button class="btn btn-sm btn-outline" onclick="App.nextCalendarMonth()">Next <i class="fa-solid fa-chevron-right"></i></button>
-          </div>
-        </div>
-
-        <div class="calendar-layout">
-          <div class="calendar-grid-wrapper">
-            <div class="calendar-weekdays">
-              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-            </div>
-            <div id="calendarDaysGrid" class="calendar-days-grid"></div>
-          </div>
-          <div class="calendar-festivals-sidebar">
-            <h4><i class="fa-solid fa-om"></i> Indian Festivals & Key Dates</h4>
-            <div id="calendarMonthFestivalsList"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pre-Imported Chapters, Multi-Lecture & 3-Tier Revision Tracker -->
-      <div class="section-box study-tracker-section">
-        <div class="study-tracker-header">
-          <div>
-            <h3><i class="fa-solid fa-chalkboard-user"></i> Subject-Wise Lecture & 3-Tier Revision Tracker</h3>
-            <p class="text-muted" style="font-size: 0.85rem;">Track multi-lecture completion concicely for each chapter alongside Revision 1 (R1), Revision 2 (R2), and Revision 3 (R3).</p>
-          </div>
-          <div class="overall-readiness-chip">
-            <span>Overall Syllabus Readiness:</span>
-            <strong id="trackerOverallReadiness">0%</strong>
-          </div>
-        </div>
-
-        <!-- Subject selection pills -->
-        <div class="subject-tracker-tabs" id="subjectTrackerTabs"></div>
-
-        <!-- Active Subject Summary Bar -->
-        <div class="active-sub-summary" id="activeSubSummary"></div>
-
-        <!-- Chapters Table Container -->
-        <div class="table-responsive">
-          <table class="table chapter-tracker-table">
-            <thead>
-              <tr>
-                <th style="width: 35%;">Chapter Name & ICAI Weightage</th>
-                <th style="width: 25%; text-align: center;">Lectures Progress</th>
-                <th style="width: 12%; text-align: center;">Lecture Status</th>
-                <th style="width: 9%; text-align: center;" title="Revision 1">R1</th>
-                <th style="width: 9%; text-align: center;" title="Revision 2">R2</th>
-                <th style="width: 9%; text-align: center;" title="Revision 3">R3</th>
-              </tr>
-            </thead>
-            <tbody id="chapterTrackerTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB: WRITING QUESTIONS (DESCRIPTIVE & PRACTICAL) -->
-    <section id="tab-writing" class="tab-pane">
-      <div class="filter-toolbar">
-        <div class="search-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="writingSearchInput" placeholder="Search descriptive questions by problem stem, standard, or section...">
-        </div>
-
-        <div class="filter-dropdowns">
-          <select id="writingSubjectFilter" class="form-control" style="width: auto;">
-            <option value="ALL">All Subjects</option>
-          </select>
-
-          <select id="writingChapterFilter" class="form-control" style="width: auto; max-width: 250px;">
-            <option value="ALL">All Chapters</option>
-          </select>
-
-          <select id="writingSourceFilter" class="form-control" style="width: auto;">
-            <option value="ALL">All Sources (SM, RTP, MTP, PYQ)</option>
-          </select>
-
-          <button class="btn btn-primary" onclick="App.openAddWritingModal()">
-            <i class="fa-solid fa-plus"></i> Add Writing Question
-          </button>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-        <span id="writingFilteredCount" class="text-muted" style="font-size: 0.85rem; font-weight: 600;">0 Questions found</span>
-        <button class="btn btn-sm btn-outline" onclick="window.print()">
-          <i class="fa-solid fa-print"></i> Print Questions Sheet
+        <button id="sidebarLogoutBtn" class="btn btn-danger btn-sm sidebar-logout-btn" onclick="App.handleLogout()" style="display: none;" title="Logout">
+          <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
         </button>
       </div>
+    </aside>
 
-      <div id="writingQuestionsList"></div>
-    </section>
+    <!-- Backdrop for Mobile Sidebar -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="App.toggleSidebar(false)"></div>
 
-    <!-- TAB 2: REPOSITORY (ALL MCQs) -->
-    <section id="tab-repository" class="tab-pane">
-      <div class="filter-toolbar">
-        <div class="search-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="repoSearchInput" placeholder="Search MCQs by concept, section, keyword, or text...">
+    <!-- MAIN APP WORKSPACE -->
+    <div class="app-main">
+      
+      <!-- Top Bar Header -->
+      <header class="top-header">
+        <div class="top-header-left">
+          <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="App.toggleSidebar(true)" title="Toggle Navigation Menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="active-tab-title-wrap">
+            <h1 id="activeTabHeading">Study Management Hub</h1>
+          </div>
         </div>
 
-        <div class="filter-dropdowns">
-          <select id="repoSubjectFilter" class="form-control" style="width: auto;">
-            <option value="ALL">All Subjects</option>
+        <div class="top-header-right">
+          <select id="globalSubjectFilter" class="subject-select" title="Switch Global Subject">
+            <option value="ALL">All CA Final Subjects</option>
           </select>
 
-          <select id="repoChapterFilter" class="form-control" style="width: auto; max-width: 250px;">
-            <option value="ALL">All Chapters</option>
-          </select>
-
-          <select id="repoSourceFilter" class="form-control" style="width: auto;">
-            <option value="ALL">All Sources</option>
-          </select>
-
-          <button class="btn btn-outline" onclick="window.print()" title="Print Current View / Save as PDF">
-            <i class="fa-solid fa-print"></i> Print / PDF
-          </button>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <span id="repoFilteredCount" class="text-muted" style="font-size: 0.85rem; font-weight: 600;">0 MCQs found</span>
-      </div>
-
-      <div id="repositoryList"></div>
-    </section>
-
-    <!-- TAB 3: PRACTICE MODE -->
-    <section id="tab-practice" class="tab-pane">
-      <div class="practice-container" id="practiceContainer"></div>
-    </section>
-
-    <!-- TAB 4: EXAM SIMULATOR -->
-    <section id="tab-exam" class="tab-pane">
-      <div id="examContainer"></div>
-    </section>
-
-    <!-- TAB 5: CASE SCENARIOS -->
-    <section id="tab-cases" class="tab-pane">
-      <div id="casesContainer"></div>
-    </section>
-
-    <!-- TAB 6: MISTAKE NOTEBOOK -->
-    <section id="tab-mistakes" class="tab-pane">
-      <div id="mistakesContainer"></div>
-    </section>
-
-    <!-- TAB 7: ADD & IMPORT MCQS -->
-    <section id="tab-importer" class="tab-pane">
-      <div class="importer-grid">
-        <!-- Add Single MCQ -->
-        <div class="import-box">
-          <h3><i class="fa-solid fa-circle-plus"></i> Add Single MCQ</h3>
-          <p>Add a new standalone question directly into your permanent repository.</p>
-
-          <form id="addSingleMCQForm">
-            <div class="form-row">
-              <div class="form-group col">
-                <label>Subject</label>
-                <select id="modalSubjectSelect" class="form-control" required></select>
-              </div>
-              <div class="form-group col">
-                <label>Chapter / Topic</label>
-                <select id="modalChapterSelect" class="form-control" required></select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col">
-                <label>Source Type</label>
-                <select id="modalSourceSelect" class="form-control" required></select>
-              </div>
-              <div class="form-group col">
-                <label>Exam Session / Edition</label>
-                <input type="text" id="modalExamSession" class="form-control" placeholder="e.g. Nov 2024 / SM 2024">
-              </div>
-              <div class="form-group col" style="max-width: 100px;">
-                <label>Marks</label>
-                <select id="modalMarks" class="form-control">
-                  <option value="2" selected>2 Marks</option>
-                  <option value="1">1 Mark</option>
-                </select>
-              </div>
-              <div class="form-group col" style="max-width: 130px;">
-                <label>Difficulty</label>
-                <select id="modalDifficulty" class="form-control">
-                  <option value="Easy">Easy</option>
-                  <option value="Medium" selected>Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Question Text *</label>
-              <textarea id="modalQuestionText" class="form-control" style="height: 90px;" placeholder="Enter question stem here..." required></textarea>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col">
-                <label>Option A *</label>
-                <input type="text" id="modalOptA" class="form-control" placeholder="Option A text" required>
-              </div>
-              <div class="form-group col">
-                <label>Option B *</label>
-                <input type="text" id="modalOptB" class="form-control" placeholder="Option B text" required>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col">
-                <label>Option C *</label>
-                <input type="text" id="modalOptC" class="form-control" placeholder="Option C text" required>
-              </div>
-              <div class="form-group col">
-                <label>Option D *</label>
-                <input type="text" id="modalOptD" class="form-control" placeholder="Option D text" required>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group col" style="max-width: 160px;">
-                <label>Correct Answer *</label>
-                <select id="modalCorrectAnswer" class="form-control" required>
-                  <option value="A">Option (A)</option>
-                  <option value="B">Option (B)</option>
-                  <option value="C">Option (C)</option>
-                  <option value="D">Option (D)</option>
-                </select>
-              </div>
-              <div class="form-group col">
-                <label>Statutory Reference</label>
-                <input type="text" id="modalReference" class="form-control" placeholder="e.g. Ind AS 115 Para 56 / Sec 194Q">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Detailed Solution / ICAI Reasoning</label>
-              <textarea id="modalExplanation" class="form-control" style="height: 70px;" placeholder="Explain why the option is correct with legal/mathematical basis..."></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block">
-              <i class="fa-solid fa-floppy-disk"></i> Save MCQ to Repository
+          <div class="user-session-badge" id="userSessionBadge" style="display: none;">
+            <button class="btn btn-sm btn-outline student-badge-btn" onclick="App.openProfileModal()" title="View Student Profile">
+              <i class="fa-solid fa-user-graduate"></i>
+              <span id="headerStudentName">Student</span>
+              <span class="badge badge-primary" id="headerStudentAttempt" style="font-size: 0.65rem; margin-left: 4px;">Nov 2026</span>
             </button>
-          </form>
-        </div>
-
-        <!-- Intelligent Batch Text Importer -->
-        <div class="import-box">
-          <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Intelligent Batch Text Importer</h3>
-          <p>Copy-paste raw MCQs directly from ICAI PDFs, booklets, or notes. Our smart parser detects question numbers, options (a)-(d), and answers automatically!</p>
-
-          <div class="form-row">
-            <div class="form-group col">
-              <label>Assign to Subject</label>
-              <select id="rawImportSubject" class="form-control"></select>
-            </div>
-            <div class="form-group col">
-              <label>Source Type</label>
-              <select id="rawImportSource" class="form-control"></select>
-            </div>
-            <div class="form-group col">
-              <label>Session / Term</label>
-              <input type="text" id="rawImportSession" class="form-control" value="Nov 2024" placeholder="e.g. Nov 2024">
-            </div>
-          </div>
-
-          <textarea id="rawImportTextarea" class="textarea-import" placeholder="Paste questions here. Example:
-
-1. What is the treatment of initial direct costs under Ind AS 116?
-(a) Charged to P&L immediately
-(b) Included in the initial measurement of Right-of-Use Asset
-(c) Deferred over 10 years
-(d) Added to lease liability
-Answer: (b)
-Explanation: Paragraph 24 of Ind AS 116 requires initial direct costs incurred by the lessee to be included in the ROU asset cost.
-
-2. ..."></textarea>
-
-          <button class="btn btn-success btn-block" onclick="App.handleRawImport()">
-            <i class="fa-solid fa-bolt"></i> Parse & Import All MCQs
-          </button>
-
-          <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
-
-          <!-- Backup & Restore -->
-          <h3><i class="fa-solid fa-database"></i> Backup & Sync</h3>
-          <p>Export your MCQ collection or restore from backup JSON file.</p>
-          
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-secondary" onclick="App.exportDataJSON()">
-              <i class="fa-solid fa-download"></i> Export JSON
-            </button>
-            <button class="btn btn-secondary" onclick="App.exportDataCSV()">
-              <i class="fa-solid fa-file-csv"></i> Export CSV
-            </button>
-            <button class="btn btn-outline" onclick="App.triggerJSONFileImport()">
-              <i class="fa-solid fa-upload"></i> Restore from JSON
-            </button>
-            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="App.handleJSONFileUpload(event)">
-            <button class="btn btn-outline" style="color: var(--danger); border-color: var(--danger-light);" onclick="App.resetAllData()">
-              <i class="fa-solid fa-rotate-left"></i> Reset Defaults
+            <button class="btn btn-sm btn-danger logout-btn" onclick="App.handleLogout()" title="Logout">
+              <i class="fa-solid fa-right-from-bracket"></i>
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <!-- Add Case Scenario Form -->
-      <div class="import-box" style="margin-top: 24px;">
-        <h3><i class="fa-solid fa-layer-group"></i> Add Integrated Case Scenario</h3>
-        <p>ICAI papers feature comprehensive case scenarios with multiple linked sub-questions.</p>
+      <!-- Main Content Container -->
+      <main class="main-content">
 
-        <form id="addCaseScenarioForm">
-          <div class="form-row">
-            <div class="form-group col">
-              <label>Subject</label>
-              <select id="caseSubjectSelect" class="form-control" required></select>
+        <!-- TAB: STUDY MANAGEMENT -->
+        <section id="tab-study" class="tab-pane active">
+          <!-- Professional Sub-Navigation Pill Bar -->
+          <div class="study-subnav-container">
+            <div class="study-subnav-pills">
+              <button type="button" class="study-subnav-pill active" data-subtab="countdown-calendar" onclick="App.switchStudySubtab('countdown-calendar')">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>a. Examination Countdown & Calendar</span>
+              </button>
+              <button type="button" class="study-subnav-pill" data-subtab="pomodoro-todo" onclick="App.switchStudySubtab('pomodoro-todo')">
+                <i class="fa-solid fa-stopwatch-20"></i>
+                <span>b. Pomodoro Focus & Daily Goals</span>
+              </button>
+              <button type="button" class="study-subnav-pill" data-subtab="subject-tracker" onclick="App.switchStudySubtab('subject-tracker')">
+                <i class="fa-solid fa-list-check"></i>
+                <span>c. Subject-Wise Syllabus Tracker</span>
+              </button>
             </div>
-            <div class="form-group col">
-              <label>Source Type</label>
-              <select id="caseSourceSelect" class="form-control" required></select>
+          </div>
+
+          <!-- SUB-SECTION A: EXAMINATION COUNTDOWN & CALENDAR -->
+          <div id="study-subtab-countdown-calendar" class="study-subpane active">
+            <div class="subpane-header">
+              <div class="subpane-title-group">
+                <span class="subpane-kicker"><i class="fa-solid fa-clock-rotate-left"></i> Timeline & Milestones</span>
+                <h2 class="subpane-title">Examination Countdown & Academic Indian Calendar</h2>
+                <p class="subpane-desc">Track remaining preparation days toward your target ICAI examination window and coordinate your revision around national festivals and official ICAI milestones.</p>
+              </div>
+              <button class="btn btn-outline" onclick="App.openCustomDateModal()" title="Customize Target Exam Date">
+                <i class="fa-solid fa-calendar-check"></i> Set Custom Exam Date
+              </button>
+            </div>
+
+            <!-- Live Countdown Hero Banner -->
+            <div class="study-countdown-banner">
+              <div class="countdown-main">
+                <div class="countdown-badge-icon">
+                  <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div>
+                  <span class="countdown-label">Target Examination Countdown</span>
+                  <h2 id="studyTargetAttemptTitle">CA Final Examination</h2>
+                  <p id="studyTargetDateText" class="text-muted">Loading target exam timeline...</p>
+                </div>
+              </div>
+              <div class="countdown-digits-wrapper">
+                <div class="countdown-unit">
+                  <span id="countdownDays" class="count-num">--</span>
+                  <span class="count-label">Days Left</span>
+                </div>
+                <div class="countdown-unit">
+                  <span id="countdownWeeks" class="count-num">--</span>
+                  <span class="count-label">Weeks Left</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Indian Calendar & Festivals -->
+            <div class="section-box calendar-section-box">
+              <div class="calendar-header-bar">
+                <div>
+                  <h3><i class="fa-solid fa-calendar-day"></i> Indian Calendar, Auspicious Festivals & Exam Windows</h3>
+                  <p class="text-muted" style="font-size: 0.85rem;">Track national holidays, major Indian festivals (Diwali, Holi, Eid, Dussehra, Navratri) & official ICAI examination periods.</p>
+                </div>
+                <div class="calendar-nav-controls">
+                  <button class="btn btn-sm btn-outline" onclick="App.prevCalendarMonth()"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                  <span id="calendarCurrentMonthTitle" style="font-weight: 700; font-size: 1.05rem; min-width: 160px; text-align: center;">Month Year</span>
+                  <button class="btn btn-sm btn-outline" onclick="App.nextCalendarMonth()">Next <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+              </div>
+
+              <div class="calendar-layout">
+                <div class="calendar-grid-wrapper">
+                  <div class="calendar-weekdays">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                  </div>
+                  <div id="calendarDaysGrid" class="calendar-days-grid"></div>
+                </div>
+                <div class="calendar-festivals-sidebar">
+                  <h4><i class="fa-solid fa-om"></i> Indian Festivals & Key Dates</h4>
+                  <div id="calendarMonthFestivalsList"></div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Case Study Title *</label>
-            <input type="text" id="caseTitleInput" class="form-control" placeholder="e.g. Case Scenario: M/s XYZ Ltd. Corporate Restructuring" required>
+          <!-- SUB-SECTION B: POMODORO & TO-DO (WITH HISTORICAL COMPARISON) -->
+          <div id="study-subtab-pomodoro-todo" class="study-subpane" style="display: none;">
+            <div class="subpane-header">
+              <div class="subpane-title-group">
+                <span class="subpane-kicker"><i class="fa-solid fa-fire"></i> Deep Focus & Productivity</span>
+                <h2 class="subpane-title">Pomodoro Focus Timer & Study Goals (To-Do List)</h2>
+                <p class="subpane-desc">Timestamp every focus session, customize study & break lengths, and compare your daily completed tasks against previous days, weeks, and months.</p>
+              </div>
+              <button class="btn btn-primary" onclick="App.openPomodoroSettingsModal()">
+                <i class="fa-solid fa-sliders"></i> Pomodoro Settings
+              </button>
+            </div>
+
+            <!-- Historical Performance Comparison Ribbon -->
+            <div class="comparison-section-card">
+              <div class="comparison-header-row">
+                <div>
+                  <h4 style="font-size: 1rem; font-weight: 700;"><i class="fa-solid fa-chart-column"></i> Performance & Comparison Analytics</h4>
+                  <p class="text-muted" style="font-size: 0.8rem;">Compare completed tasks and focus sessions with past performance.</p>
+                </div>
+                <div class="comparison-period-pills">
+                  <button class="comp-pill active" data-period="today" onclick="App.setComparisonPeriod('today')">Today vs Yesterday</button>
+                  <button class="comp-pill" data-period="yesterday" onclick="App.setComparisonPeriod('yesterday')">Yesterday</button>
+                  <button class="comp-pill" data-period="week" onclick="App.setComparisonPeriod('week')">This Week</button>
+                  <button class="comp-pill" data-period="month" onclick="App.setComparisonPeriod('month')">This Month</button>
+                </div>
+              </div>
+
+              <div id="comparisonMetricsRow" class="comparison-metrics-grid">
+                <!-- Dynamic comparison content from App.renderComparisonAnalytics() -->
+              </div>
+            </div>
+
+            <!-- Study Tools Grid: Pomodoro Timer + Task Manager -->
+            <div class="study-tools-grid">
+              <!-- Focus Pomodoro Timer -->
+              <div class="section-box pomodoro-card">
+                <div class="box-header-row">
+                  <h3><i class="fa-solid fa-stopwatch"></i> Focus Pomodoro Timer</h3>
+                  <span class="badge badge-primary" id="pomodoroSessionsToday">0 / 8 Sessions Today</span>
+                </div>
+                
+                <div class="pomodoro-modes">
+                  <button class="pomo-mode-btn active" data-mode="study" onclick="App.setPomodoroMode('study')">Study</button>
+                  <button class="pomo-mode-btn" data-mode="short_break" onclick="App.setPomodoroMode('short_break')">Short Break</button>
+                  <button class="pomo-mode-btn" data-mode="long_break" onclick="App.setPomodoroMode('long_break')">Long Break</button>
+                </div>
+
+                <div class="pomo-active-subject-select">
+                  <label for="pomoActiveSubject"><i class="fa-solid fa-tag"></i> Active Study Paper:</label>
+                  <select id="pomoActiveSubject" class="form-control" onchange="App.handlePomodoroSubjectChange(this.value)">
+                    <option value="FR">Paper 1: Financial Reporting (FR)</option>
+                    <option value="AFM">Paper 2: Adv. Financial Management (AFM)</option>
+                    <option value="AUDIT">Paper 3: Advanced Auditing & Ethics</option>
+                    <option value="DT">Paper 4: Direct Tax Laws & Intl Tax</option>
+                    <option value="IDT">Paper 5: Indirect Tax Laws (GST & Customs)</option>
+                    <option value="IBS">Paper 6: Integrated Business Solutions</option>
+                    <option value="GENERAL">General / Self-Study Revision</option>
+                  </select>
+                </div>
+
+                <div class="pomodoro-clock" id="pomodoroClockDisplay">25:00</div>
+
+                <!-- Target session meter -->
+                <div class="pomo-target-meter">
+                  <div class="pomo-target-bar-bg">
+                    <div class="pomo-target-bar-fill" id="pomoTargetBarFill" style="width: 0%;"></div>
+                  </div>
+                  <small class="text-muted" id="pomoTargetSummary">0 of 8 Target Sessions Completed</small>
+                </div>
+
+                <div class="pomodoro-controls">
+                  <button id="pomodoroToggleBtn" class="btn btn-primary btn-lg" onclick="App.togglePomodoro()">
+                    <i class="fa-solid fa-play"></i> Start Focus
+                  </button>
+                  <button class="btn btn-outline" onclick="App.resetPomodoro()">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                  </button>
+                </div>
+
+                <!-- Timestamped Session Logs Collapsible / Drawer -->
+                <details class="pomo-logs-collapsible" style="margin-top: 18px;">
+                  <summary><i class="fa-solid fa-clock-rotate-left"></i> View Timestamped Focus Logs (<span id="pomoLogsCount">0</span> Sessions)</summary>
+                  <div class="pomo-logs-list" id="pomoLogsList">
+                    <p class="text-muted" style="font-size: 0.8rem; padding: 10px 0;">No completed focus sessions yet today.</p>
+                  </div>
+                </details>
+              </div>
+
+              <!-- Task Manager (To-Do List) -->
+              <div class="section-box task-manager-card">
+                <div class="box-header-row">
+                  <h3><i class="fa-solid fa-list-check"></i> Daily Study Goals & To-Do List</h3>
+                  <span class="text-muted" style="font-size: 0.8rem;" id="tasksCountSummary">0 Pending Goals</span>
+                </div>
+                
+                <form id="addTaskForm" class="add-task-form" onsubmit="App.handleAddTask(event)">
+                  <input type="text" id="taskTitleInput" class="form-control" placeholder="Add study target (e.g. Ind AS 115 Lecture 3 + TYQ)..." required>
+                  <div class="task-form-subrow">
+                    <select id="taskSubjectSelect" class="form-control" style="width: auto;">
+                      <option value="FR">FR</option>
+                      <option value="AFM">AFM</option>
+                      <option value="AUDIT">Audit</option>
+                      <option value="DT">DT</option>
+                      <option value="IDT">IDT</option>
+                      <option value="IBS">IBS</option>
+                      <option value="GENERAL">General</option>
+                    </select>
+                    <select id="taskPrioritySelect" class="form-control" style="width: auto;">
+                      <option value="High">High Priority</option>
+                      <option value="Medium" selected>Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fa-solid fa-plus"></i> Add Goal
+                    </button>
+                  </div>
+                </form>
+
+                <div id="tasksListContainer" class="tasks-list"></div>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>Comprehensive Case Scenario / Narrative *</label>
-            <textarea id="caseNarrativeInput" class="form-control" style="height: 140px;" placeholder="Paste the complete case facts, transaction details, and financial figures..." required></textarea>
+          <!-- SUB-SECTION C: SUBJECT WISE TRACKER -->
+          <div id="study-subtab-subject-tracker" class="study-subpane" style="display: none;">
+            <div class="subpane-header">
+              <div class="subpane-title-group">
+                <span class="subpane-kicker"><i class="fa-solid fa-graduation-cap"></i> Syllabus Completion & Mastery</span>
+                <h2 class="subpane-title">Subject-Wise Chapter, Lecture & Revision Tracker</h2>
+                <p class="subpane-desc">Customize chapter lecture counts for your faculty, choose Recorded or Live batch mode, and track multiple revisions (R1, R2, R3).</p>
+              </div>
+              <div class="overall-readiness-chip">
+                <span>Overall Syllabus Readiness:</span>
+                <strong id="trackerOverallReadiness">0%</strong>
+              </div>
+            </div>
+
+            <!-- Subject selection pills -->
+            <div class="subject-tracker-tabs" id="subjectTrackerTabs"></div>
+
+            <!-- Active Subject Summary Bar -->
+            <div class="active-sub-summary" id="activeSubSummary"></div>
+
+            <!-- Chapters Table Container -->
+            <div class="table-responsive">
+              <table class="table chapter-tracker-table">
+                <thead>
+                  <tr>
+                    <th style="width: 32%;">Chapter Name & ICAI Weightage</th>
+                    <th style="width: 14%; text-align: center;">Batch Mode</th>
+                    <th style="width: 27%; text-align: center;">Lecture Completion (Faculty Adjusted)</th>
+                    <th style="width: 9%; text-align: center;" title="Revision 1">R1</th>
+                    <th style="width: 9%; text-align: center;" title="Revision 2">R2</th>
+                    <th style="width: 9%; text-align: center;" title="Revision 3">R3</th>
+                  </tr>
+                </thead>
+                <tbody id="chapterTrackerTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-pane">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon" style="background-color: var(--primary-light); color: var(--primary);">
+                <i class="fa-solid fa-database"></i>
+              </div>
+              <div class="metric-data">
+                <h3 id="statTotalMCQs">0</h3>
+                <p>Total MCQs Stored</p>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background-color: var(--info-light); color: var(--info);">
+                <i class="fa-solid fa-pen-nib"></i>
+              </div>
+              <div class="metric-data">
+                <h3 id="statAttempted">0</h3>
+                <p>MCQs Attempted</p>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background-color: var(--success-light); color: var(--success);">
+                <i class="fa-solid fa-bullseye"></i>
+              </div>
+              <div class="metric-data">
+                <h3 id="statAccuracy">0%</h3>
+                <p>Overall Accuracy</p>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background-color: var(--danger-light); color: var(--danger);">
+                <i class="fa-solid fa-xmark"></i>
+              </div>
+              <div class="metric-data">
+                <h3 id="statMistakes">0</h3>
+                <p>Mistakes Logged</p>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="background-color: var(--warning-light); color: var(--warning);">
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <div class="metric-data">
+                <h3 id="statStarred">0</h3>
+                <p>Starred for Revision</p>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>Sub-Questions (Formatted with (a)-(d) options and Answer: X) *</label>
-            <textarea id="caseSubQInput" class="form-control" style="height: 160px;" placeholder="1. What is the value of consideration under Ind AS 103?
-(a) ₹ 100 Cr
-(b) ₹ 120 Cr
-(c) ₹ 150 Cr
-(d) ₹ 180 Cr
-Answer: (b)
-Explanation: Net assets acquired...
+          <div class="dashboard-split">
+            <div class="section-box">
+              <h3><i class="fa-solid fa-bars-progress"></i> Subject-Wise Coverage & Accuracy</h3>
+              <div id="dashboardSubjectList"></div>
+            </div>
 
-2. What is the tax implication under Section 72A?
-(a) Loss cannot be carried forward
-(b) Accumulated loss can be carried forward for 8 years
-(c) Only depreciation is allowed
-(d) None of the above
-Answer: (b)" required></textarea>
+            <div class="section-box">
+              <h3><i class="fa-solid fa-tags"></i> Official ICAI Sources Bank</h3>
+              <div id="dashboardSourceList" class="sources-grid"></div>
+            </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block">
-            <i class="fa-solid fa-layer-group"></i> Save Integrated Case Scenario
-          </button>
-        </form>
-      </div>
-    </section>
+          <div class="section-box">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Simulated Exam Attempts</h3>
+            <div style="overflow-x: auto;">
+              <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                  <tr style="text-align: left; border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                    <th style="padding: 10px;">Date & Time</th>
+                    <th style="padding: 10px;">Score</th>
+                    <th style="padding: 10px;">Percentage</th>
+                    <th style="padding: 10px;">Duration</th>
+                    <th style="padding: 10px;">Questions</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardRecentExams"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-  </main>
+        <!-- TAB 2: REPOSITORY (ALL MCQs) -->
+        <section id="tab-repository" class="tab-pane">
+          <div class="filter-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="repoSearchInput" placeholder="Search MCQs by concept, section, keyword, or text...">
+            </div>
 
-  <!-- App Footer -->
-  <footer class="app-footer">
-    <div>
-      <strong>ICAI CA Final MCQ Master Compilation</strong> • Designed for Chartered Accountancy aspirants.
+            <div class="filter-dropdowns">
+              <select id="repoSubjectFilter" class="form-control" style="width: auto;">
+                <option value="ALL">All Subjects</option>
+              </select>
+
+              <select id="repoChapterFilter" class="form-control" style="width: auto; max-width: 250px;">
+                <option value="ALL">All Chapters</option>
+              </select>
+
+              <select id="repoSourceFilter" class="form-control" style="width: auto;">
+                <option value="ALL">All Sources</option>
+              </select>
+
+              <button class="btn btn-outline" onclick="window.print()" title="Print Current View / Save as PDF">
+                <i class="fa-solid fa-print"></i> Print / PDF
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span id="repoFilteredCount" class="text-muted" style="font-size: 0.85rem; font-weight: 600;">0 MCQs found</span>
+          </div>
+
+          <div id="repositoryList"></div>
+        </section>
+
+        <!-- TAB: WRITING QUESTIONS (DESCRIPTIVE & PRACTICAL) -->
+        <section id="tab-writing" class="tab-pane">
+          <div class="filter-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="writingSearchInput" placeholder="Search descriptive questions by problem stem, standard, or section...">
+            </div>
+
+            <div class="filter-dropdowns">
+              <select id="writingSubjectFilter" class="form-control" style="width: auto;">
+                <option value="ALL">All Subjects</option>
+              </select>
+
+              <select id="writingChapterFilter" class="form-control" style="width: auto; max-width: 250px;">
+                <option value="ALL">All Chapters</option>
+              </select>
+
+              <select id="writingSourceFilter" class="form-control" style="width: auto;">
+                <option value="ALL">All Sources (SM, RTP, MTP, PYQ)</option>
+              </select>
+
+              <button class="btn btn-primary" onclick="App.openAddWritingModal()">
+                <i class="fa-solid fa-plus"></i> Add Writing Question
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <span id="writingFilteredCount" class="text-muted" style="font-size: 0.85rem; font-weight: 600;">0 Questions found</span>
+            <button class="btn btn-sm btn-outline" onclick="window.print()">
+              <i class="fa-solid fa-print"></i> Print Questions Sheet
+            </button>
+          </div>
+
+          <div id="writingQuestionsList"></div>
+        </section>
+
+        <!-- TAB 3: PRACTICE MODE -->
+        <section id="tab-practice" class="tab-pane">
+          <div class="practice-container" id="practiceContainer"></div>
+        </section>
+
+        <!-- TAB 4: EXAM SIMULATOR -->
+        <section id="tab-exam" class="tab-pane">
+          <div id="examContainer"></div>
+        </section>
+
+        <!-- TAB 5: CASE SCENARIOS -->
+        <section id="tab-cases" class="tab-pane">
+          <div id="casesContainer"></div>
+        </section>
+
+        <!-- TAB 6: MISTAKE NOTEBOOK -->
+        <section id="tab-mistakes" class="tab-pane">
+          <div id="mistakesContainer"></div>
+        </section>
+
+        <!-- TAB 7: ADD & IMPORT MCQS -->
+        <section id="tab-importer" class="tab-pane">
+          <div class="importer-grid">
+            <!-- Add Single MCQ -->
+            <div class="import-box">
+              <h3><i class="fa-solid fa-circle-plus"></i> Add Single MCQ</h3>
+              <p>Add a new standalone question directly into your permanent repository.</p>
+
+              <form id="addSingleMCQForm">
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label>Subject *</label>
+                    <select id="modalSubjectSelect" class="form-control" required></select>
+                  </div>
+                  <div class="form-group col">
+                    <label>Chapter / Topic *</label>
+                    <select id="modalChapterSelect" class="form-control" required></select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label>Source Type *</label>
+                    <select id="modalSourceSelect" class="form-control" required></select>
+                  </div>
+                  <div class="form-group col">
+                    <label>Exam Attempt / Edition *</label>
+                    <input type="text" id="modalExamSession" class="form-control" placeholder="e.g. Nov 2024 / May 2025" required>
+                  </div>
+                  <div class="form-group col">
+                    <label>Marks *</label>
+                    <input type="number" id="modalMarks" class="form-control" value="2" min="1" max="10" required>
+                  </div>
+                  <div class="form-group col">
+                    <label>Difficulty</label>
+                    <select id="modalDifficulty" class="form-control">
+                      <option value="Easy">Easy</option>
+                      <option value="Medium" selected>Medium</option>
+                      <option value="Hard">Hard</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Question Text *</label>
+                  <textarea id="modalQuestionText" class="form-control" placeholder="Enter complete question statement..." required></textarea>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label>Option A *</label>
+                    <input type="text" id="modalOptA" class="form-control" required>
+                  </div>
+                  <div class="form-group col">
+                    <label>Option B *</label>
+                    <input type="text" id="modalOptB" class="form-control" required>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label>Option C *</label>
+                    <input type="text" id="modalOptC" class="form-control" required>
+                  </div>
+                  <div class="form-group col">
+                    <label>Option D *</label>
+                    <input type="text" id="modalOptD" class="form-control" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Correct Answer *</label>
+                  <select id="modalCorrectAnswer" class="form-control">
+                    <option value="A">Option A</option>
+                    <option value="B">Option B</option>
+                    <option value="C">Option C</option>
+                    <option value="D">Option D</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Explanation & Statutory Rationale</label>
+                  <textarea id="modalExplanation" class="form-control" placeholder="Explain the provision, calculation, or standard..."></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label>Statutory Reference</label>
+                  <input type="text" id="modalReference" class="form-control" placeholder="e.g. Ind AS 115 Para 56 / SA 240 / Section 115BAC">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Question to Bank
+                </button>
+              </form>
+            </div>
+
+            <!-- Case Scenario & Batch Importer -->
+            <div class="import-box">
+              <h3><i class="fa-solid fa-layer-group"></i> Add Integrated Case Scenario</h3>
+              <p>Add a comprehensive case scenario with multiple linked sub-questions.</p>
+
+              <form id="addCaseScenarioForm">
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label>Subject *</label>
+                    <select id="caseSubjectSelect" class="form-control" required></select>
+                  </div>
+                  <div class="form-group col">
+                    <label>Source Type *</label>
+                    <select id="caseSourceSelect" class="form-control" required></select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Case Scenario Title *</label>
+                  <input type="text" id="caseTitleInput" class="form-control" placeholder="e.g. Comprehensive Restructuring & Ind AS 103" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Case Study Narrative / Background Facts *</label>
+                  <textarea id="caseNarrativeInput" class="form-control" style="height: 120px;" placeholder="Paste the narrative case facts, financial figures, transaction details..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label>Sub-Questions Text (Raw Formatted) *</label>
+                  <textarea id="caseSubQInput" class="form-control" style="height: 150px;" placeholder="Paste sub-questions formatted as:&#10;1. Question text&#10;(a) Opt 1&#10;(b) Opt 2&#10;(c) Opt 3&#10;(d) Opt 4&#10;Answer: a&#10;Explanation: ..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                  <i class="fa-solid fa-layer-group"></i> Save Integrated Case Study
+                </button>
+              </form>
+
+              <hr style="margin: 24px 0; border: none; border-top: 1px dashed var(--border-color);">
+
+              <!-- Raw Text Parser Importer -->
+              <h3><i class="fa-solid fa-file-code"></i> Batch Import from Raw Text</h3>
+              <p class="text-muted" style="font-size: 0.85rem;">Quickly paste multiple MCQs copied from PDF, RTP, or Word docs.</p>
+
+              <div class="form-row">
+                <div class="form-group col">
+                  <select id="rawImportSubject" class="form-control"></select>
+                </div>
+                <div class="form-group col">
+                  <select id="rawImportSource" class="form-control"></select>
+                </div>
+                <div class="form-group col">
+                  <input type="text" id="rawImportSession" class="form-control" placeholder="e.g. Nov 2024" value="Nov 2024">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <textarea id="rawImportTextarea" class="form-control" style="height: 120px;" placeholder="Paste raw questions here...&#10;1. Question?&#10;(a) Opt A&#10;(b) Opt B&#10;(c) Opt C&#10;(d) Opt D&#10;Answer: B"></textarea>
+              </div>
+
+              <div class="form-row">
+                <button type="button" class="btn btn-secondary col" onclick="App.handleRawImport()">
+                  <i class="fa-solid fa-bolt"></i> Parse & Import
+                </button>
+                <button type="button" class="btn btn-outline col" onclick="App.exportDataJSON()">
+                  <i class="fa-solid fa-download"></i> Backup JSON
+                </button>
+                <button type="button" class="btn btn-outline col" onclick="App.triggerJSONFileImport()">
+                  <i class="fa-solid fa-upload"></i> Restore JSON
+                </button>
+              </div>
+              <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="App.handleJSONFileUpload(event)">
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- App Footer -->
+      <footer class="app-footer">
+        <div>
+          <strong>ICAI CA Final Study Management & MCQ Master Compilation</strong> • Designed for Chartered Accountancy aspirants.
+        </div>
+        <div>
+          <span>v2.0 • 24/7 Live Deployment</span>
+        </div>
+      </footer>
     </div>
-    <div>
-      <span>v1.0.0</span>
-    </div>
-  </footer>
+  </div>
 
   <!-- AUTH GATEWAY MODAL (Access Protection) -->
   <div id="authGatewayOverlay" class="auth-gateway-overlay">
@@ -682,7 +782,7 @@ Answer: (b)" required></textarea>
         </div>
 
         <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 8px;">
-          <i class="fa-solid fa-arrow-right-to-bracket"></i> Login to MCQ Portal
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Login to Portal
         </button>
 
         <div class="auth-footer-prompt">
@@ -745,7 +845,7 @@ Answer: (b)" required></textarea>
         </div>
 
         <button type="submit" class="btn btn-success btn-block btn-lg" style="margin-top: 8px;">
-          <i class="fa-solid fa-user-check"></i> Register & Enter MCQ Portal
+          <i class="fa-solid fa-user-check"></i> Register & Enter Portal
         </button>
 
         <div class="auth-footer-prompt">
@@ -859,6 +959,84 @@ Answer: (b)" required></textarea>
         <button type="button" class="btn btn-secondary" onclick="App.closeCustomDateModal()">Cancel</button>
         <button type="button" class="btn btn-primary" onclick="App.saveCustomExamDate()">Save Target Date</button>
       </div>
+    </div>
+  </div>
+
+  <!-- POMODORO SETTINGS MODAL -->
+  <div id="pomodoroSettingsModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-sliders"></i> Focus Pomodoro Settings</h3>
+        <button type="button" class="icon-btn close-modal-btn" onclick="App.closePomodoroSettingsModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="pomodoroSettingsForm" onsubmit="App.savePomodoroSettings(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Study Focus Time (Mins) *</label>
+              <input type="number" id="pomoStudyMins" class="form-control" min="5" max="120" value="25" required>
+            </div>
+            <div class="form-group col">
+              <label>Short Break (Mins) *</label>
+              <input type="number" id="pomoShortMins" class="form-control" min="1" max="30" value="5" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Long Break (Mins) *</label>
+              <input type="number" id="pomoLongMins" class="form-control" min="5" max="60" value="15" required>
+            </div>
+            <div class="form-group col">
+              <label>Target Pomodoros / Day *</label>
+              <input type="number" id="pomoDailyTarget" class="form-control" min="1" max="30" value="8" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Default Study Subject Tag</label>
+            <select id="pomoDefaultSubject" class="form-control">
+              <option value="FR">Paper 1: Financial Reporting (FR)</option>
+              <option value="AFM">Paper 2: Adv. Financial Management (AFM)</option>
+              <option value="AUDIT">Paper 3: Advanced Auditing & Ethics</option>
+              <option value="DT">Paper 4: Direct Tax Laws & Intl Tax</option>
+              <option value="IDT">Paper 5: Indirect Tax Laws (GST & Customs)</option>
+              <option value="IBS">Paper 6: Integrated Business Solutions</option>
+              <option value="GENERAL">General / Self-Study Revision</option>
+            </select>
+            <small class="text-muted" style="display: block; margin-top: 4px;">Tags each completed session with timestamp and subject in your productivity log.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closePomodoroSettingsModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT FACULTY LECTURES COUNT MODAL -->
+  <div id="editFacultyLecturesModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-pen-to-square"></i> Customize Chapter Lectures</h3>
+        <button type="button" class="icon-btn close-modal-btn" onclick="App.closeEditLectureModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="editFacultyLecturesForm" onsubmit="App.saveFacultyLectureTotal(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Chapter Name</label>
+            <p id="editFacultyLectureChName" style="font-weight: 600; color: var(--primary); margin-bottom: 8px;"></p>
+          </div>
+          <div class="form-group">
+            <label>Your Faculty's Total Lectures for this Chapter *</label>
+            <input type="number" id="editFacultyLectureInput" class="form-control" min="1" max="150" value="10" required>
+            <small class="text-muted" style="display: block; margin-top: 4px;">Different coaching faculties provide varying lecture totals. Set your exact coaching batch count.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeEditLectureModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update Lecture Count</button>
+        </div>
+      </form>
     </div>
   </div>
 
