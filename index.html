@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICAI CA Final MCQ Master Compilation | SM • PYQ • RTP • MTP • Booklet</title>
+  <meta name="description" content="Comprehensive ICAI CA Final MCQ portal covering Study Material, Past Year Questions (PYQs), Revision Test Papers (RTP), Mock Test Papers (MTP), and ICAI MCQ Booklets.">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-section">
+        <div class="brand-logo-badge">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div>
+          <h1>ICAI CA Final MCQ Portal</h1>
+          <p class="brand-tagline">Master 30:70 MCQ Section • Study Material • PYQ • RTP • MTP • Booklet</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <select id="globalSubjectFilter" class="subject-select" title="Switch Global Subject">
+          <option value="ALL">All CA Final Subjects</option>
+        </select>
+
+        <button id="themeToggleBtn" class="btn btn-sm btn-secondary" title="Toggle Theme">
+          <i class="fa-solid fa-moon"></i> <span>Dark Mode</span>
+        </button>
+
+        <button class="btn btn-sm btn-outline" onclick="App.exportDataJSON()" title="Quick Backup JSON">
+          <i class="fa-solid fa-cloud-arrow-down"></i> <span>Backup</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-bar">
+      <a href="#" class="nav-link active" data-tab="dashboard">
+        <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-link" data-tab="repository">
+        <i class="fa-solid fa-book-open"></i> <span>Question Bank</span>
+      </a>
+      <a href="#" class="nav-link" data-tab="practice">
+        <i class="fa-solid fa-circle-question"></i> <span>Practice Mode</span>
+      </a>
+      <a href="#" class="nav-link" data-tab="exam">
+        <i class="fa-solid fa-stopwatch"></i> <span>Exam Simulator (30 Marks)</span>
+      </a>
+      <a href="#" class="nav-link" data-tab="cases">
+        <i class="fa-solid fa-layer-group"></i> <span>Case Scenarios</span>
+      </a>
+      <a href="#" class="nav-link" data-tab="mistakes">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span>Mistake Notebook</span>
+      </a>
+      <a href="#" class="nav-link" data-tab="importer">
+        <i class="fa-solid fa-file-import"></i> <span>Add & Import MCQs</span>
+      </a>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="tab-pane active">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon" style="background-color: var(--primary-light); color: var(--primary);">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <div class="metric-data">
+            <h3 id="statTotalMCQs">0</h3>
+            <p>Total MCQs Stored</p>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background-color: var(--info-light); color: var(--info);">
+            <i class="fa-solid fa-pen-nib"></i>
+          </div>
+          <div class="metric-data">
+            <h3 id="statAttempted">0</h3>
+            <p>MCQs Attempted</p>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background-color: var(--success-light); color: var(--success);">
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
+          <div class="metric-data">
+            <h3 id="statAccuracy">0%</h3>
+            <p>Overall Accuracy</p>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background-color: var(--danger-light); color: var(--danger);">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+          <div class="metric-data">
+            <h3 id="statMistakes">0</h3>
+            <p>Mistakes Logged</p>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background-color: var(--warning-light); color: var(--warning);">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div class="metric-data">
+            <h3 id="statStarred">0</h3>
+            <p>Starred for Revision</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-split">
+        <div class="section-box">
+          <h3><i class="fa-solid fa-bars-progress"></i> Subject-Wise Coverage & Accuracy</h3>
+          <div id="dashboardSubjectList"></div>
+        </div>
+
+        <div class="section-box">
+          <h3><i class="fa-solid fa-tags"></i> Official ICAI Sources Bank</h3>
+          <div id="dashboardSourceList" class="sources-grid"></div>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Simulated Exam Attempts</h3>
+        <div style="overflow-x: auto;">
+          <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="text-align: left; border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 10px;">Date & Time</th>
+                <th style="padding: 10px;">Score</th>
+                <th style="padding: 10px;">Percentage</th>
+                <th style="padding: 10px;">Duration</th>
+                <th style="padding: 10px;">Questions</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardRecentExams"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: REPOSITORY (ALL MCQs) -->
+    <section id="tab-repository" class="tab-pane">
+      <div class="filter-toolbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="repoSearchInput" placeholder="Search MCQs by concept, section, keyword, or text...">
+        </div>
+
+        <div class="filter-dropdowns">
+          <select id="repoSubjectFilter" class="form-control" style="width: auto;">
+            <option value="ALL">All Subjects</option>
+          </select>
+
+          <select id="repoSourceFilter" class="form-control" style="width: auto;">
+            <option value="ALL">All Sources</option>
+          </select>
+
+          <button class="btn btn-outline" onclick="window.print()" title="Print Current View / Save as PDF">
+            <i class="fa-solid fa-print"></i> Print / PDF
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span id="repoFilteredCount" class="text-muted" style="font-size: 0.85rem; font-weight: 600;">0 MCQs found</span>
+      </div>
+
+      <div id="repositoryList"></div>
+    </section>
+
+    <!-- TAB 3: PRACTICE MODE -->
+    <section id="tab-practice" class="tab-pane">
+      <div class="practice-container" id="practiceContainer"></div>
+    </section>
+
+    <!-- TAB 4: EXAM SIMULATOR -->
+    <section id="tab-exam" class="tab-pane">
+      <div id="examContainer"></div>
+    </section>
+
+    <!-- TAB 5: CASE SCENARIOS -->
+    <section id="tab-cases" class="tab-pane">
+      <div id="casesContainer"></div>
+    </section>
+
+    <!-- TAB 6: MISTAKE NOTEBOOK -->
+    <section id="tab-mistakes" class="tab-pane">
+      <div id="mistakesContainer"></div>
+    </section>
+
+    <!-- TAB 7: ADD & IMPORT MCQS -->
+    <section id="tab-importer" class="tab-pane">
+      <div class="importer-grid">
+        <!-- Add Single MCQ -->
+        <div class="import-box">
+          <h3><i class="fa-solid fa-circle-plus"></i> Add Single MCQ</h3>
+          <p>Add a new standalone question directly into your permanent repository.</p>
+
+          <form id="addSingleMCQForm">
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Subject</label>
+                <select id="modalSubjectSelect" class="form-control" required></select>
+              </div>
+              <div class="form-group col">
+                <label>Chapter / Topic</label>
+                <select id="modalChapterSelect" class="form-control" required></select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Source Type</label>
+                <select id="modalSourceSelect" class="form-control" required></select>
+              </div>
+              <div class="form-group col">
+                <label>Exam Session / Edition</label>
+                <input type="text" id="modalExamSession" class="form-control" placeholder="e.g. Nov 2024 / SM 2024">
+              </div>
+              <div class="form-group col" style="max-width: 100px;">
+                <label>Marks</label>
+                <select id="modalMarks" class="form-control">
+                  <option value="2" selected>2 Marks</option>
+                  <option value="1">1 Mark</option>
+                </select>
+              </div>
+              <div class="form-group col" style="max-width: 130px;">
+                <label>Difficulty</label>
+                <select id="modalDifficulty" class="form-control">
+                  <option value="Easy">Easy</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Question Text *</label>
+              <textarea id="modalQuestionText" class="form-control" style="height: 90px;" placeholder="Enter question stem here..." required></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Option A *</label>
+                <input type="text" id="modalOptA" class="form-control" placeholder="Option A text" required>
+              </div>
+              <div class="form-group col">
+                <label>Option B *</label>
+                <input type="text" id="modalOptB" class="form-control" placeholder="Option B text" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Option C *</label>
+                <input type="text" id="modalOptC" class="form-control" placeholder="Option C text" required>
+              </div>
+              <div class="form-group col">
+                <label>Option D *</label>
+                <input type="text" id="modalOptD" class="form-control" placeholder="Option D text" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col" style="max-width: 160px;">
+                <label>Correct Answer *</label>
+                <select id="modalCorrectAnswer" class="form-control" required>
+                  <option value="A">Option (A)</option>
+                  <option value="B">Option (B)</option>
+                  <option value="C">Option (C)</option>
+                  <option value="D">Option (D)</option>
+                </select>
+              </div>
+              <div class="form-group col">
+                <label>Statutory Reference</label>
+                <input type="text" id="modalReference" class="form-control" placeholder="e.g. Ind AS 115 Para 56 / Sec 194Q">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Detailed Solution / ICAI Reasoning</label>
+              <textarea id="modalExplanation" class="form-control" style="height: 70px;" placeholder="Explain why the option is correct with legal/mathematical basis..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-floppy-disk"></i> Save MCQ to Repository
+            </button>
+          </form>
+        </div>
+
+        <!-- Intelligent Batch Text Importer -->
+        <div class="import-box">
+          <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Intelligent Batch Text Importer</h3>
+          <p>Copy-paste raw MCQs directly from ICAI PDFs, booklets, or notes. Our smart parser detects question numbers, options (a)-(d), and answers automatically!</p>
+
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Assign to Subject</label>
+              <select id="rawImportSubject" class="form-control"></select>
+            </div>
+            <div class="form-group col">
+              <label>Source Type</label>
+              <select id="rawImportSource" class="form-control"></select>
+            </div>
+            <div class="form-group col">
+              <label>Session / Term</label>
+              <input type="text" id="rawImportSession" class="form-control" value="Nov 2024" placeholder="e.g. Nov 2024">
+            </div>
+          </div>
+
+          <textarea id="rawImportTextarea" class="textarea-import" placeholder="Paste questions here. Example:
+
+1. What is the treatment of initial direct costs under Ind AS 116?
+(a) Charged to P&L immediately
+(b) Included in the initial measurement of Right-of-Use Asset
+(c) Deferred over 10 years
+(d) Added to lease liability
+Answer: (b)
+Explanation: Paragraph 24 of Ind AS 116 requires initial direct costs incurred by the lessee to be included in the ROU asset cost.
+
+2. ..."></textarea>
+
+          <button class="btn btn-success btn-block" onclick="App.handleRawImport()">
+            <i class="fa-solid fa-bolt"></i> Parse & Import All MCQs
+          </button>
+
+          <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+
+          <!-- Backup & Restore -->
+          <h3><i class="fa-solid fa-database"></i> Backup & Sync</h3>
+          <p>Export your MCQ collection or restore from backup JSON file.</p>
+          
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" onclick="App.exportDataJSON()">
+              <i class="fa-solid fa-download"></i> Export JSON
+            </button>
+            <button class="btn btn-secondary" onclick="App.exportDataCSV()">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+            <button class="btn btn-outline" onclick="App.triggerJSONFileImport()">
+              <i class="fa-solid fa-upload"></i> Restore from JSON
+            </button>
+            <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="App.handleJSONFileUpload(event)">
+            <button class="btn btn-outline" style="color: var(--danger); border-color: var(--danger-light);" onclick="App.resetAllData()">
+              <i class="fa-solid fa-rotate-left"></i> Reset Defaults
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Case Scenario Form -->
+      <div class="import-box" style="margin-top: 24px;">
+        <h3><i class="fa-solid fa-layer-group"></i> Add Integrated Case Scenario</h3>
+        <p>ICAI papers feature comprehensive case scenarios with multiple linked sub-questions.</p>
+
+        <form id="addCaseScenarioForm">
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Subject</label>
+              <select id="caseSubjectSelect" class="form-control" required></select>
+            </div>
+            <div class="form-group col">
+              <label>Source Type</label>
+              <select id="caseSourceSelect" class="form-control" required></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Case Study Title *</label>
+            <input type="text" id="caseTitleInput" class="form-control" placeholder="e.g. Case Scenario: M/s XYZ Ltd. Corporate Restructuring" required>
+          </div>
+
+          <div class="form-group">
+            <label>Comprehensive Case Scenario / Narrative *</label>
+            <textarea id="caseNarrativeInput" class="form-control" style="height: 140px;" placeholder="Paste the complete case facts, transaction details, and financial figures..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Sub-Questions (Formatted with (a)-(d) options and Answer: X) *</label>
+            <textarea id="caseSubQInput" class="form-control" style="height: 160px;" placeholder="1. What is the value of consideration under Ind AS 103?
+(a) ₹ 100 Cr
+(b) ₹ 120 Cr
+(c) ₹ 150 Cr
+(d) ₹ 180 Cr
+Answer: (b)
+Explanation: Net assets acquired...
+
+2. What is the tax implication under Section 72A?
+(a) Loss cannot be carried forward
+(b) Accumulated loss can be carried forward for 8 years
+(c) Only depreciation is allowed
+(d) None of the above
+Answer: (b)" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-layer-group"></i> Save Integrated Case Scenario
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div>
+      <strong>ICAI CA Final MCQ Master Compilation</strong> • Designed for Chartered Accountancy aspirants.
+    </div>
+    <div>
+      <span class="badge" style="background-color: #059669; color: white;">
+        <i class="fa-solid fa-circle-check"></i> Netlify 24/7 Live Ready
+      </span>
+      <span>• v1.0.0</span>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="data/subjects.js"></script>
+  <script src="data/default_mcqs.js"></script>
+  <script src="js/importer.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
