@@ -44,6 +44,7 @@ const App = {
     this.setupEventListeners();
     this.renderHeaderSubjects();
     this.populateModalSelects();
+    this.initSidebarAutoHide();
   },
 
   checkAuthStatus() {
@@ -333,6 +334,57 @@ const App = {
     }
   },
 
+  initSidebarAutoHide() {
+    const sidebar = document.getElementById("appSidebar");
+    if (!sidebar) return;
+
+    sidebar.addEventListener("mouseenter", () => {
+      this.cancelSidebarAutoHide();
+    });
+
+    sidebar.addEventListener("mouseleave", () => {
+      this.scheduleSidebarAutoHide();
+    });
+
+    // Reveal when mouse moves near left edge (<= 15px)
+    document.addEventListener("mousemove", (e) => {
+      if (e.clientX <= 15 && document.body.classList.contains("sidebar-auto-hidden")) {
+        this.revealSidebar();
+      }
+    });
+  },
+
+  scheduleSidebarAutoHide() {
+    this.cancelSidebarAutoHide();
+    // Only auto-hide on desktop screens (> 992px)
+    if (window.innerWidth <= 992) return;
+
+    this.sidebarHideTimer = setTimeout(() => {
+      this.autoHideSidebar();
+    }, 5000);
+  },
+
+  cancelSidebarAutoHide() {
+    if (this.sidebarHideTimer) {
+      clearTimeout(this.sidebarHideTimer);
+      this.sidebarHideTimer = null;
+    }
+  },
+
+  autoHideSidebar() {
+    if (window.innerWidth <= 992) return;
+    document.body.classList.add("sidebar-auto-hidden");
+    const revealTab = document.getElementById("sidebarRevealTab");
+    if (revealTab) revealTab.style.display = "flex";
+  },
+
+  revealSidebar() {
+    this.cancelSidebarAutoHide();
+    document.body.classList.remove("sidebar-auto-hidden");
+    const revealTab = document.getElementById("sidebarRevealTab");
+    if (revealTab) revealTab.style.display = "none";
+  },
+
   switchStudySubtab(subtabId) {
     this.state.studySubtab = subtabId;
     document.querySelectorAll(".study-subnav-pill").forEach(pill => {
@@ -396,13 +448,21 @@ const App = {
 
   // ---------------- DASHBOARD ----------------
   renderDashboard() {
-    const metrics = MCQStats.computeDashboardMetrics(this.state.allMCQs);
+    const metrics = (typeof MCQStats !== 'undefined' && MCQStats.computeDashboardMetrics) 
+      ? MCQStats.computeDashboardMetrics(this.state.allMCQs || []) 
+      : { totalQuestions: 0, attemptedCount: 0, accuracyRate: 0, incorrectCount: 0, starredCount: 0, subjectMetrics: {} };
 
-    document.getElementById("statTotalMCQs").textContent = metrics.totalQuestions;
-    document.getElementById("statAttempted").textContent = metrics.attemptedCount;
-    document.getElementById("statAccuracy").textContent = `${metrics.accuracyRate}%`;
-    document.getElementById("statMistakes").textContent = metrics.incorrectCount;
-    document.getElementById("statStarred").textContent = metrics.starredCount;
+    const totalEl = document.getElementById("statTotalMCQs");
+    const attemptedEl = document.getElementById("statAttempted");
+    const accuracyEl = document.getElementById("statAccuracy");
+    const mistakesEl = document.getElementById("statMistakes");
+    const starredEl = document.getElementById("statStarred");
+
+    if (totalEl) totalEl.textContent = metrics.totalQuestions;
+    if (attemptedEl) attemptedEl.textContent = metrics.attemptedCount;
+    if (accuracyEl) accuracyEl.textContent = `${metrics.accuracyRate}%`;
+    if (mistakesEl) mistakesEl.textContent = metrics.incorrectCount;
+    if (starredEl) starredEl.textContent = metrics.starredCount;
 
     // Subject breakdown bars
     const subjectListEl = document.getElementById("dashboardSubjectList");
@@ -1583,8 +1643,21 @@ const App = {
       this.showAuthAlert("Login successful! Welcome, " + user.name, "success");
       setTimeout(() => {
         this.checkAuthStatus();
-        this.switchTab("dashboard");
-      }, 400);
+        this.switchTab("study");
+      }, 350);
+    } catch (err) {
+      this.showAuthAlert(err.message, "error");
+    }
+  },
+
+  async handleDemoLogin() {
+    try {
+      const demoUser = await Auth.loginDemo();
+      this.showAuthAlert("Demo Student Login successful! Entering portal...", "success");
+      setTimeout(() => {
+        this.checkAuthStatus();
+        this.switchTab("study");
+      }, 350);
     } catch (err) {
       this.showAuthAlert(err.message, "error");
     }
@@ -1771,8 +1844,12 @@ const App = {
     const logsList = document.getElementById("pomoLogsList");
     const logsCount = document.getElementById("pomoLogsCount");
 
-    const settings = StudyEngine.loadPomodoroSettings();
-    const todayCount = StudyEngine.getPomodoroTotalToday();
+    const settings = (typeof StudyEngine !== 'undefined' && StudyEngine.loadPomodoroSettings) 
+      ? (StudyEngine.loadPomodoroSettings() || {}) 
+      : {};
+    const todayCount = (typeof StudyEngine !== 'undefined' && StudyEngine.getPomodoroTotalToday) 
+      ? StudyEngine.getPomodoroTotalToday() 
+      : 0;
     const target = settings.dailyTarget || 8;
     const targetPct = Math.min(100, Math.round((todayCount / target) * 100));
 
@@ -2099,64 +2176,45 @@ const App = {
       if (defaultChapters.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No pre-imported chapters for this subject.</td></tr>`;
       } else {
-        tableBody.innerHTML = defaultChapters.map(ch => {
+        tableBody.innerHTML = defaultChapters.map((ch, index) => {
           const prog = chProgress[ch.id] || { 
             completedLectures: 0, 
             totalLectures: ch.totalLectures || 10, 
-            deliveryMode: 'recorded', 
-            liveCompleted: false, 
             lectureDone: false, 
             r1Done: false, 
             r2Done: false, 
             r3Done: false 
           };
-          const isLive = prog.deliveryMode === 'live';
           const isRecDone = prog.completedLectures >= prog.totalLectures;
           const escapedName = (ch.name || '').replace(/'/g, "\\'");
 
           return `
             <tr>
+              <td style="text-align: center;">
+                <span class="ch-sr-badge">${index + 1}</span>
+              </td>
               <td>
-                <div style="font-weight: 600; font-size: 0.9rem;">${ch.name}</div>
+                <div style="font-weight: 600; font-size: 0.92rem; color: var(--text-main);">${ch.name}</div>
                 <small class="text-muted"><i class="fa-solid fa-chart-simple"></i> ICAI Weightage: ${ch.defaultWeightage || 'Standard'}</small>
               </td>
               <td style="text-align: center;">
-                <div class="batch-mode-toggle">
-                  <button type="button" class="batch-toggle-pill ${!isLive ? 'active' : ''}" onclick="App.handleDeliveryModeChange('${activeSub}', '${ch.id}', 'recorded')" title="Recorded Lectures Mode">
-                    <i class="fa-solid fa-video"></i> Rec
-                  </button>
-                  <button type="button" class="batch-toggle-pill ${isLive ? 'active' : ''}" onclick="App.handleDeliveryModeChange('${activeSub}', '${ch.id}', 'live')" title="Live Batch Mode">
-                    <i class="fa-solid fa-satellite-dish"></i> Live
-                  </button>
-                </div>
-              </td>
-              <td style="text-align: center;">
-                ${isLive ? `
-                  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                    <button type="button" class="live-done-btn ${prog.liveCompleted ? 'completed' : ''}" onclick="App.handleLiveToggle('${activeSub}', '${ch.id}')" title="Click to toggle Live batch completion">
-                      <i class="fa-solid ${prog.liveCompleted ? 'fa-circle-check' : 'fa-circle'}"></i> ${prog.liveCompleted ? 'Live Batch Done' : 'Mark Live Done'}
+                <div class="chapter-lectures-controls">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <div class="lecture-stepper">
+                      <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', -1)" title="Decrement Lecture" ${prog.completedLectures <= 0 ? 'disabled' : ''}>-</button>
+                      <span class="stepper-text">${prog.completedLectures} / ${prog.totalLectures}</span>
+                      <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', 1)" title="Increment Lecture" ${prog.completedLectures >= prog.totalLectures ? 'disabled' : ''}>+</button>
+                    </div>
+                    <button type="button" class="lecture-edit-btn" onclick="App.openEditLectureModal('${activeSub}', '${ch.id}', '${escapedName}', ${prog.totalLectures})" title="Change faculty total lectures">
+                      <i class="fa-solid fa-pen"></i> Total: ${prog.totalLectures}
                     </button>
-                    <small class="text-muted" style="font-size: 0.72rem;">Live Streaming / Physical</small>
                   </div>
-                ` : `
-                  <div class="recorded-tracking-container">
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                      <div class="lecture-stepper">
-                        <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', -1)" title="Decrement Lecture" ${prog.completedLectures <= 0 ? 'disabled' : ''}>-</button>
-                        <span class="stepper-text">${prog.completedLectures} / ${prog.totalLectures}</span>
-                        <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', 1)" title="Increment Lecture" ${prog.completedLectures >= prog.totalLectures ? 'disabled' : ''}>+</button>
-                      </div>
-                      <button type="button" class="lecture-edit-btn" onclick="App.openEditLectureModal('${activeSub}', '${ch.id}', '${escapedName}', ${prog.totalLectures})" title="Change faculty total lectures">
-                        <i class="fa-solid fa-pen"></i> Total: ${prog.totalLectures}
-                      </button>
-                    </div>
-                    <div style="margin-top: 6px; display: flex; align-items: center; justify-content: center;">
-                      <button type="button" class="stepper-quick-done-btn ${isRecDone ? 'done' : ''}" onclick="App.handleMarkChapterComplete('${activeSub}', '${ch.id}')" title="Mark all lectures watched">
-                        <i class="fa-solid ${isRecDone ? 'fa-check-double' : 'fa-check'}"></i> ${isRecDone ? 'All Watched' : 'Mark All Done'}
-                      </button>
-                    </div>
+                  <div style="margin-top: 6px; display: flex; align-items: center; justify-content: center;">
+                    <button type="button" class="stepper-quick-done-btn ${isRecDone ? 'done' : ''}" onclick="App.handleMarkChapterComplete('${activeSub}', '${ch.id}')" title="Quickly mark all lectures in this chapter as watched">
+                      <i class="fa-solid ${isRecDone ? 'fa-check-double' : 'fa-check'}"></i> ${isRecDone ? 'All Lectures Done' : 'Mark All Completed'}
+                    </button>
                   </div>
-                `}
+                </div>
               </td>
               <td style="text-align: center;">
                 <button type="button" class="rev-check-btn ${prog.r1Done ? 'checked' : ''}" onclick="App.handleRevisionToggle('${activeSub}', '${ch.id}', 'r1')" title="Toggle Revision 1">

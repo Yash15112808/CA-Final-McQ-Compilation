@@ -95,6 +95,11 @@
     <!-- Backdrop for Mobile Sidebar -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="App.toggleSidebar(false)"></div>
 
+    <!-- Floating Tab to Reveal Menu Bar when Auto-Hidden -->
+    <button id="sidebarRevealTab" class="sidebar-reveal-tab" onclick="App.revealSidebar()" title="Expand Navigation Menu">
+      <i class="fa-solid fa-angles-right"></i> <span>Menu</span>
+    </button>
+
     <!-- MAIN APP WORKSPACE -->
     <div class="app-main">
       
@@ -365,12 +370,12 @@
               <table class="table chapter-tracker-table">
                 <thead>
                   <tr>
-                    <th style="width: 32%;">Chapter Name & ICAI Weightage</th>
-                    <th style="width: 14%; text-align: center;">Batch Mode</th>
-                    <th style="width: 27%; text-align: center;">Lecture Completion (Faculty Adjusted)</th>
-                    <th style="width: 9%; text-align: center;" title="Revision 1">R1</th>
-                    <th style="width: 9%; text-align: center;" title="Revision 2">R2</th>
-                    <th style="width: 9%; text-align: center;" title="Revision 3">R3</th>
+                    <th style="width: 8%; text-align: center;">Sr No.</th>
+                    <th style="width: 44%;">Chapter Name & ICAI Weightage</th>
+                    <th style="width: 30%; text-align: center;">Lecture Completion & Faculty Customization</th>
+                    <th style="width: 6%; text-align: center;" title="Revision 1">R1</th>
+                    <th style="width: 6%; text-align: center;" title="Revision 2">R2</th>
+                    <th style="width: 6%; text-align: center;" title="Revision 3">R3</th>
                   </tr>
                 </thead>
                 <tbody id="chapterTrackerTableBody"></tbody>
@@ -765,6 +770,22 @@
 
       <!-- LOGIN FORM -->
       <form id="authLoginForm" class="auth-form-content">
+        <!-- Instant 1-Click Demo Login Banner -->
+        <div class="demo-login-box">
+          <div class="demo-login-header">
+            <span class="demo-badge"><i class="fa-solid fa-bolt"></i> Instant Access</span>
+            <span class="demo-tag">Review & Testing Mode</span>
+          </div>
+          <button type="button" class="btn btn-demo-access btn-block" onclick="App.handleDemoLogin()">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> 1-Click Instant Demo Login
+          </button>
+          <small class="demo-hint"><i class="fa-solid fa-circle-check"></i> Instant full access without registration while we finalize the site.</small>
+        </div>
+
+        <div class="auth-divider">
+          <span>OR SIGN IN WITH REGISTERED CREDENTIALS</span>
+        </div>
+
         <div class="form-group">
           <label for="loginRegNo"><i class="fa-solid fa-id-card"></i> Student Registration No. *</label>
           <input type="text" id="loginRegNo" class="form-control" placeholder="e.g. WRO0123456 / CRO / NRO / SRO / ERO" required autocomplete="username">
@@ -851,6 +872,12 @@
         <div class="auth-footer-prompt">
           <span>Already have an account?</span>
           <a href="#" onclick="App.switchAuthTab('login'); return false;">Log In with Registration No.</a>
+        </div>
+
+        <div style="margin-top: 14px; text-align: center;">
+          <button type="button" class="btn btn-outline btn-block btn-sm" onclick="App.handleDemoLogin()">
+            <i class="fa-solid fa-bolt"></i> Or Skip & Use 1-Click Instant Demo Login
+          </button>
         </div>
       </form>
     </div>

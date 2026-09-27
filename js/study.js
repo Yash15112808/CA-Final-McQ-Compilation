@@ -168,9 +168,15 @@ const StudyEngine = {
     if (!progress[subjectId] || !progress[subjectId][chapterId]) return;
 
     const ch = progress[subjectId][chapterId];
-    ch.completedLectures = ch.totalLectures;
-    ch.lectureDone = true;
-    if (ch.deliveryMode === "live") ch.liveCompleted = true;
+    if (ch.completedLectures >= ch.totalLectures) {
+      ch.completedLectures = 0;
+      ch.lectureDone = false;
+      ch.liveCompleted = false;
+    } else {
+      ch.completedLectures = ch.totalLectures;
+      ch.lectureDone = true;
+      ch.liveCompleted = true;
+    }
 
     this.saveStudyProgress(progress);
     return ch;
@@ -239,7 +245,7 @@ const StudyEngine = {
         subLecturesTotal += totalL;
         totalLecturesGlobal += totalL;
 
-        const isDone = (c.deliveryMode === "live") ? Boolean(c.liveCompleted) : (c.completedLectures >= totalL);
+        const isDone = (c.completedLectures >= totalL);
         const compL = isDone ? totalL : Math.min(totalL, c.completedLectures || 0);
 
         subLecturesDone += compL;
@@ -314,6 +320,14 @@ const StudyEngine = {
       const mins = this.pomodoro.customMinutes[this.pomodoro.mode] || 25;
       this.pomodoro.remainingSeconds = mins * 60;
     }
+
+    return {
+      study: this.pomodoro.customMinutes.study,
+      short_break: this.pomodoro.customMinutes.short_break,
+      long_break: this.pomodoro.customMinutes.long_break,
+      dailyTarget: this.pomodoro.dailyTarget,
+      currentSubject: this.pomodoro.currentSubject
+    };
   },
 
   savePomodoroSettings(settings) {
@@ -324,20 +338,24 @@ const StudyEngine = {
     this.pomodoro.dailyTarget = Math.max(1, parseInt(settings.dailyTarget) || 8);
     this.pomodoro.currentSubject = settings.currentSubject || "FR";
 
+    const saved = {
+      study: this.pomodoro.customMinutes.study,
+      short_break: this.pomodoro.customMinutes.short_break,
+      long_break: this.pomodoro.customMinutes.long_break,
+      dailyTarget: this.pomodoro.dailyTarget,
+      currentSubject: this.pomodoro.currentSubject
+    };
+
     try {
-      localStorage.setItem(key, JSON.stringify({
-        study: this.pomodoro.customMinutes.study,
-        short_break: this.pomodoro.customMinutes.short_break,
-        long_break: this.pomodoro.customMinutes.long_break,
-        dailyTarget: this.pomodoro.dailyTarget,
-        currentSubject: this.pomodoro.currentSubject
-      }));
+      localStorage.setItem(key, JSON.stringify(saved));
     } catch (e) {}
 
     if (!this.pomodoro.isRunning) {
       const mins = this.pomodoro.customMinutes[this.pomodoro.mode] || 25;
       this.pomodoro.remainingSeconds = mins * 60;
     }
+
+    return saved;
   },
 
   setPomodoroMode(mode) {

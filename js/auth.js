@@ -121,6 +121,20 @@ const Auth = {
     return user;
   },
 
+  async loginDemo() {
+    const demoUser = {
+      name: "CA Final Aspirant (Demo)",
+      regNo: "WRO0897654",
+      phone: "9876543210",
+      email: "demo.student@icai.org",
+      dob: "2001-05-15",
+      attempt: "Nov 2026",
+      registeredAt: new Date().toISOString()
+    };
+    this.setCurrentUser(demoUser);
+    return demoUser;
+  },
+
   logout() {
     this.setCurrentUser(null);
   }
