@@ -36,9 +36,16 @@
           <i class="fa-solid fa-moon"></i> <span>Dark Mode</span>
         </button>
 
-        <button class="btn btn-sm btn-outline" onclick="App.exportDataJSON()" title="Quick Backup JSON">
-          <i class="fa-solid fa-cloud-arrow-down"></i> <span>Backup</span>
-        </button>
+        <div class="user-session-badge" id="userSessionBadge" style="display: none;">
+          <button class="btn btn-sm btn-outline student-badge-btn" onclick="App.openProfileModal()" title="View Student Profile">
+            <i class="fa-solid fa-user-graduate"></i>
+            <span id="headerStudentName">Student</span>
+            <span class="badge badge-primary" id="headerStudentAttempt" style="font-size: 0.65rem; margin-left: 4px;">Nov 2026</span>
+          </button>
+          <button class="btn btn-sm btn-danger logout-btn" onclick="App.handleLogout()" title="Logout to lock portal">
+            <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -433,7 +440,141 @@ Answer: (b)" required></textarea>
     </div>
   </footer>
 
+  <!-- AUTH GATEWAY MODAL (Access Protection) -->
+  <div id="authGatewayOverlay" class="auth-gateway-overlay">
+    <div class="auth-gateway-card">
+      <div class="auth-card-header">
+        <div class="auth-logo-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2>ICAI Student Access Portal</h2>
+        <p class="auth-subtitle">Authorized access only for CA Final Aspirants. Log in or create your student account to access all MCQs.</p>
+
+        <div class="auth-tabs">
+          <button type="button" id="tabBtnLogin" class="auth-tab-btn active" onclick="App.switchAuthTab('login')">
+            <i class="fa-solid fa-right-to-bracket"></i> Login
+          </button>
+          <button type="button" id="tabBtnRegister" class="auth-tab-btn" onclick="App.switchAuthTab('register')">
+            <i class="fa-solid fa-user-plus"></i> Create Account
+          </button>
+        </div>
+      </div>
+
+      <!-- Alert / Error message display -->
+      <div id="authAlertBox" class="auth-alert" style="display: none;"></div>
+
+      <!-- LOGIN FORM -->
+      <form id="authLoginForm" class="auth-form-content">
+        <div class="form-group">
+          <label for="loginRegNo"><i class="fa-solid fa-id-card"></i> Student Registration No. *</label>
+          <input type="text" id="loginRegNo" class="form-control" placeholder="e.g. WRO0123456 / CRO / NRO / SRO / ERO" required autocomplete="username">
+          <small class="text-muted" style="display: block; margin-top: 4px;">Student Registration No. given during Account Creation.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword"><i class="fa-solid fa-lock"></i> Password *</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="loginPassword" class="form-control" placeholder="Password set during Account Creation" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" onclick="App.togglePasswordVisibility('loginPassword')">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 8px;">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Login to MCQ Portal
+        </button>
+
+        <div class="auth-footer-prompt">
+          <span>Don't have an account yet?</span>
+          <a href="#" onclick="App.switchAuthTab('register'); return false;">Create New Student Account</a>
+        </div>
+      </form>
+
+      <!-- CREATE ACCOUNT FORM -->
+      <form id="authRegisterForm" class="auth-form-content" style="display: none;">
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="regName"><i class="fa-solid fa-user"></i> Full Name *</label>
+            <input type="text" id="regName" class="form-control" placeholder="Full Name as per ICAI" required>
+          </div>
+          <div class="form-group col">
+            <label for="regRegNo"><i class="fa-solid fa-id-card"></i> Student Registration No. *</label>
+            <input type="text" id="regRegNo" class="form-control" placeholder="e.g. WRO0123456" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="regPhone"><i class="fa-solid fa-phone"></i> Phone No. *</label>
+            <input type="tel" id="regPhone" class="form-control" placeholder="10-digit Phone No." pattern="[0-9]{10}" required>
+          </div>
+          <div class="form-group col">
+            <label for="regEmail"><i class="fa-solid fa-envelope"></i> Email ID *</label>
+            <input type="email" id="regEmail" class="form-control" placeholder="student@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="regDob"><i class="fa-solid fa-calendar"></i> Date of Birth *</label>
+            <input type="date" id="regDob" class="form-control" required>
+          </div>
+          <div class="form-group col">
+            <label for="regAttempt"><i class="fa-solid fa-bullseye"></i> Attempt of Exam *</label>
+            <select id="regAttempt" class="form-control" required>
+              <option value="Nov 2026" selected>Nov 2026 Attempt</option>
+              <option value="May 2027">May 2027 Attempt</option>
+              <option value="Nov 2027">Nov 2027 Attempt</option>
+              <option value="May 2028">May 2028 Attempt</option>
+              <option value="Nov 2028">Nov 2028 Attempt</option>
+              <option value="May 2029">May 2029 Attempt</option>
+              <option value="Self-Paced">Self-Paced / Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword"><i class="fa-solid fa-lock"></i> Password (min 6 chars) *</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="regPassword" class="form-control" placeholder="Set your password" minlength="6" required autocomplete="new-password">
+            <button type="button" class="btn-toggle-pwd" onclick="App.togglePasswordVisibility('regPassword')">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-block btn-lg" style="margin-top: 8px;">
+          <i class="fa-solid fa-user-check"></i> Register & Enter MCQ Portal
+        </button>
+
+        <div class="auth-footer-prompt">
+          <span>Already have an account?</span>
+          <a href="#" onclick="App.switchAuthTab('login'); return false;">Log In with Registration No.</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- STUDENT PROFILE DETAILS MODAL -->
+  <div id="studentProfileModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-graduate"></i> ICAI Student Profile</h3>
+        <button type="button" class="icon-btn close-modal-btn" onclick="App.closeProfileModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="studentProfileDetails"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeProfileModal()">Close</button>
+        <button type="button" class="btn btn-danger" onclick="App.handleLogout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Application Scripts -->
+  <script src="js/auth.js"></script>
   <script src="data/subjects.js"></script>
   <script src="data/default_mcqs.js"></script>
   <script src="js/importer.js"></script>

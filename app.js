@@ -26,11 +26,30 @@ const App = {
 
   init() {
     this.loadTheme();
+    this.checkAuthStatus();
     this.loadMCQs();
     this.setupEventListeners();
     this.renderHeaderSubjects();
-    this.switchTab("dashboard");
     this.populateModalSelects();
+  },
+
+  checkAuthStatus() {
+    const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+    const overlay = document.getElementById("authGatewayOverlay");
+    const sessionBadge = document.getElementById("userSessionBadge");
+    const headerName = document.getElementById("headerStudentName");
+    const headerAttempt = document.getElementById("headerStudentAttempt");
+
+    if (user) {
+      if (overlay) overlay.style.display = "none";
+      if (sessionBadge) sessionBadge.style.display = "flex";
+      if (headerName) headerName.textContent = user.name;
+      if (headerAttempt) headerAttempt.textContent = `${user.regNo} • ${user.attempt}`;
+      this.switchTab("dashboard");
+    } else {
+      if (overlay) overlay.style.display = "flex";
+      if (sessionBadge) sessionBadge.style.display = "none";
+    }
   },
 
   // Theme Management
@@ -1149,6 +1168,23 @@ const App = {
       });
     }
 
+    // Auth Forms
+    const loginForm = document.getElementById("authLoginForm");
+    if (loginForm) {
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        App.handleAuthLogin();
+      });
+    }
+
+    const registerForm = document.getElementById("authRegisterForm");
+    if (registerForm) {
+      registerForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        App.handleAuthRegister();
+      });
+    }
+
     // Keyboard Shortcuts for Practice Mode
     window.addEventListener("keydown", (e) => {
       if (App.state.currentTab !== "practice") return;
@@ -1322,6 +1358,137 @@ const App = {
       }
     };
     reader.readAsText(file);
+  },
+
+  // ---------------- AUTHENTICATION & ACCESS CONTROL ----------------
+  switchAuthTab(tab) {
+    const isLogin = tab === 'login';
+    const tabLogin = document.getElementById("tabBtnLogin");
+    const tabReg = document.getElementById("tabBtnRegister");
+    const formLogin = document.getElementById("authLoginForm");
+    const formReg = document.getElementById("authRegisterForm");
+    const alertBox = document.getElementById("authAlertBox");
+
+    if (alertBox) alertBox.style.display = "none";
+    if (tabLogin) tabLogin.classList.toggle("active", isLogin);
+    if (tabReg) tabReg.classList.toggle("active", !isLogin);
+    if (formLogin) formLogin.style.display = isLogin ? "block" : "none";
+    if (formReg) formReg.style.display = isLogin ? "none" : "block";
+  },
+
+  togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isPwd = input.type === "password";
+    input.type = isPwd ? "text" : "password";
+    const btn = input.nextElementSibling;
+    if (btn && btn.querySelector("i")) {
+      btn.querySelector("i").className = isPwd ? "fa-regular fa-eye-slash" : "fa-regular fa-eye";
+    }
+  },
+
+  showAuthAlert(message, type = "error") {
+    const alertBox = document.getElementById("authAlertBox");
+    if (!alertBox) return;
+    alertBox.className = `auth-alert ${type === 'success' ? 'alert-success' : 'alert-error'}`;
+    alertBox.innerHTML = `
+      <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
+      <span>${message}</span>
+    `;
+    alertBox.style.display = "flex";
+  },
+
+  async handleAuthLogin() {
+    const regNo = document.getElementById("loginRegNo").value;
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+      const user = await Auth.login(regNo, password);
+      this.showAuthAlert("Login successful! Welcome, " + user.name, "success");
+      setTimeout(() => {
+        this.checkAuthStatus();
+        this.switchTab("dashboard");
+      }, 400);
+    } catch (err) {
+      this.showAuthAlert(err.message, "error");
+    }
+  },
+
+  async handleAuthRegister() {
+    const name = document.getElementById("regName").value;
+    const regNo = document.getElementById("regRegNo").value;
+    const phone = document.getElementById("regPhone").value;
+    const email = document.getElementById("regEmail").value;
+    const dob = document.getElementById("regDob").value;
+    const attempt = document.getElementById("regAttempt").value;
+    const password = document.getElementById("regPassword").value;
+
+    try {
+      const newUser = await Auth.register({ name, regNo, phone, email, dob, attempt, password });
+      this.showAuthAlert("Account created successfully! Welcome, " + newUser.name, "success");
+      setTimeout(() => {
+        this.checkAuthStatus();
+        this.switchTab("dashboard");
+      }, 500);
+    } catch (err) {
+      this.showAuthAlert(err.message, "error");
+    }
+  },
+
+  handleLogout() {
+    if (confirm("Are you sure you want to log out? This will lock the MCQ portal.")) {
+      Auth.logout();
+      this.closeProfileModal();
+      this.checkAuthStatus();
+      this.switchAuthTab('login');
+      const loginForm = document.getElementById("authLoginForm");
+      if (loginForm) loginForm.reset();
+    }
+  },
+
+  openProfileModal() {
+    const user = Auth.getCurrentUser();
+    if (!user) return;
+    const detailsEl = document.getElementById("studentProfileDetails");
+    if (detailsEl) {
+      detailsEl.innerHTML = `
+        <div class="profile-field-row">
+          <span class="profile-field-label">Student Name:</span>
+          <span class="profile-field-value">${user.name}</span>
+        </div>
+        <div class="profile-field-row">
+          <span class="profile-field-label">Registration No.:</span>
+          <span class="profile-field-value" style="color: var(--primary);">${user.regNo}</span>
+        </div>
+        <div class="profile-field-row">
+          <span class="profile-field-label">Target Exam Attempt:</span>
+          <span class="profile-field-value"><span class="badge badge-primary">${user.attempt}</span></span>
+        </div>
+        <div class="profile-field-row">
+          <span class="profile-field-label">Phone Number:</span>
+          <span class="profile-field-value">${user.phone}</span>
+        </div>
+        <div class="profile-field-row">
+          <span class="profile-field-label">Email ID:</span>
+          <span class="profile-field-value">${user.email}</span>
+        </div>
+        <div class="profile-field-row">
+          <span class="profile-field-label">Date of Birth:</span>
+          <span class="profile-field-value">${user.dob}</span>
+        </div>
+        <div class="profile-field-row">
+          <span class="profile-field-label">Account Created:</span>
+          <span class="profile-field-value">${user.registeredAt ? new Date(user.registeredAt).toLocaleDateString() : 'N/A'}</span>
+        </div>
+      `;
+    }
+    const modal = document.getElementById("studentProfileModal");
+    if (modal) modal.style.display = "flex";
+  },
+
+  closeProfileModal() {
+    const modal = document.getElementById("studentProfileModal");
+    if (modal) modal.style.display = "none";
   },
 
   resetAllData() {

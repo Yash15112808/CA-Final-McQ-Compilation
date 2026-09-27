@@ -4,7 +4,8 @@
 
 const MCQStats = {
   getStorageKey() {
-    return "ICAI_MCQ_USER_DATA_V1";
+    const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+    return user ? `ICAI_MCQ_USER_DATA_${user.regNo}` : "ICAI_MCQ_USER_DATA_V1";
   },
 
   getUserData() {
