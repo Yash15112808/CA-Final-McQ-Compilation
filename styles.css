@@ -1691,3 +1691,27 @@ body {
   background-color: var(--bg-muted);
 }
 
+/* ================= HIDE ANY NETLIFY BADGE / BANNER ================= */
+#netlify-badge,
+.netlify-badge,
+[id*="netlify-badge"],
+[class*="netlify-badge"],
+[class*="netlify-drawer"],
+[data-netlify-deploy-id],
+[id*="netlify-drawer"],
+iframe[title*="Netlify"],
+iframe[src*="netlify"],
+div[class*="netlify-feedback"],
+div[id*="netlify-feedback"],
+a[href*="netlify.com"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+}
+

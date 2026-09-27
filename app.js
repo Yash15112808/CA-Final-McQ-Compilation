@@ -1523,4 +1523,33 @@ const App = {
 // Bootstrap application on window load
 window.addEventListener("DOMContentLoaded", () => {
   App.init();
+
+  // Remove any Netlify injected badge / floating banner
+  const purgeNetlifyBadge = () => {
+    const selectors = [
+      '#netlify-badge',
+      '.netlify-badge',
+      '[id*="netlify-badge"]',
+      '[class*="netlify-badge"]',
+      '[class*="netlify-drawer"]',
+      '[data-netlify-deploy-id]',
+      'iframe[title*="Netlify"]',
+      'iframe[src*="netlify"]',
+      'div[class*="netlify-feedback"]',
+      'a[href*="netlify.com"]'
+    ];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => el.remove());
+    });
+  };
+
+  purgeNetlifyBadge();
+  setTimeout(purgeNetlifyBadge, 500);
+  setTimeout(purgeNetlifyBadge, 1500);
+
+  // Observer to catch any dynamically injected elements
+  const netlifyObserver = new MutationObserver(() => {
+    purgeNetlifyBadge();
+  });
+  netlifyObserver.observe(document.body, { childList: true, subtree: true });
 });
