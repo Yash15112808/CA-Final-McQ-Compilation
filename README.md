@@ -1,4 +1,4 @@
-# ICAI CA Final MCQ Master Compilation Portal
+# CA Study Management - ICAI CA Final MCQ Master Portal
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/your-badge-id/deploy-status)](https://app.netlify.com)
 
