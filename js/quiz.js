@@ -98,14 +98,28 @@ const QuizEngine = {
     const q = this.practiceState.questions[questionIndex];
     if (!q) return null;
 
-    this.practiceState.selectedAnswers[questionIndex] = optionId;
-    this.practiceState.revealed[questionIndex] = true;
-
-    const isCorrect = (optionId === q.correctAnswer);
-    MCQStats.recordAttempt(q.id, optionId, isCorrect);
+    // Only record selection; DO NOT reveal answer before submission
+    if (!this.practiceState.revealed[questionIndex]) {
+      this.practiceState.selectedAnswers[questionIndex] = optionId;
+    }
 
     return {
       selected: optionId,
+      revealed: Boolean(this.practiceState.revealed[questionIndex])
+    };
+  },
+
+  submitPracticeAnswer(questionIndex) {
+    const q = this.practiceState.questions[questionIndex];
+    const selected = this.practiceState.selectedAnswers[questionIndex];
+    if (!q || !selected) return null;
+
+    this.practiceState.revealed[questionIndex] = true;
+    const isCorrect = (selected === q.correctAnswer);
+    MCQStats.recordAttempt(q.id, selected, isCorrect);
+
+    return {
+      selected,
       correct: q.correctAnswer,
       isCorrect,
       explanation: q.explanation,

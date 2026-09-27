@@ -8,13 +8,22 @@ const STORAGE_KEY_THEME = "ICAI_MCQ_THEME";
 const App = {
   state: {
     allMCQs: [],
+    allWritingQuestions: [],
+    activeTrackerSubject: "FR",
     currentTab: "dashboard",
     theme: "light",
     repositoryFilter: {
       search: "",
       subject: "ALL",
+      chapter: "ALL",
       source: "ALL",
       difficulty: "ALL"
+    },
+    writingFilter: {
+      search: "",
+      subject: "ALL",
+      chapter: "ALL",
+      source: "ALL"
     },
     practiceFilter: {
       subject: "ALL",
@@ -28,6 +37,7 @@ const App = {
     this.loadTheme();
     this.checkAuthStatus();
     this.loadMCQs();
+    this.loadWritingQuestions();
     this.setupEventListeners();
     this.renderHeaderSubjects();
     this.populateModalSelects();
@@ -127,7 +137,14 @@ const App = {
   },
 
   deleteMCQ(id) {
-    if (!confirm("Are you sure you want to delete this MCQ?")) return;
+    const code = prompt("🔒 Developer Security Passcode Required:\nOnly Developers can delete MCQs from the Master Bank. Enter Developer Passcode:");
+    if (!code) return;
+    if (code !== "DEV@ICAI2026") {
+      alert("❌ Unauthorized: Invalid Developer Passcode. Deleting MCQs from the Master Bank is restricted to Developer role only.");
+      return;
+    }
+
+    if (!confirm("Developer Confirmation: Are you sure you want to permanently delete this MCQ from the Master Bank?")) return;
     let customItems = [];
     try {
       const stored = localStorage.getItem(STORAGE_KEY_CUSTOM_MCQS);
@@ -197,6 +214,10 @@ const App = {
       });
       this.updateChapterDropdown("modalChapterSelect", modalSubject.value || "FR");
     }
+
+    // Populate chapter filters for Repository and Writing sections
+    this.updateChapterFilterDropdown("repoChapterFilter", "ALL");
+    this.updateChapterFilterDropdown("writingChapterFilter", "ALL");
   },
 
   updateChapterDropdown(dropdownId, subjectId) {
@@ -212,6 +233,41 @@ const App = {
     } else {
       chapterSelect.innerHTML = '<option value="General">General / All Topics</option>';
     }
+  },
+
+  updateChapterFilterDropdown(dropdownId, subjectId) {
+    const sel = document.getElementById(dropdownId);
+    if (!sel || typeof ICAI_METADATA === "undefined") return;
+
+    sel.innerHTML = '<option value="ALL">All Chapters</option>';
+    if (!subjectId || subjectId === "ALL") {
+      const allChs = new Set();
+      ICAI_METADATA.subjects.forEach(s => {
+        (s.chapters || []).forEach(ch => allChs.add(ch));
+      });
+      allChs.forEach(ch => {
+        sel.innerHTML += `<option value="${ch}">${ch}</option>`;
+      });
+    } else {
+      const sub = ICAI_METADATA.subjects.find(s => s.id === subjectId);
+      if (sub && sub.chapters) {
+        sub.chapters.forEach(ch => {
+          sel.innerHTML += `<option value="${ch}">${ch}</option>`;
+        });
+      }
+    }
+  },
+
+  formatMarkdown(text) {
+    if (!text) return "";
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/---/g, '<hr style="margin: 14px 0; border: none; border-top: 1px dashed var(--border-color);">');
   },
 
   switchTab(tabId) {
@@ -235,8 +291,14 @@ const App = {
       case "dashboard":
         this.renderDashboard();
         break;
+      case "study":
+        this.renderStudyView();
+        break;
       case "repository":
         this.renderRepository();
+        break;
+      case "writing":
+        this.renderWritingQuestions();
         break;
       case "practice":
         this.renderPractice();
@@ -339,11 +401,13 @@ const App = {
 
     const searchTerm = (this.state.repositoryFilter.search || "").toLowerCase().trim();
     const filterSub = this.state.repositoryFilter.subject;
+    const filterCh = this.state.repositoryFilter.chapter || "ALL";
     const filterSrc = this.state.repositoryFilter.source;
     const filterDiff = this.state.repositoryFilter.difficulty;
 
     const filtered = this.state.allMCQs.filter(q => {
       if (filterSub !== "ALL" && q.subjectId !== filterSub) return false;
+      if (filterCh !== "ALL" && q.chapter !== filterCh) return false;
       if (filterSrc !== "ALL" && q.source !== filterSrc) return false;
       if (filterDiff !== "ALL" && q.difficulty !== filterDiff) return false;
 
@@ -377,6 +441,7 @@ const App = {
 
       const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === q.subjectId) : null;
       const srcMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.sources.find(s => s.id === q.source) : null;
+      const isOfficialAttemptSource = ["RTP", "MTP", "PYQ"].includes(q.source);
 
       return `
         <div class="mcq-card ${isCase ? 'case-card' : ''}" id="card-${q.id}">
@@ -388,7 +453,15 @@ const App = {
               <span class="badge badge-source" style="background-color: ${srcMeta ? srcMeta.badgeColor : '#64748b'}; color: white;">
                 ${srcMeta ? srcMeta.label : q.source}
               </span>
-              <span class="badge badge-outline">${q.examSession || 'All Sessions'}</span>
+              ${isOfficialAttemptSource ? `
+                <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
+                  <i class="fa-regular fa-calendar-check"></i> ${q.examSession || 'Session Specified'}
+                </span>
+              ` : `
+                <span class="badge badge-outline" title="Edition / Source Detail">
+                  <i class="fa-solid fa-book"></i> ${q.examSession || 'ICAI Edition'}
+                </span>
+              `}
               <span class="badge badge-marks">${q.marks || 2} Marks</span>
               ${isCase ? `<span class="badge badge-case"><i class="fa-solid fa-layer-group"></i> Case Scenario (${q.subQuestions ? q.subQuestions.length : 0} MCQs)</span>` : ''}
             </div>
@@ -512,7 +585,7 @@ const App = {
               stateClass = "selected-choice";
             }
             return `
-              <button class="practice-option-btn ${stateClass}" onclick="App.handlePracticeSelect('${opt.id}')">
+              <button class="practice-option-btn ${stateClass}" onclick="App.handlePracticeSelect('${opt.id}')" ${isRevealed ? 'disabled' : ''}>
                 <span class="opt-letter">${opt.id}</span>
                 <span class="opt-text">${opt.text}</span>
                 ${isRevealed && opt.id === currentQ.correctAnswer ? '<i class="fa-solid fa-check opt-status-icon"></i>' : ''}
@@ -521,6 +594,15 @@ const App = {
             `;
           }).join("")}
         </div>
+
+        ${!isRevealed ? `
+          <div class="practice-submit-action" style="margin: 18px 0; text-align: center;">
+            <button class="btn btn-primary btn-lg" onclick="App.submitPracticeChoice()" ${!selectedOption ? 'disabled' : ''} style="min-width: 260px;">
+              <i class="fa-solid fa-paper-plane"></i> Submit Answer to Reveal Solution
+            </button>
+            ${!selectedOption ? '<p class="text-muted" style="font-size: 0.8rem; margin-top: 6px;">Select an option above, then click Submit to verify and view statutory rationale.</p>' : '<p class="text-muted" style="font-size: 0.8rem; margin-top: 6px;">Option (' + selectedOption + ') selected. Click Submit to verify and reveal ICAI reasoning.</p>'}
+          </div>
+        ` : ''}
 
         ${isRevealed ? `
           <div class="practice-feedback-box ${selectedOption === currentQ.correctAnswer ? 'feedback-correct' : 'feedback-wrong'}">
@@ -553,7 +635,7 @@ const App = {
             <i class="fa-solid fa-arrow-left"></i> Previous
           </button>
           <div class="keyboard-hints">
-            <small class="text-muted"><kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> to pick | <kbd>→</kbd> Next Question</small>
+            <small class="text-muted"><kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> to pick | <kbd>Enter</kbd> to Submit | <kbd>→</kbd> Next</small>
           </div>
           <button class="btn btn-primary" onclick="App.nextPracticeQuestion()" ${currentIdx >= totalQ - 1 ? 'disabled' : ''}>
             Next <i class="fa-solid fa-arrow-right"></i>
@@ -566,6 +648,12 @@ const App = {
   handlePracticeSelect(optionId) {
     const currentIdx = QuizEngine.practiceState.activeQuestionIndex;
     QuizEngine.selectPracticeAnswer(currentIdx, optionId);
+    this.renderPractice();
+  },
+
+  submitPracticeChoice() {
+    const currentIdx = QuizEngine.practiceState.activeQuestionIndex;
+    QuizEngine.submitPracticeAnswer(currentIdx);
     this.renderPractice();
   },
 
@@ -1138,6 +1226,16 @@ const App = {
     if (repoSubFilter) {
       repoSubFilter.addEventListener("change", (e) => {
         App.state.repositoryFilter.subject = e.target.value;
+        App.state.repositoryFilter.chapter = "ALL";
+        App.updateChapterFilterDropdown("repoChapterFilter", e.target.value);
+        App.renderRepository();
+      });
+    }
+
+    const repoChFilter = document.getElementById("repoChapterFilter");
+    if (repoChFilter) {
+      repoChFilter.addEventListener("change", (e) => {
+        App.state.repositoryFilter.chapter = e.target.value;
         App.renderRepository();
       });
     }
@@ -1193,6 +1291,8 @@ const App = {
       const key = e.key.toUpperCase();
       if (["A", "B", "C", "D"].includes(key)) {
         App.handlePracticeSelect(key);
+      } else if (e.key === "Enter") {
+        App.submitPracticeChoice();
       } else if (e.key === "ArrowRight") {
         App.nextPracticeQuestion();
       } else if (e.key === "ArrowLeft") {
@@ -1504,9 +1604,595 @@ const App = {
     if (modal) modal.style.display = "flex";
   },
 
-  closeProfileModal() {
-    const modal = document.getElementById("studentProfileModal");
+  // ================= STUDY MANAGEMENT CONTROLLER =================
+  renderStudyView() {
+    this.renderStudyCountdown();
+    this.renderPomodoro();
+    this.renderTasksList();
+    this.renderCalendar();
+    this.renderChapterTracker();
+  },
+
+  renderStudyCountdown() {
+    const countdown = StudyEngine.calculateRemainingDays();
+    const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+    const attempt = user ? user.attempt : "Nov 2026";
+
+    const titleEl = document.getElementById("studyTargetAttemptTitle");
+    const dateTextEl = document.getElementById("studyTargetDateText");
+    const daysEl = document.getElementById("countdownDays");
+    const weeksEl = document.getElementById("countdownWeeks");
+
+    if (titleEl) titleEl.textContent = `CA Final ${attempt} Attempt`;
+    if (dateTextEl && countdown.targetDate) {
+      dateTextEl.textContent = `Target Exam Window: ${countdown.targetDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    }
+    if (daysEl) daysEl.textContent = countdown.totalDays;
+    if (weeksEl) weeksEl.textContent = countdown.weeks;
+  },
+
+  openCustomDateModal() {
+    const current = StudyEngine.getTargetExamDate();
+    const input = document.getElementById("customExamDateInput");
+    if (input) {
+      input.value = current.toISOString().slice(0, 10);
+    }
+    const modal = document.getElementById("customExamDateModal");
+    if (modal) modal.style.display = "flex";
+  },
+
+  closeCustomDateModal() {
+    const modal = document.getElementById("customExamDateModal");
     if (modal) modal.style.display = "none";
+  },
+
+  saveCustomExamDate() {
+    const input = document.getElementById("customExamDateInput");
+    if (input && input.value) {
+      localStorage.setItem(`ICAI_CUSTOM_EXAM_DATE_${StudyEngine.getStoragePrefix()}`, input.value);
+      this.closeCustomDateModal();
+      this.renderStudyCountdown();
+      alert("Target examination date saved successfully!");
+    }
+  },
+
+  // Pomodoro
+  renderPomodoro() {
+    const clock = document.getElementById("pomodoroClockDisplay");
+    const sessionsBadge = document.getElementById("pomodoroSessionsToday");
+    const toggleBtn = document.getElementById("pomodoroToggleBtn");
+
+    const rem = Math.max(0, StudyEngine.pomodoro.remainingSeconds);
+    const m = Math.floor(rem / 60);
+    const s = rem % 60;
+
+    if (clock) clock.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    if (sessionsBadge) sessionsBadge.textContent = `${StudyEngine.getPomodoroTotalToday()} Sessions Today`;
+    if (toggleBtn) {
+      toggleBtn.innerHTML = StudyEngine.pomodoro.isRunning
+        ? '<i class="fa-solid fa-pause"></i> Pause Focus'
+        : '<i class="fa-solid fa-play"></i> Start Focus';
+      toggleBtn.className = StudyEngine.pomodoro.isRunning ? "btn btn-danger btn-lg" : "btn btn-primary btn-lg";
+    }
+
+    // Highlight active mode button
+    document.querySelectorAll(".pomo-mode-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.mode === StudyEngine.pomodoro.mode);
+    });
+  },
+
+  setPomodoroMode(mode) {
+    StudyEngine.setPomodoroMode(mode);
+    this.renderPomodoro();
+  },
+
+  togglePomodoro() {
+    StudyEngine.togglePomodoro(
+      (rem) => {
+        const clock = document.getElementById("pomodoroClockDisplay");
+        const m = Math.floor(rem / 60);
+        const s = rem % 60;
+        if (clock) clock.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      },
+      (completedMode) => {
+        alert(`🔔 Pomodoro session completed! Great work on your CA Final study goal! Time for ${completedMode === 'study' ? 'a break' : 'focused study'}.`);
+        App.renderPomodoro();
+      }
+    );
+    this.renderPomodoro();
+  },
+
+  resetPomodoro() {
+    StudyEngine.resetPomodoro();
+    this.renderPomodoro();
+  },
+
+  // Task Manager
+  handleAddTask(event) {
+    if (event) event.preventDefault();
+    const titleInput = document.getElementById("taskTitleInput");
+    const subSelect = document.getElementById("taskSubjectSelect");
+    const prioritySelect = document.getElementById("taskPrioritySelect");
+
+    if (!titleInput || !titleInput.value.trim()) return;
+
+    StudyEngine.addTask({
+      title: titleInput.value.trim(),
+      subjectId: subSelect ? subSelect.value : "FR",
+      priority: prioritySelect ? prioritySelect.value : "Medium"
+    });
+
+    titleInput.value = "";
+    this.renderTasksList();
+  },
+
+  handleToggleTask(taskId) {
+    StudyEngine.toggleTask(taskId);
+    this.renderTasksList();
+  },
+
+  handleDeleteTask(taskId) {
+    StudyEngine.deleteTask(taskId);
+    this.renderTasksList();
+  },
+
+  renderTasksList() {
+    const container = document.getElementById("tasksListContainer");
+    const summary = document.getElementById("tasksCountSummary");
+    if (!container) return;
+
+    const tasks = StudyEngine.getTasks();
+    const pending = tasks.filter(t => !t.isCompleted).length;
+    if (summary) summary.textContent = `${pending} Pending Goal${pending === 1 ? '' : 's'}`;
+
+    if (tasks.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding: 24px;">
+          <p class="text-muted"><i class="fa-solid fa-clipboard-check"></i> No tasks logged yet. Add your daily study targets above!</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = tasks.map(t => {
+      const priorityColor = t.priority === "High" ? "var(--danger)" : t.priority === "Medium" ? "var(--warning)" : "var(--success)";
+      return `
+        <div class="task-item ${t.isCompleted ? 'completed' : ''}" style="border-left-color: ${priorityColor};">
+          <div class="task-left">
+            <input type="checkbox" class="task-checkbox" ${t.isCompleted ? 'checked' : ''} onchange="App.handleToggleTask('${t.id}')">
+            <span class="task-title-text">${t.title}</span>
+          </div>
+          <div class="task-meta-tags">
+            <span class="badge badge-outline" style="font-size: 0.65rem;">${t.subjectId}</span>
+            <button class="icon-btn delete-btn" onclick="App.handleDeleteTask('${t.id}')" title="Delete Task" style="padding: 4px;">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  },
+
+  // Indian Calendar
+  renderCalendar() {
+    const year = StudyEngine.calendar.currentYear;
+    const month = StudyEngine.calendar.currentMonth;
+    const titleEl = document.getElementById("calendarCurrentMonthTitle");
+    const gridEl = document.getElementById("calendarDaysGrid");
+    const festivalsListEl = document.getElementById("calendarMonthFestivalsList");
+
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    if (titleEl) titleEl.textContent = `${monthNames[month]} ${year}`;
+
+    const days = StudyEngine.getCalendarDays(year, month);
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    if (gridEl) {
+      gridEl.innerHTML = days.map(d => {
+        if (!d.isCurrentMonth) return `<div class="calendar-day-cell empty-slot"></div>`;
+
+        const isToday = d.dateStr === todayStr;
+        const hasFestival = d.holiday && d.holiday.type === "festival";
+        const hasIcai = d.holiday && d.holiday.type === "icai";
+        const hasNational = d.holiday && d.holiday.type === "national";
+
+        let customClass = isToday ? "is-today " : "";
+        if (hasIcai) customClass += "has-icai ";
+        else if (hasFestival || hasNational) customClass += "has-festival ";
+
+        return `
+          <div class="calendar-day-cell ${customClass}" title="${d.holiday ? d.holiday.name + ': ' + d.holiday.desc : ''}">
+            <span>${d.dayNumber}</span>
+            ${d.holiday ? `<span class="festival-dot">${d.holiday.name}</span>` : ''}
+          </div>
+        `;
+      }).join("");
+    }
+
+    if (festivalsListEl) {
+      const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+      const monthFestivals = (typeof INDIAN_HOLIDAYS_AND_FESTIVALS !== "undefined" ? INDIAN_HOLIDAYS_AND_FESTIVALS : []).filter(h => h.date.startsWith(monthPrefix));
+
+      if (monthFestivals.length === 0) {
+        festivalsListEl.innerHTML = `<p class="text-muted" style="font-size: 0.85rem; padding: 10px 0;">No major holidays listed for this month.</p>`;
+      } else {
+        festivalsListEl.innerHTML = `
+          <div class="festivals-list-container">
+            ${monthFestivals.map(f => `
+              <div class="festival-item-pill" style="border-left: 4px solid ${f.type === 'icai' ? '#dc2626' : '#d97706'};">
+                <strong>${f.name}</strong>
+                <small class="text-muted">${new Date(f.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • ${f.desc}</small>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+    }
+  },
+
+  prevCalendarMonth() {
+    if (StudyEngine.calendar.currentMonth === 0) {
+      StudyEngine.calendar.currentMonth = 11;
+      StudyEngine.calendar.currentYear--;
+    } else {
+      StudyEngine.calendar.currentMonth--;
+    }
+    this.renderCalendar();
+  },
+
+  nextCalendarMonth() {
+    if (StudyEngine.calendar.currentMonth === 11) {
+      StudyEngine.calendar.currentMonth = 0;
+      StudyEngine.calendar.currentYear++;
+    } else {
+      StudyEngine.calendar.currentMonth++;
+    }
+    this.renderCalendar();
+  },
+
+  // Chapter & Lecture Tracker
+  renderChapterTracker() {
+    const tabsContainer = document.getElementById("subjectTrackerTabs");
+    const summaryContainer = document.getElementById("activeSubSummary");
+    const tableBody = document.getElementById("chapterTrackerTableBody");
+    const readinessEl = document.getElementById("trackerOverallReadiness");
+
+    const metrics = StudyEngine.computeSyllabusMetrics();
+    if (readinessEl) readinessEl.textContent = `${metrics.overallReadiness}%`;
+
+    const subjects = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects : [];
+    const activeSub = this.state.activeTrackerSubject || "FR";
+
+    if (tabsContainer) {
+      tabsContainer.innerHTML = subjects.map(s => {
+        const subM = metrics.subjectMetrics[s.id] || { readinessPct: 0, lecturePct: 0 };
+        return `
+          <button class="sub-tracker-pill ${s.id === activeSub ? 'active' : ''}" onclick="App.setStudyTrackerSubject('${s.id}')">
+            ${s.id} (${subM.readinessPct}%)
+          </button>
+        `;
+      }).join("");
+    }
+
+    const currentSubMeta = subjects.find(s => s.id === activeSub) || { name: activeSub, paper: "" };
+    const curMetrics = metrics.subjectMetrics[activeSub] || { totalLectures: 0, completedLectures: 0, lecturePct: 0, r1Pct: 0, r2Pct: 0, r3Pct: 0, readinessPct: 0 };
+
+    if (summaryContainer) {
+      summaryContainer.innerHTML = `
+        <div>
+          <h4 style="font-size: 1rem; margin-bottom: 2px;">${currentSubMeta.paper}: ${currentSubMeta.name}</h4>
+          <small class="text-muted">Lectures Completed: ${curMetrics.completedLectures} / ${curMetrics.totalLectures} (${curMetrics.lecturePct}%)</small>
+        </div>
+        <div style="display: flex; gap: 14px; font-size: 0.85rem;">
+          <span><strong>R1:</strong> ${curMetrics.r1Pct}%</span>
+          <span><strong>R2:</strong> ${curMetrics.r2Pct}%</span>
+          <span><strong>R3:</strong> ${curMetrics.r3Pct}%</span>
+          <span><strong>Subject Readiness:</strong> <span class="badge badge-primary">${curMetrics.readinessPct}%</span></span>
+        </div>
+      `;
+    }
+
+    // Chapters rows
+    const progress = StudyEngine.getStudyProgress();
+    const chProgress = progress[activeSub] || {};
+    const defaultChapters = typeof STUDY_CHAPTERS_DATA !== "undefined" && STUDY_CHAPTERS_DATA[activeSub] ? STUDY_CHAPTERS_DATA[activeSub] : [];
+
+    if (tableBody) {
+      if (defaultChapters.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No pre-imported chapters for this subject.</td></tr>`;
+      } else {
+        tableBody.innerHTML = defaultChapters.map(ch => {
+          const prog = chProgress[ch.id] || { completedLectures: 0, totalLectures: ch.totalLectures, lectureDone: false, r1Done: false, r2Done: false, r3Done: false };
+          const isDone = prog.completedLectures >= prog.totalLectures;
+
+          return `
+            <tr>
+              <td>
+                <div style="font-weight: 600; font-size: 0.9rem;">${ch.name}</div>
+                <small class="text-muted"><i class="fa-solid fa-chart-simple"></i> ICAI Weightage: ${ch.defaultWeightage || 'Standard'}</small>
+              </td>
+              <td style="text-align: center;">
+                <div class="lecture-stepper">
+                  <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', -1)" title="Decrement Lecture">-</button>
+                  <span class="stepper-text">${prog.completedLectures} / ${prog.totalLectures}</span>
+                  <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', 1)" title="Increment Lecture">+</button>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="badge ${isDone ? 'badge-success' : 'badge-outline'}" style="font-size: 0.75rem;">
+                  ${isDone ? '<i class="fa-solid fa-check"></i> Done' : Math.round((prog.completedLectures / prog.totalLectures) * 100) + '%'}
+                </span>
+              </td>
+              <td style="text-align: center;">
+                <button type="button" class="rev-check-btn ${prog.r1Done ? 'checked' : ''}" onclick="App.handleRevisionToggle('${activeSub}', '${ch.id}', 'r1')" title="Toggle Revision 1">
+                  ${prog.r1Done ? '<i class="fa-solid fa-check"></i>' : ''}
+                </button>
+              </td>
+              <td style="text-align: center;">
+                <button type="button" class="rev-check-btn ${prog.r2Done ? 'checked' : ''}" onclick="App.handleRevisionToggle('${activeSub}', '${ch.id}', 'r2')" title="Toggle Revision 2">
+                  ${prog.r2Done ? '<i class="fa-solid fa-check"></i>' : ''}
+                </button>
+              </td>
+              <td style="text-align: center;">
+                <button type="button" class="rev-check-btn ${prog.r3Done ? 'checked' : ''}" onclick="App.handleRevisionToggle('${activeSub}', '${ch.id}', 'r3')" title="Toggle Revision 3">
+                  ${prog.r3Done ? '<i class="fa-solid fa-check"></i>' : ''}
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+  },
+
+  setStudyTrackerSubject(subId) {
+    this.state.activeTrackerSubject = subId;
+    this.renderChapterTracker();
+  },
+
+  handleLectureStep(subId, chId, delta) {
+    StudyEngine.updateLectureCount(subId, chId, delta);
+    this.renderChapterTracker();
+  },
+
+  handleRevisionToggle(subId, chId, stage) {
+    StudyEngine.toggleRevision(subId, chId, stage);
+    this.renderChapterTracker();
+  },
+
+  // ================= WRITING QUESTIONS CONTROLLER =================
+  loadWritingQuestions() {
+    const key = "ICAI_WRITING_QUESTIONS_V1";
+    let custom = [];
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) custom = JSON.parse(stored);
+    } catch (e) {}
+
+    const defaults = typeof DEFAULT_WRITING_QUESTIONS !== "undefined" ? DEFAULT_WRITING_QUESTIONS : [];
+    const map = new Map();
+    custom.forEach(item => map.set(item.id, item));
+
+    const merged = [];
+    defaults.forEach(item => {
+      if (map.has(item.id)) {
+        merged.push(map.get(item.id));
+        map.delete(item.id);
+      } else {
+        merged.push(item);
+      }
+    });
+    map.forEach(item => merged.push(item));
+
+    this.state.allWritingQuestions = merged;
+  },
+
+  saveWritingQuestion(item) {
+    const key = "ICAI_WRITING_QUESTIONS_V1";
+    let custom = [];
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) custom = JSON.parse(stored);
+    } catch (e) {}
+
+    const idx = custom.findIndex(x => x.id === item.id);
+    if (idx > -1) custom[idx] = item;
+    else custom.push(item);
+
+    localStorage.setItem(key, JSON.stringify(custom));
+    this.loadWritingQuestions();
+  },
+
+  renderWritingQuestions() {
+    const listEl = document.getElementById("writingQuestionsList");
+    const countEl = document.getElementById("writingFilteredCount");
+    const subFilter = document.getElementById("writingSubjectFilter");
+    const srcFilter = document.getElementById("writingSourceFilter");
+    const searchInput = document.getElementById("writingSearchInput");
+
+    if (!listEl) return;
+
+    // Populate dropdowns once if empty
+    if (subFilter && subFilter.children.length <= 1 && typeof ICAI_METADATA !== "undefined") {
+      subFilter.innerHTML = '<option value="ALL">All Subjects</option>';
+      ICAI_METADATA.subjects.forEach(s => {
+        subFilter.innerHTML += `<option value="${s.id}">${s.paper}: ${s.name}</option>`;
+      });
+      subFilter.addEventListener("change", (e) => {
+        App.state.writingFilter.subject = e.target.value;
+        App.state.writingFilter.chapter = "ALL";
+        App.updateChapterFilterDropdown("writingChapterFilter", e.target.value);
+        App.renderWritingQuestions();
+      });
+    }
+
+    const chFilter = document.getElementById("writingChapterFilter");
+    if (chFilter && !chFilter.dataset.hasListener) {
+      chFilter.dataset.hasListener = "true";
+      chFilter.addEventListener("change", (e) => {
+        App.state.writingFilter.chapter = e.target.value;
+        App.renderWritingQuestions();
+      });
+    }
+
+    if (srcFilter && srcFilter.children.length <= 1) {
+      srcFilter.innerHTML = `
+        <option value="ALL">All Sources (SM, RTP, MTP, PYQ)</option>
+        <option value="RTP">Revision Test Paper (RTP)</option>
+        <option value="MTP">Mock Test Paper (MTP)</option>
+        <option value="PYQ">Past Year Question (PYQ)</option>
+        <option value="SM">Study Material (SM)</option>
+      `;
+      srcFilter.addEventListener("change", (e) => {
+        App.state.writingFilter.source = e.target.value;
+        App.renderWritingQuestions();
+      });
+    }
+
+    if (searchInput && !searchInput.dataset.hasListener) {
+      searchInput.dataset.hasListener = "true";
+      searchInput.addEventListener("input", (e) => {
+        App.state.writingFilter.search = e.target.value;
+        App.renderWritingQuestions();
+      });
+    }
+
+    const searchTerm = (this.state.writingFilter.search || "").toLowerCase().trim();
+    const fSub = this.state.writingFilter.subject;
+    const fCh = this.state.writingFilter.chapter || "ALL";
+    const fSrc = this.state.writingFilter.source;
+
+    const filtered = this.state.allWritingQuestions.filter(q => {
+      if (fSub !== "ALL" && q.subjectId !== fSub) return false;
+      if (fCh !== "ALL" && q.chapter !== fCh) return false;
+      if (fSrc !== "ALL" && q.source !== fSrc) return false;
+      if (searchTerm) {
+        const inTitle = (q.title || "").toLowerCase().includes(searchTerm);
+        const inCh = (q.chapter || "").toLowerCase().includes(searchTerm);
+        const inQ = (q.question || "").toLowerCase().includes(searchTerm);
+        if (!inTitle && !inCh && !inQ) return false;
+      }
+      return true;
+    });
+
+    if (countEl) countEl.textContent = `${filtered.length} Descriptive Questions found`;
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-file-pen fa-3x"></i>
+          <h3>No Descriptive Questions Found</h3>
+          <p>Try clearing your filters or click "Add Writing Question" to add new practical questions.</p>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(wq => {
+      const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === wq.subjectId) : null;
+      const isOfficialAttemptSource = ["RTP", "MTP", "PYQ"].includes(wq.source);
+
+      return `
+        <div class="writing-question-card" id="wq-${wq.id}">
+          <div class="wq-header">
+            <div class="tags-group">
+              <span class="badge" style="background-color: ${subMeta ? subMeta.color : '#2563eb'}; color: white;">
+                ${wq.subjectId}
+              </span>
+              <span class="badge badge-source" style="background-color: #8b5cf6; color: white;">
+                ${wq.source === 'RTP' ? 'RTP' : wq.source === 'MTP' ? 'MTP' : wq.source === 'PYQ' ? 'Past Exam (PYQ)' : 'Study Material'}
+              </span>
+              ${isOfficialAttemptSource ? `
+                <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
+                  <i class="fa-regular fa-calendar-check"></i> ${wq.examSession || 'Session Specified'}
+                </span>
+              ` : `
+                <span class="badge badge-outline" title="Study Material Edition">
+                  <i class="fa-solid fa-book"></i> ${wq.examSession || 'ICAI Edition'}
+                </span>
+              `}
+              <span class="badge badge-marks">${wq.marks || 8} Marks</span>
+              <span class="badge badge-outline"><i class="fa-regular fa-bookmark"></i> ${wq.chapter || 'Practical Question'}</span>
+            </div>
+          </div>
+
+          <h3 class="wq-title">${wq.title || 'Practical Descriptive Problem'}</h3>
+
+          <div class="wq-stem">${App.formatMarkdown(wq.question)}</div>
+
+          <details class="wq-solution-collapsible">
+            <summary><i class="fa-solid fa-graduation-cap"></i> View ICAI Suggested Model Solution & Detailed Working Notes</summary>
+            <div class="wq-solution-content">
+              ${App.formatMarkdown(wq.solution)}
+              ${wq.reference ? `<p class="reference-tag" style="margin-top: 14px;"><i class="fa-solid fa-book-bookmark"></i> <strong>Statutory Reference:</strong> ${wq.reference}</p>` : ''}
+            </div>
+          </details>
+        </div>
+      `;
+    }).join("");
+  },
+
+  openAddWritingModal() {
+    const subSel = document.getElementById("wqSubject");
+
+    if (subSel && typeof ICAI_METADATA !== "undefined") {
+      subSel.innerHTML = "";
+      ICAI_METADATA.subjects.forEach(s => {
+        subSel.innerHTML += `<option value="${s.id}">${s.paper}: ${s.name}</option>`;
+      });
+      subSel.onchange = (e) => this.updateChapterDropdown("wqChapter", e.target.value);
+      this.updateChapterDropdown("wqChapter", subSel.value || "FR");
+    }
+
+    const modal = document.getElementById("addWritingQuestionModal");
+    if (modal) modal.style.display = "flex";
+  },
+
+  closeAddWritingModal() {
+    const modal = document.getElementById("addWritingQuestionModal");
+    if (modal) modal.style.display = "none";
+  },
+
+  handleAddWritingQuestion(event) {
+    if (event) event.preventDefault();
+    const subjectId = document.getElementById("wqSubject").value;
+    const chapter = document.getElementById("wqChapter").value;
+    const source = document.getElementById("wqSource").value;
+    const examSession = document.getElementById("wqExamSession").value || "Nov 2024";
+    const marks = parseInt(document.getElementById("wqMarks").value) || 8;
+    const title = document.getElementById("wqTitle").value.trim();
+    const question = document.getElementById("wqQuestionText").value.trim();
+    const solution = document.getElementById("wqSolutionText").value.trim();
+    const reference = document.getElementById("wqReference").value.trim();
+
+    if (!title || !question || !solution) {
+      alert("Please fill in Question Title, Problem Statement, and Model Solution.");
+      return;
+    }
+
+    const newWQ = {
+      id: `${subjectId}-WQ-${Date.now().toString(36).toUpperCase()}`,
+      subjectId,
+      chapter,
+      source,
+      examSession,
+      marks,
+      title,
+      question,
+      solution,
+      reference,
+      createdAt: new Date().toISOString()
+    };
+
+    this.saveWritingQuestion(newWQ);
+    alert("Descriptive writing question saved successfully!");
+    this.closeAddWritingModal();
+    document.getElementById("addWritingQuestionForm").reset();
+    this.renderWritingQuestions();
   },
 
   resetAllData() {
