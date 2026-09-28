@@ -2075,10 +2075,46 @@ const App = {
         if (hasIcai) customClass += "has-icai ";
         else if (hasFestival || hasNational) customClass += "has-festival ";
 
+        // Build chips for holiday and custom events
+        const chips = [];
+        if (d.holiday) {
+          const chipClass = d.holiday.type === 'icai' ? 'cal-chip-icai' : 'cal-chip-festival';
+          chips.push(`
+            <span class="cal-chip ${chipClass}" title="${d.holiday.name}: ${d.holiday.desc}">
+              <i class="fa-solid ${d.holiday.type === 'icai' ? 'fa-building-columns' : 'fa-sun'}"></i> ${d.holiday.name}
+            </span>
+          `);
+        }
+
+        if (d.customEvents && d.customEvents.length > 0) {
+          d.customEvents.forEach(evt => {
+            chips.push(`
+              <span class="cal-chip cal-chip-custom" title="${evt.title}${evt.time ? ' (' + evt.time + ')' : ''}">
+                <i class="fa-solid fa-calendar-check"></i> ${evt.title}
+              </span>
+            `);
+          });
+        }
+
+        let chipsHtml = "";
+        if (chips.length > 0) {
+          const visibleChips = chips.slice(0, 2);
+          const moreCount = chips.length - 2;
+          chipsHtml = `
+            <div class="cal-chips-container">
+              ${visibleChips.join("")}
+              ${moreCount > 0 ? `<span class="cal-chip-more">+${moreCount} more</span>` : ""}
+            </div>
+          `;
+        }
+
         return `
-          <div class="calendar-day-cell ${customClass}" title="${d.holiday ? d.holiday.name + ': ' + d.holiday.desc : ''}">
-            <span>${d.dayNumber}</span>
-            ${d.holiday ? `<span class="festival-dot">${d.holiday.name}</span>` : ''}
+          <div class="calendar-day-cell ${customClass}" onclick="App.openDateEventsModal('${d.dateStr}', ${d.dayNumber})" title="Click to view, add, or delete events on ${d.dateStr}">
+            <div class="cal-day-header">
+              <span class="cal-day-num">${d.dayNumber}</span>
+              <span class="cal-add-icon" title="Add / View events"><i class="fa-solid fa-plus"></i></span>
+            </div>
+            ${chipsHtml}
           </div>
         `;
       }).join("");
@@ -2105,6 +2141,121 @@ const App = {
     }
   },
 
+  openDateEventsModal(dateStr, dayNumber) {
+    if (!dateStr) return;
+    const modal = document.getElementById("dateEventModal");
+    const formattedTitle = document.getElementById("modalDateFormatted");
+    const targetInput = document.getElementById("modalTargetDateStr");
+    const titleInput = document.getElementById("modalNewEventTitle");
+    const timeInput = document.getElementById("modalNewEventTime");
+
+    if (formattedTitle) {
+      const parts = dateStr.split("-");
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      formattedTitle.textContent = d.toLocaleDateString("en-IN", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      });
+    }
+
+    if (targetInput) targetInput.value = dateStr;
+    if (titleInput) titleInput.value = "";
+    if (timeInput) timeInput.value = "";
+
+    this.renderDateEventsList(dateStr);
+
+    if (modal) modal.style.display = "flex";
+  },
+
+  closeDateEventsModal() {
+    const modal = document.getElementById("dateEventModal");
+    if (modal) modal.style.display = "none";
+  },
+
+  renderDateEventsList(dateStr) {
+    const container = document.getElementById("modalDateEventsList");
+    if (!container) return;
+
+    const events = StudyEngine.getEventsForDate(dateStr);
+    const holiday = typeof INDIAN_HOLIDAYS_AND_FESTIVALS !== "undefined"
+      ? INDIAN_HOLIDAYS_AND_FESTIVALS.find(h => h.date === dateStr)
+      : null;
+
+    let html = "";
+
+    if (holiday) {
+      html += `
+        <div class="cal-modal-event-item" style="border-left: 3px solid ${holiday.type === 'icai' ? '#dc2626' : '#d97706'};">
+          <div class="cal-modal-event-left">
+            <div class="cal-modal-event-title">${holiday.name}</div>
+            <div class="cal-modal-event-meta">${holiday.type === 'icai' ? 'ICAI Milestone' : 'Gazetted Holiday / Festival'} • ${holiday.desc}</div>
+          </div>
+          <span class="badge" style="font-size: 0.7rem; background: ${holiday.type === 'icai' ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)'}; color: ${holiday.type === 'icai' ? '#dc2626' : '#d97706'};">Official</span>
+        </div>
+      `;
+    }
+
+    if (events.length === 0 && !holiday) {
+      html = `<p class="text-muted" style="font-size: 0.82rem; margin: 6px 0;">No events or study targets set for this date yet. Use the form below to add one!</p>`;
+    } else {
+      events.forEach(evt => {
+        const typeLabels = {
+          study: "📚 Study Target",
+          revision: "📝 Revision Goal",
+          exam: "⏱️ Mock / Exam",
+          reminder: "🔔 Reminder"
+        };
+        const label = typeLabels[evt.type] || "Study Event";
+
+        html += `
+          <div class="cal-modal-event-item">
+            <div class="cal-modal-event-left">
+              <div class="cal-modal-event-title">${evt.title}</div>
+              <div class="cal-modal-event-meta">${label}${evt.time ? ' • ' + evt.time : ''}</div>
+            </div>
+            <button type="button" class="cal-event-delete-btn" onclick="App.handleDeleteCalendarEvent('${evt.id}', '${dateStr}')" title="Delete this event">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    container.innerHTML = html;
+  },
+
+  handleSaveDateEvent(e) {
+    if (e) e.preventDefault();
+    const targetInput = document.getElementById("modalTargetDateStr");
+    const titleInput = document.getElementById("modalNewEventTitle");
+    const typeSelect = document.getElementById("modalNewEventType");
+    const timeInput = document.getElementById("modalNewEventTime");
+
+    const dateStr = targetInput ? targetInput.value : "";
+    const title = titleInput ? titleInput.value.trim() : "";
+    const type = typeSelect ? typeSelect.value : "study";
+    const time = timeInput ? timeInput.value.trim() : "";
+
+    if (!dateStr || !title) return;
+
+    StudyEngine.addCalendarEvent({ dateStr, title, type, time });
+
+    if (titleInput) titleInput.value = "";
+    if (timeInput) timeInput.value = "";
+
+    this.renderDateEventsList(dateStr);
+    this.renderCalendar();
+  },
+
+  handleDeleteCalendarEvent(eventId, dateStr) {
+    if (!eventId) return;
+    StudyEngine.deleteCalendarEvent(eventId);
+    this.renderDateEventsList(dateStr);
+    this.renderCalendar();
+  },
+
   prevCalendarMonth() {
     if (StudyEngine.calendar.currentMonth === 0) {
       StudyEngine.calendar.currentMonth = 11;
@@ -2125,7 +2276,7 @@ const App = {
     this.renderCalendar();
   },
 
-  // Chapter & Lecture Tracker (Custom Faculty Lecture Count, Recorded/Live Modes, Revisions)
+  // Chapter & Lecture Tracker (Simple Lecture Completion State, Revisions)
   renderChapterTracker() {
     const tabsContainer = document.getElementById("subjectTrackerTabs");
     const summaryContainer = document.getElementById("activeSubSummary");
@@ -2150,13 +2301,13 @@ const App = {
     }
 
     const currentSubMeta = subjects.find(s => s.id === activeSub) || { name: activeSub, paper: "" };
-    const curMetrics = metrics.subjectMetrics[activeSub] || { totalLectures: 0, completedLectures: 0, lecturePct: 0, r1Pct: 0, r2Pct: 0, r3Pct: 0, readinessPct: 0 };
+    const curMetrics = metrics.subjectMetrics[activeSub] || { totalChapters: 0, completedLectures: 0, lecturePct: 0, r1Pct: 0, r2Pct: 0, r3Pct: 0, readinessPct: 0 };
 
     if (summaryContainer) {
       summaryContainer.innerHTML = `
         <div>
           <h4 style="font-size: 1rem; margin-bottom: 2px;">${currentSubMeta.paper}: ${currentSubMeta.name}</h4>
-          <small class="text-muted">Lectures Completed: ${curMetrics.completedLectures} / ${curMetrics.totalLectures} (${curMetrics.lecturePct}%)</small>
+          <small class="text-muted">Chapters Completed with Lecture: ${curMetrics.completedLectures} / ${curMetrics.totalChapters} (${curMetrics.lecturePct}%)</small>
         </div>
         <div style="display: flex; gap: 14px; font-size: 0.85rem; flex-wrap: wrap;">
           <span><strong>R1:</strong> ${curMetrics.r1Pct}%</span>
@@ -2178,15 +2329,11 @@ const App = {
       } else {
         tableBody.innerHTML = defaultChapters.map((ch, index) => {
           const prog = chProgress[ch.id] || { 
-            completedLectures: 0, 
-            totalLectures: ch.totalLectures || 10, 
             lectureDone: false, 
             r1Done: false, 
             r2Done: false, 
             r3Done: false 
           };
-          const isRecDone = prog.completedLectures >= prog.totalLectures;
-          const escapedName = (ch.name || '').replace(/'/g, "\\'");
 
           return `
             <tr>
@@ -2198,23 +2345,13 @@ const App = {
                 <small class="text-muted"><i class="fa-solid fa-chart-simple"></i> ICAI Weightage: ${ch.defaultWeightage || 'Standard'}</small>
               </td>
               <td style="text-align: center;">
-                <div class="chapter-lectures-controls">
-                  <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <div class="lecture-stepper">
-                      <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', -1)" title="Decrement Lecture" ${prog.completedLectures <= 0 ? 'disabled' : ''}>-</button>
-                      <span class="stepper-text">${prog.completedLectures} / ${prog.totalLectures}</span>
-                      <button type="button" class="stepper-btn" onclick="App.handleLectureStep('${activeSub}', '${ch.id}', 1)" title="Increment Lecture" ${prog.completedLectures >= prog.totalLectures ? 'disabled' : ''}>+</button>
-                    </div>
-                    <button type="button" class="lecture-edit-btn" onclick="App.openEditLectureModal('${activeSub}', '${ch.id}', '${escapedName}', ${prog.totalLectures})" title="Change faculty total lectures">
-                      <i class="fa-solid fa-pen"></i> Total: ${prog.totalLectures}
-                    </button>
-                  </div>
-                  <div style="margin-top: 6px; display: flex; align-items: center; justify-content: center;">
-                    <button type="button" class="stepper-quick-done-btn ${isRecDone ? 'done' : ''}" onclick="App.handleMarkChapterComplete('${activeSub}', '${ch.id}')" title="Quickly mark all lectures in this chapter as watched">
-                      <i class="fa-solid ${isRecDone ? 'fa-check-double' : 'fa-check'}"></i> ${isRecDone ? 'All Lectures Done' : 'Mark All Completed'}
-                    </button>
-                  </div>
-                </div>
+                <button type="button" 
+                        class="ch-lecture-status-btn ${prog.lectureDone ? 'completed' : 'pending'}" 
+                        onclick="App.handleToggleChapterLecture('${activeSub}', '${ch.id}')"
+                        title="Click to toggle whether chapter is completed with lecture">
+                  <i class="fa-solid ${prog.lectureDone ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                  <span>${prog.lectureDone ? 'Lecture Completed' : 'Not Completed'}</span>
+                </button>
               </td>
               <td style="text-align: center;">
                 <button type="button" class="rev-check-btn ${prog.r1Done ? 'checked' : ''}" onclick="App.handleRevisionToggle('${activeSub}', '${ch.id}', 'r1')" title="Toggle Revision 1">
@@ -2243,10 +2380,14 @@ const App = {
     this.renderChapterTracker();
   },
 
-  handleLectureStep(subId, chId, delta) {
-    StudyEngine.updateLectureCount(subId, chId, delta);
+  handleToggleChapterLecture(subId, chId) {
+    StudyEngine.toggleChapterLecture(subId, chId);
     this.renderChapterTracker();
     this.renderComparisonAnalytics();
+  },
+
+  handleLectureStep(subId, chId, delta) {
+    this.handleToggleChapterLecture(subId, chId);
   },
 
   handleDeliveryModeChange(subId, chId, mode) {
@@ -2256,15 +2397,11 @@ const App = {
   },
 
   handleLiveToggle(subId, chId) {
-    StudyEngine.toggleLiveCompletion(subId, chId);
-    this.renderChapterTracker();
-    this.renderComparisonAnalytics();
+    this.handleToggleChapterLecture(subId, chId);
   },
 
   handleMarkChapterComplete(subId, chId) {
-    StudyEngine.markChapterLecturesComplete(subId, chId);
-    this.renderChapterTracker();
-    this.renderComparisonAnalytics();
+    this.handleToggleChapterLecture(subId, chId);
   },
 
   handleRevisionToggle(subId, chId, stage) {

@@ -182,6 +182,19 @@ const StudyEngine = {
     return ch;
   },
 
+  toggleChapterLecture(subjectId, chapterId) {
+    const progress = this.getStudyProgress();
+    if (!progress[subjectId] || !progress[subjectId][chapterId]) return;
+
+    const ch = progress[subjectId][chapterId];
+    ch.lectureDone = !ch.lectureDone;
+    ch.completedLectures = ch.lectureDone ? 1 : 0;
+    ch.totalLectures = 1;
+
+    this.saveStudyProgress(progress);
+    return ch;
+  },
+
   updateLectureCount(subjectId, chapterId, delta) {
     const progress = this.getStudyProgress();
     if (!progress[subjectId] || !progress[subjectId][chapterId]) return;
@@ -222,7 +235,6 @@ const StudyEngine = {
   computeSyllabusMetrics() {
     const progress = this.getStudyProgress();
     let totalChapters = 0;
-    let totalLecturesGlobal = 0;
     let completedLecturesGlobal = 0;
     let r1Count = 0;
     let r2Count = 0;
@@ -232,7 +244,6 @@ const StudyEngine = {
 
     Object.entries(progress).forEach(([subId, chapters]) => {
       let subChCount = 0;
-      let subLecturesTotal = 0;
       let subLecturesDone = 0;
       let subR1 = 0;
       let subR2 = 0;
@@ -241,22 +252,19 @@ const StudyEngine = {
       Object.values(chapters).forEach(c => {
         subChCount++;
         totalChapters++;
-        const totalL = c.totalLectures || 10;
-        subLecturesTotal += totalL;
-        totalLecturesGlobal += totalL;
 
-        const isDone = (c.completedLectures >= totalL);
-        const compL = isDone ? totalL : Math.min(totalL, c.completedLectures || 0);
-
-        subLecturesDone += compL;
-        completedLecturesGlobal += compL;
+        const isDone = Boolean(c.lectureDone);
+        if (isDone) {
+          subLecturesDone++;
+          completedLecturesGlobal++;
+        }
 
         if (c.r1Done) { subR1++; r1Count++; }
         if (c.r2Done) { subR2++; r2Count++; }
         if (c.r3Done) { subR3++; r3Count++; }
       });
 
-      const lecturePct = subLecturesTotal > 0 ? Math.round((subLecturesDone / subLecturesTotal) * 100) : 0;
+      const lecturePct = subChCount > 0 ? Math.round((subLecturesDone / subChCount) * 100) : 0;
       const r1Pct = subChCount > 0 ? Math.round((subR1 / subChCount) * 100) : 0;
       const r2Pct = subChCount > 0 ? Math.round((subR2 / subChCount) * 100) : 0;
       const r3Pct = subChCount > 0 ? Math.round((subR3 / subChCount) * 100) : 0;
@@ -266,7 +274,7 @@ const StudyEngine = {
 
       subjectMetrics[subId] = {
         totalChapters: subChCount,
-        totalLectures: subLecturesTotal,
+        totalLectures: subChCount,
         completedLectures: subLecturesDone,
         lecturePct,
         r1Count: subR1,
@@ -279,6 +287,7 @@ const StudyEngine = {
       };
     });
 
+    const totalLecturesGlobal = totalChapters;
     const overallLecturePct = totalLecturesGlobal > 0 ? Math.round((completedLecturesGlobal / totalLecturesGlobal) * 100) : 0;
     const overallR1Pct = totalChapters > 0 ? Math.round((r1Count / totalChapters) * 100) : 0;
     const overallR2Pct = totalChapters > 0 ? Math.round((r2Count / totalChapters) * 100) : 0;
@@ -463,6 +472,51 @@ const StudyEngine = {
     }
   },
 
+  // ---------------- CALENDAR CUSTOM EVENTS & TASKS (ADD/DELETE) ----------------
+  getCalendarEvents() {
+    const key = `ICAI_CALENDAR_EVENTS_${this.getStoragePrefix()}`;
+    try {
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveCalendarEvents(events) {
+    const key = `ICAI_CALENDAR_EVENTS_${this.getStoragePrefix()}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(events));
+    } catch (e) {}
+  },
+
+  addCalendarEvent({ dateStr, title, type, time }) {
+    if (!title || !title.trim() || !dateStr) return null;
+    const events = this.getCalendarEvents();
+    const newEvent = {
+      id: `CEVT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      dateStr,
+      title: title.trim(),
+      type: type || "study", // "study", "revision", "exam", "reminder"
+      time: time ? time.trim() : "",
+      createdAt: new Date().toISOString()
+    };
+    events.push(newEvent);
+    this.saveCalendarEvents(events);
+    return newEvent;
+  },
+
+  deleteCalendarEvent(eventId) {
+    let events = this.getCalendarEvents();
+    events = events.filter(e => e.id !== eventId);
+    this.saveCalendarEvents(events);
+    return true;
+  },
+
+  getEventsForDate(dateStr) {
+    const events = this.getCalendarEvents();
+    return events.filter(e => e.dateStr === dateStr);
+  },
+
   // ---------------- INDIAN CALENDAR & FESTIVALS ----------------
   getCalendarDays(year, month) {
     const firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
@@ -471,7 +525,7 @@ const StudyEngine = {
 
     // Empty lead slots
     for (let i = 0; i < firstDay; i++) {
-      days.push({ dayNumber: null, isCurrentMonth: false });
+      days.push({ dayNumber: null, isCurrentMonth: false, dateStr: null, holiday: null, customEvents: [] });
     }
 
     // Days in month
@@ -481,12 +535,24 @@ const StudyEngine = {
         ? INDIAN_HOLIDAYS_AND_FESTIVALS.find(h => h.date === dateStr)
         : null;
 
+      const customEvents = this.getEventsForDate(dateStr);
+
       days.push({
         dayNumber: d,
         dateStr,
         isCurrentMonth: true,
-        holiday
+        holiday,
+        customEvents
       });
+    }
+
+    // Trailing empty slots to make rows strictly 7 equal columns
+    const remainder = days.length % 7;
+    if (remainder !== 0) {
+      const needed = 7 - remainder;
+      for (let j = 0; j < needed; j++) {
+        days.push({ dayNumber: null, isCurrentMonth: false, dateStr: null, holiday: null, customEvents: [] });
+      }
     }
 
     return days;
