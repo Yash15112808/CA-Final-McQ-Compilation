@@ -63,6 +63,7 @@ const App = {
     this.loadCaseAttempts();
     this.loadMCQs();
     this.loadWritingQuestions();
+    this.loadCompiledQuestions();
     this.setupEventListeners();
     this.renderHeaderSubjects();
     this.populateModalSelects();
@@ -3603,7 +3604,14 @@ const App = {
 
   // ================= WRITING QUESTIONS CONTROLLER =================
   loadWritingQuestions() {
+    const versionKey = "ICAI_WRITING_QUESTIONS_VERSION";
+    const currentVersion = "ICAI_BOS_V2";
     const key = "ICAI_WRITING_QUESTIONS_V1";
+    if (localStorage.getItem(versionKey) !== currentVersion) {
+      localStorage.setItem(versionKey, currentVersion);
+      localStorage.removeItem(key);
+    }
+
     let custom = [];
     try {
       const stored = localStorage.getItem(key);
@@ -3626,6 +3634,46 @@ const App = {
     map.forEach(item => merged.push(item));
 
     this.state.allWritingQuestions = merged;
+  },
+
+  async loadCompiledQuestions() {
+    try {
+      let data = null;
+      if (typeof COMPILED_QUESTIONS !== "undefined" && Array.isArray(COMPILED_QUESTIONS) && COMPILED_QUESTIONS.length > 0) {
+        data = COMPILED_QUESTIONS;
+      } else {
+        const resp = await fetch('src/data/questions.json');
+        if (resp.ok) {
+          data = await resp.json();
+        }
+      }
+      if (data && Array.isArray(data)) {
+        this.state.allQuestions = data;
+        const desc = data.filter(q => q.type === "Descriptive");
+        if (desc.length > 0 && desc.length >= (this.state.allWritingQuestions ? this.state.allWritingQuestions.length : 0)) {
+          const map = new Map();
+          desc.forEach(d => {
+            map.set(d.id, {
+              id: d.id,
+              subjectId: d.subjectId,
+              chapter: d.chapter,
+              source: d.source || "SM",
+              examSession: d.examSession || "Official ICAI",
+              pageNo: d.pageNo || "",
+              itemRef: d.itemRef || "",
+              marks: d.marks || 10,
+              title: d.title || `${d.subjectId} - ${d.chapter}`,
+              question: d.question,
+              solution: d.explanation,
+              reference: d.reference || ""
+            });
+          });
+          this.state.allWritingQuestions = Array.from(map.values());
+        }
+      }
+    } catch (e) {
+      console.warn("Using embedded default datasets", e);
+    }
   },
 
   saveWritingQuestion(item) {
