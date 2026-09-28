@@ -285,6 +285,14 @@ const App = {
     }
   },
 
+  escapeHTML(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  },
+
   formatMarkdown(text) {
     if (!text) return "";
     return text
@@ -574,9 +582,8 @@ const App = {
       return true;
     });
 
-    if (countEl) countEl.textContent = `${filtered.length} MCQs found`;
-
     if (filtered.length === 0) {
+      if (countEl) countEl.textContent = "0 MCQs found";
       listEl.innerHTML = `
         <div class="empty-state">
           <i class="fa-solid fa-file-circle-question fa-3x"></i>
@@ -587,126 +594,287 @@ const App = {
       return;
     }
 
-    listEl.innerHTML = filtered.map(q => {
-      const isStarred = MCQStats.isStarred(q.id);
-      const isImp = MCQStats.isImp(q.id);
-      const userNote = MCQStats.getNote(q.id);
-      const isCase = q.type === "case_scenario";
+    // Group filtered MCQs by Case Scenario
+    const caseGroups = new Map();
+    filtered.forEach(q => {
+      const hasScenario = Boolean(q.scenarioText && q.scenarioText.trim());
+      const groupKey = hasScenario
+        ? `${q.subjectId}___${(q.caseTitle || q.chapter || 'Case Scenario').trim()}`
+        : `standalone___${q.id}`;
 
-      const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === q.subjectId) : null;
-      const srcMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.sources.find(s => s.id === q.source) : null;
-      const isOfficialAttemptSource = ["RTP", "MTP", "PYQ"].includes(q.source);
+      if (!caseGroups.has(groupKey)) {
+        caseGroups.set(groupKey, {
+          isCase: hasScenario,
+          subjectId: q.subjectId,
+          chapter: q.chapter,
+          caseTitle: q.caseTitle || `Case Scenario: ${q.chapter || 'Comprehensive'}`,
+          scenarioText: q.scenarioText || "",
+          source: q.source || "BOOKLET",
+          examSession: q.examSession || "ICAI May 2026 Case Scenario Booklet",
+          questions: []
+        });
+      }
+      caseGroups.get(groupKey).questions.push(q);
+    });
 
-      return `
-        <div class="mcq-card ${isCase ? 'case-card' : ''} ${isImp ? 'is-imp-mcq' : ''}" id="card-${q.id}">
-          <div class="mcq-card-header">
-            <div class="tags-group">
-              <span class="badge" style="background-color: ${subMeta ? subMeta.color : '#2563eb'}; color: white;">
+    const caseCount = Array.from(caseGroups.values()).filter(g => g.isCase).length;
+    if (countEl) {
+      if (caseCount > 0) {
+        countEl.textContent = `${caseCount} Case Scenarios (${filtered.length} MCQs found)`;
+      } else {
+        countEl.textContent = `${filtered.length} MCQs found`;
+      }
+    }
+
+    let html = "";
+    caseGroups.forEach((group) => {
+      const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === group.subjectId) : null;
+      const srcMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.sources.find(s => s.id === group.source) : null;
+      const subColor = subMeta ? subMeta.color : "#2563eb";
+      const srcBadgeColor = srcMeta ? srcMeta.badgeColor : "#8b5cf6";
+      const srcLabel = srcMeta ? srcMeta.label : (group.source || "ICAI Material");
+
+      if (group.isCase) {
+        // Clean Indian Rupee notation in the narrative text
+        const cleanScenarioText = this.escapeHTML(group.scenarioText)
+          .replace(/`\s*(\d)/g, '₹$1')
+          .replace(/`/g, '₹');
+
+        html += `
+          <div class="case-study-compilation-group" id="case-group-${group.questions[0].id}">
+            <!-- 1. CASE SCENARIO HERO BOX (Distinctive Background Color, Open & Untruncated) -->
+            <div class="case-scenario-hero-box">
+              <div class="case-hero-header">
+                <div class="case-hero-tagline">
+                  <span class="case-hero-pill-badge" style="background-color: ${subColor};">
+                    <i class="fa-solid fa-graduation-cap"></i> ${group.subjectId}
+                  </span>
+                  <span class="case-hero-source-badge" style="background-color: ${srcBadgeColor};">
+                    <i class="fa-solid fa-book-open"></i> ${srcLabel}
+                  </span>
+                  <span class="case-hero-edition-badge">
+                    <i class="fa-regular fa-calendar-check"></i> ${group.examSession}
+                  </span>
+                </div>
+                <div class="case-hero-count-badge">
+                  <i class="fa-solid fa-layer-group"></i> ${group.questions.length} ${group.questions.length === 1 ? 'MCQ' : 'MCQs'}
+                </div>
+              </div>
+
+              <div class="case-hero-title-row">
+                <div class="case-hero-kicker">
+                  <i class="fa-solid fa-scale-balanced"></i> OFFICIAL ICAI CASE SCENARIO
+                </div>
+                <h3 class="case-hero-title">
+                  <i class="fa-solid fa-file-contract"></i> ${group.caseTitle}
+                </h3>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                  <i class="fa-regular fa-folder-open"></i> Relevant Chapter: <strong>${group.chapter || 'Comprehensive / Multi-disciplinary'}</strong>
+                </div>
+              </div>
+
+              <!-- Untruncated, fully open case scenario background facts in distinct colored container -->
+              <div class="case-scenario-content-body">
+                <div class="case-narrative-text">${cleanScenarioText}</div>
+              </div>
+            </div>
+
+            <!-- 2. DIVIDER BEFORE ATTACHED SUB-MCQS -->
+            <div class="case-mcqs-divider">
+              <div class="case-mcqs-divider-title">
+                <i class="fa-solid fa-list-check"></i> Questions Based On Above Case Scenario
+              </div>
+              <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">
+                ${group.questions.length} ${group.questions.length === 1 ? 'Question' : 'Questions'}
+              </div>
+            </div>
+
+            <!-- 3. SUB-MCQs ATTACHED TO THIS CASE SCENARIO -->
+            <div class="case-sub-mcqs-list">
+              ${group.questions.map((q, idx) => this.renderRepoCardHTML(q, idx, group.questions.length, true, subColor, srcBadgeColor, srcLabel)).join("")}
+            </div>
+          </div>
+        `;
+      } else {
+        // Standalone question
+        group.questions.forEach((q, idx) => {
+          html += this.renderRepoCardHTML(q, idx, 1, false, subColor, srcBadgeColor, srcLabel);
+        });
+      }
+    });
+
+    listEl.innerHTML = html;
+  },
+
+  renderRepoCardHTML(q, idx, totalInGroup, isSubCard, subColor, srcBadgeColor, srcLabel) {
+    const isStarred = MCQStats.isStarred(q.id);
+    const isImp = MCQStats.isImp(q.id);
+    const userNote = MCQStats.getNote(q.id);
+
+    // Clean Indian Rupee notation in stem
+    const cleanStem = this.escapeHTML(q.question)
+      .replace(/`\s*(\d)/g, '₹$1')
+      .replace(/`/g, '₹');
+
+    return `
+      <div class="mcq-card ${isSubCard ? 'sub-mcq-card' : ''} ${isImp ? 'is-imp-mcq' : ''}" id="card-${q.id}">
+        <div class="mcq-card-header">
+          <div class="tags-group">
+            ${isSubCard ? `
+              <span class="sub-q-number-pill">Question ${idx + 1} of ${totalInGroup}</span>
+            ` : `
+              <span class="badge" style="background-color: ${subColor}; color: white;">
                 ${q.subjectId}
               </span>
-              <span class="badge badge-source" style="background-color: ${srcMeta ? srcMeta.badgeColor : '#8b5cf6'}; color: white;">
-                <i class="fa-solid fa-book-open"></i> ${srcMeta ? srcMeta.label : q.source}
+              <span class="badge badge-source" style="background-color: ${srcBadgeColor}; color: white;">
+                <i class="fa-solid fa-book-open"></i> ${srcLabel}
               </span>
               <span class="badge badge-outline" title="ICAI Material Source / Edition">
                 <i class="fa-regular fa-calendar-check"></i> ${q.examSession || 'May 2026 Edition'}
               </span>
-              <span class="badge badge-marks">${q.marks || 2} Marks</span>
-              ${userNote ? `<span class="badge badge-success" title="Personal Note Attached"><i class="fa-solid fa-note-sticky"></i> Note Added</span>` : ''}
-              ${isImp ? `<span class="badge" style="background-color: #f59e0b; color: white;" title="Marked as Important"><i class="fa-solid fa-star"></i> IMP</span>` : ''}
-            </div>
-            <div class="card-actions" style="display: flex; gap: 8px; align-items: center;">
-              <button class="imp-toggle-btn ${isImp ? 'imp-active' : ''}" onclick="App.handleToggleImp('${q.id}')" title="${isImp ? 'Marked as Important (Click to unmark)' : 'Mark as Important (IMP)'}">
-                <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
-                <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
-              </button>
-              <button class="icon-btn star-btn ${isStarred ? 'starred' : ''}" onclick="App.handleToggleStar('${q.id}')" title="Star / Bookmark">
-                <i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>
-              </button>
-            </div>
+            `}
+            <span class="badge badge-marks">${q.marks || 2} Marks</span>
+            ${userNote ? `<span class="badge badge-success badge-note-indicator" title="Personal Note Attached"><i class="fa-solid fa-note-sticky"></i> Note Added</span>` : ''}
+            ${isImp ? `<span class="badge badge-imp-indicator" style="background-color: #f59e0b; color: white;" title="Marked as Important"><i class="fa-solid fa-star"></i> IMP</span>` : ''}
           </div>
+          <div class="card-actions" style="display: flex; gap: 8px; align-items: center;">
+            <button class="imp-toggle-btn ${isImp ? 'imp-active' : ''}" onclick="App.handleToggleImp('${q.id}')" title="${isImp ? 'Marked as Important (Click to unmark)' : 'Mark as Important (IMP)'}">
+              <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
+              <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
+            </button>
+            <button class="icon-btn star-btn ${isStarred ? 'starred' : ''}" onclick="App.handleToggleStar('${q.id}')" title="Star / Bookmark">
+              <i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>
+            </button>
+          </div>
+        </div>
 
+        ${!isSubCard ? `
           <div class="mcq-chapter-title">
             <i class="fa-regular fa-bookmark"></i> ${q.chapter || 'General Topic'}
           </div>
+        ` : ''}
 
-          ${q.scenarioText ? `
-            <details class="case-preview-drawer" style="margin-bottom: 12px; background: rgba(0,0,0,0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-color); padding: 8px 12px;">
-              <summary style="font-weight: 600; font-size: 0.82rem; cursor: pointer; color: var(--primary);">
-                <i class="fa-solid fa-file-lines"></i> ${q.caseTitle || 'View Scenario Background Facts'}
-              </summary>
-              <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); margin-top: 8px; white-space: pre-line;">${q.scenarioText}</p>
-            </details>
-          ` : ''}
-
-          <div class="mcq-stem">${q.question}</div>
-          <div class="mcq-options-grid">
-            ${(q.options || []).map(opt => `
+        <div class="mcq-stem">${cleanStem}</div>
+        <div class="mcq-options-grid">
+          ${(q.options || []).map(opt => {
+            const cleanOptText = this.escapeHTML(opt.text)
+              .replace(/`\s*(\d)/g, '₹$1')
+              .replace(/`/g, '₹');
+            return `
               <div class="mcq-option-item ${opt.id === q.correctAnswer ? 'repo-correct' : ''}">
                 <span class="option-letter">${opt.id}</span>
-                <span class="option-text">${opt.text}</span>
+                <span class="option-text">${cleanOptText}</span>
               </div>
-            `).join("")}
+            `;
+          }).join("")}
+        </div>
+
+        <details class="mcq-explanation-collapsible">
+          <summary><i class="fa-solid fa-lightbulb"></i> View ICAI Official Reasoning & Solution</summary>
+          <div class="explanation-content">
+            <p><strong>Correct Option: (${q.correctAnswer})</strong></p>
+            <p>${this.escapeHTML(q.explanation || 'Refer to the relevant ICAI provisions.').replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹')}</p>
+            ${q.reference ? `<p class="reference-tag"><i class="fa-solid fa-book-bookmark"></i> Source: ${this.escapeHTML(q.reference)}</p>` : ''}
           </div>
+        </details>
 
-          <details class="mcq-explanation-collapsible">
-            <summary><i class="fa-solid fa-lightbulb"></i> View ICAI Official Reasoning & Solution</summary>
-            <div class="explanation-content">
-              <p><strong>Correct Option: (${q.correctAnswer})</strong></p>
-              <p>${q.explanation || 'Refer to the relevant ICAI provisions.'}</p>
-              ${q.reference ? `<p class="reference-tag"><i class="fa-solid fa-book-bookmark"></i> Source: ${q.reference}</p>` : ''}
+        <!-- STUDENT PERSONAL NOTE SECTION -->
+        <div class="mcq-student-note-card ${userNote ? 'has-note' : ''}" id="note-card-${q.id}">
+          <div class="mcq-note-header" onclick="App.toggleNoteAccordion('${q.id}')">
+            <div class="note-title-left">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <strong>Student Personal Note / Memory Key</strong>
+              ${userNote ? '<span class="note-badge-pill">Saved</span>' : ''}
             </div>
-          </details>
-
-          <!-- STUDENT PERSONAL NOTE SECTION -->
-          <div class="mcq-student-note-card ${userNote ? 'has-note' : ''}" id="note-card-${q.id}">
-            <div class="mcq-note-header" onclick="App.toggleNoteAccordion('${q.id}')">
-              <div class="note-title-left">
-                <i class="fa-solid fa-pen-to-square"></i>
-                <strong>Student Personal Note / Memory Key</strong>
-                ${userNote ? '<span class="note-badge-pill">Saved</span>' : ''}
-              </div>
-              <div class="note-expand-indicator">
-                <small class="text-muted">${userNote ? 'View / Edit Note' : 'Add Note'}</small>
-                <i class="fa-solid fa-chevron-down ${userNote ? 'rotated' : ''}" id="note-chevron-${q.id}"></i>
-              </div>
+            <div class="note-expand-indicator">
+              <small class="text-muted">${userNote ? 'View / Edit Note' : 'Add Note'}</small>
+              <i class="fa-solid fa-chevron-down ${userNote ? 'rotated' : ''}" id="note-chevron-${q.id}"></i>
             </div>
-            <div class="mcq-note-drawer" id="note-drawer-${q.id}" style="${userNote ? 'display: block;' : 'display: none;'}">
-              <textarea 
-                class="student-note-textarea" 
-                id="student-note-${q.id}" 
-                placeholder="Write your personal tips, memory keys, tricky points, or statutory notes to remember for this question..."
-                oninput="App.handleStudentNoteInput('${q.id}', this.value)"
-              >${userNote}</textarea>
-              <div class="note-drawer-actions">
-                <small class="text-muted note-status-msg" id="note-status-${q.id}">
-                  ${userNote ? 'Note saved in your account' : 'Notes auto-save as you type'}
-                </small>
-                <div style="display: flex; gap: 6px;">
-                  ${userNote ? `
-                    <button type="button" class="btn btn-sm btn-outline text-danger" onclick="App.handleClearStudentNote('${q.id}')" title="Delete Note">
-                      <i class="fa-regular fa-trash-can"></i> Clear
-                    </button>
-                  ` : ''}
-                  <button type="button" class="btn btn-sm btn-primary" onclick="App.handleSaveStudentNote('${q.id}')">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Note
+          </div>
+          <div class="mcq-note-drawer" id="note-drawer-${q.id}" style="${userNote ? 'display: block;' : 'display: none;'}">
+            <textarea 
+              class="student-note-textarea" 
+              id="student-note-${q.id}" 
+              placeholder="Write your personal tips, memory keys, tricky points, or statutory notes to remember for this question..."
+              oninput="App.handleStudentNoteInput('${q.id}', this.value)"
+            >${this.escapeHTML(userNote || '')}</textarea>
+            <div class="note-drawer-actions">
+              <small class="text-muted note-status-msg" id="note-status-${q.id}">
+                ${userNote ? 'Note saved in your account ✓' : 'Notes auto-save as you type'}
+              </small>
+              <div style="display: flex; gap: 6px;">
+                ${userNote ? `
+                  <button type="button" class="btn btn-sm btn-outline text-danger" onclick="App.handleClearStudentNote('${q.id}')" title="Delete Note">
+                    <i class="fa-regular fa-trash-can"></i> Clear
                   </button>
-                </div>
+                ` : ''}
+                <button type="button" class="btn btn-sm btn-primary" onclick="App.handleSaveStudentNote('${q.id}')">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Note
+                </button>
               </div>
             </div>
           </div>
         </div>
-      `;
-    }).join("");
+      </div>
+    `;
   },
 
   handleToggleStar(qId) {
-    MCQStats.toggleStar(qId);
-    this.renderCurrentView();
+    const isStarred = MCQStats.toggleStar(qId);
+    const card = document.getElementById(`card-${qId}`);
+    if (card) {
+      const starBtn = card.querySelector(".star-btn");
+      if (starBtn) {
+        starBtn.classList.toggle("starred", isStarred);
+        starBtn.innerHTML = `<i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>`;
+      }
+    } else {
+      this.renderCurrentView();
+    }
   },
 
   handleToggleImp(qId) {
-    MCQStats.toggleImp(qId);
-    this.renderCurrentView();
+    const isImp = MCQStats.toggleImp(qId);
+
+    // If filtering specifically by IMP or WITH_NOTES, re-render to update the view
+    if (this.state.repositoryFilter && this.state.repositoryFilter.imp !== "ALL") {
+      this.renderCurrentView();
+      return;
+    }
+
+    // In-place smooth update without jumping scroll position
+    const card = document.getElementById(`card-${qId}`);
+    if (card) {
+      card.classList.toggle("is-imp-mcq", isImp);
+      const impBtn = card.querySelector(".imp-toggle-btn");
+      if (impBtn) {
+        impBtn.classList.toggle("imp-active", isImp);
+        impBtn.title = isImp ? "Marked as Important (Click to unmark)" : "Mark as Important (IMP)";
+        impBtn.innerHTML = `
+          <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
+          <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
+        `;
+      }
+
+      const tagsGroup = card.querySelector(".tags-group");
+      if (tagsGroup) {
+        let impBadge = tagsGroup.querySelector(".badge-imp-indicator");
+        if (isImp) {
+          if (!impBadge) {
+            impBadge = document.createElement("span");
+            impBadge.className = "badge badge-imp-indicator";
+            impBadge.style.cssText = "background-color: #f59e0b; color: white;";
+            impBadge.title = "Marked as Important";
+            impBadge.innerHTML = '<i class="fa-solid fa-star"></i> IMP';
+            tagsGroup.appendChild(impBadge);
+          }
+        } else if (impBadge) {
+          impBadge.remove();
+        }
+      }
+    } else {
+      this.renderCurrentView();
+    }
   },
 
   toggleNoteAccordion(qId) {
@@ -740,13 +908,55 @@ const App = {
     MCQStats.saveNote(qId, val);
     const statusEl = document.getElementById(`note-status-${qId}`);
     if (statusEl) statusEl.textContent = "Saved successfully! ✓";
-    this.renderCurrentView();
+
+    // In-place update of note card & badges
+    const noteCard = document.getElementById(`note-card-${qId}`);
+    if (noteCard) {
+      noteCard.classList.toggle("has-note", Boolean(val.trim()));
+      const titleLeft = noteCard.querySelector(".note-title-left");
+      if (titleLeft) {
+        let pill = titleLeft.querySelector(".note-badge-pill");
+        if (val.trim()) {
+          if (!pill) {
+            pill = document.createElement("span");
+            pill.className = "note-badge-pill";
+            pill.textContent = "Saved";
+            titleLeft.appendChild(pill);
+          }
+        } else if (pill) {
+          pill.remove();
+        }
+      }
+    }
+
+    const mcqCard = document.getElementById(`card-${qId}`);
+    if (mcqCard) {
+      const tagsGroup = mcqCard.querySelector(".tags-group");
+      if (tagsGroup) {
+        let noteBadge = tagsGroup.querySelector(".badge-note-indicator");
+        if (val.trim()) {
+          if (!noteBadge) {
+            noteBadge = document.createElement("span");
+            noteBadge.className = "badge badge-success badge-note-indicator";
+            noteBadge.title = "Personal Note Attached";
+            noteBadge.innerHTML = '<i class="fa-solid fa-note-sticky"></i> Note Added';
+            tagsGroup.appendChild(noteBadge);
+          }
+        } else if (noteBadge) {
+          noteBadge.remove();
+        }
+      }
+    }
+
+    if (this.state.repositoryFilter && this.state.repositoryFilter.imp === "WITH_NOTES") {
+      this.renderCurrentView();
+    }
   },
 
   handleClearStudentNote(qId) {
     if (confirm("Are you sure you want to clear your personal note for this question?")) {
       MCQStats.saveNote(qId, "");
-      this.renderCurrentView();
+      this.handleSaveStudentNote(qId);
     }
   },
 
@@ -1271,7 +1481,35 @@ const App = {
     const container = document.getElementById("casesContainer");
     if (!container) return;
 
-    const caseScenarios = this.state.allMCQs.filter(q => q.type === "case_scenario");
+    let caseScenarios = this.state.allMCQs.filter(q => q.type === "case_scenario");
+
+    if (caseScenarios.length === 0) {
+      const map = new Map();
+      this.state.allMCQs.forEach(q => {
+        if (!q.scenarioText || !q.scenarioText.trim()) return;
+        const key = `${q.subjectId}___${q.caseTitle || q.chapter}`;
+        if (!map.has(key)) {
+          map.set(key, {
+            id: q.id,
+            subjectId: q.subjectId,
+            source: q.source || "BOOKLET",
+            examSession: q.examSession || "ICAI May 2026 Case Scenario Booklet",
+            title: q.caseTitle || `Case Scenario: ${q.chapter || 'Comprehensive'}`,
+            scenarioText: q.scenarioText,
+            subQuestions: []
+          });
+        }
+        map.get(key).subQuestions.push({
+          subId: q.id,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          marks: q.marks || 2
+        });
+      });
+      caseScenarios = Array.from(map.values());
+    }
 
     if (caseScenarios.length === 0) {
       container.innerHTML = `

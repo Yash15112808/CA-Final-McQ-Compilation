@@ -3725,4 +3725,220 @@ a[href*="netlify.com"] {
   font-size: 0.78rem;
 }
 
+/* ================= CASE SCENARIO BOOKLET PRESENTATION ================= */
+.case-study-compilation-group {
+  margin-bottom: 32px;
+  background: transparent;
+}
+
+/* Distinctive Colored Background for the Case Scenario Hero Box */
+.case-scenario-hero-box {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e2eefd 100%);
+  border: 1.5px solid #bfdbfe;
+  border-left: 6px solid #2563eb;
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.08);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .case-scenario-hero-box {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-color: #334155;
+  border-left: 6px solid #3b82f6;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.case-hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .case-hero-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.case-hero-tagline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.case-hero-pill-badge {
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.case-hero-source-badge {
+  background: #8b5cf6;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.case-hero-edition-badge {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .case-hero-edition-badge {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.case-hero-count-badge {
+  background: #10b981;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.case-hero-kicker {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.case-hero-title-row {
+  margin-bottom: 14px;
+}
+
+.case-hero-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.case-hero-title i {
+  color: #2563eb;
+}
+
+[data-theme="dark"] .case-hero-title i {
+  color: #60a5fa;
+}
+
+.case-scenario-content-body {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+  backdrop-filter: blur(4px);
+}
+
+[data-theme="dark"] .case-scenario-content-body {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.case-narrative-text {
+  font-size: 0.93rem;
+  line-height: 1.8;
+  color: var(--text-main);
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+/* Divider Bar before MCQs */
+.case-mcqs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 100%);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  margin: 18px 0 14px 0;
+}
+
+[data-theme="dark"] .case-mcqs-divider {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.02) 100%);
+}
+
+.case-mcqs-divider-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sub-mcq-card {
+  margin-left: 12px;
+  border-left: 3px solid var(--border-color);
+  background: var(--bg-card);
+  transition: all 0.2s ease;
+}
+
+.sub-mcq-card:hover {
+  border-left-color: var(--primary);
+}
+
+.sub-mcq-card.is-imp-mcq {
+  border-left: 4px solid #f59e0b !important;
+}
+
+.sub-q-number-pill {
+  background: var(--primary);
+  color: #ffffff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 768px) {
+  .sub-mcq-card {
+    margin-left: 0;
+  }
+  .case-scenario-hero-box {
+    padding: 16px;
+  }
+}
+
 
