@@ -36933,6 +36933,1094 @@ const DEFAULT_MCQS = [
     "correctAnswer": "A",
     "explanation": "Under GST: Charge of GST & Reverse Charge Mechanism (RCM), as per the CGST & IGST Act, 2017 provisions.",
     "reference": "ICAI May 2026 Booklet Multidisciplinary Integration; ICAI May 2026 Booklet Case Scenario 2; GST: Charge of GST & Reverse Charge Mechanism (RCM)"
+  },
+  {
+    "id": "FR-MTP-M25-01",
+    "subjectId": "FR",
+    "chapter": "Ind AS 34: Interim Financial Reporting",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Narayan Ltd. requires to calculate the tax expense for each quarter under Ind AS 34. Estimated gross annual income is \u20b9 33,00,000 (inclusive of estimated Capital Gains of \u20b9 8,00,000 taxable at flat 12%). Tax rate on other income: first \u20b9 5,00,000 @ 30%, balance @ 40%. Estimated quarter incomes: Q1: \u20b9 7,00,000, Q2: \u20b9 8,00,000, Q3: \u20b9 12,00,000 (including Capital Gain of \u20b9 8,00,000), Q4: \u20b9 6,00,000. What is the weighted average annual estimated tax rate on other income?",
+    "options": [
+      {
+        "id": "A",
+        "text": "29%"
+      },
+      {
+        "id": "B",
+        "text": "38%"
+      },
+      {
+        "id": "C",
+        "text": "30%"
+      },
+      {
+        "id": "D",
+        "text": "40%"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Annual other income = \u20b9 33,00,000 - \u20b9 8,00,000 = \u20b9 25,00,000. Tax on other income = (\u20b9 5,00,000 \u00d7 30%) + (\u20b9 20,00,000 \u00d7 40%) = \u20b9 1,50,000 + \u20b9 8,00,000 = \u20b9 9,50,000. Weighted average annual income tax rate = \u20b9 9,50,000 / \u20b9 25,00,000 = 38%.",
+    "reference": "Ind AS 34: Interim Financial Reporting; ICAI Model Test Paper May 2025 Group I"
+  },
+  {
+    "id": "FR-PYQ-M24-01",
+    "subjectId": "FR",
+    "chapter": "Ind AS 115: Revenue from Contracts with Customers",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Ind AS 115, when an entity grants a customer the option to acquire additional goods or services for free or at a discount, the option gives rise to a separate performance obligation only if:",
+    "options": [
+      {
+        "id": "A",
+        "text": "The customer pays an additional upfront non-refundable fee for the option"
+      },
+      {
+        "id": "B",
+        "text": "The option provides a material right to the customer that it would not receive without entering into that contract"
+      },
+      {
+        "id": "C",
+        "text": "The market value of the underlying goods is readily determinable in an active market"
+      },
+      {
+        "id": "D",
+        "text": "The delivery period of the additional goods exceeds 12 months from the contract date"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Ind AS 115, paragraph B35, a customer option to acquire additional goods or services gives rise to a separate performance obligation in the contract only if the option provides a material right to the customer that it would not receive without entering into that contract.",
+    "reference": "Ind AS 115, Para B35; CA Final Past Exam Paper May 2024"
+  },
+  {
+    "id": "FR-RTP-N24-01",
+    "subjectId": "FR",
+    "chapter": "Ind AS 116: Leases",
+    "source": "RTP",
+    "examSession": "Nov 2024 RTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "A lessee enters into a 5-year lease of an industrial printing machine with annual lease payments of \u20b9 4,00,000 payable at year end. The lessee incurs initial direct costs of \u20b9 30,000 and receives lease incentives of \u20b9 50,000 from the lessor at lease commencement. The present value of the lease payments discounted at the incremental borrowing rate (8%) is \u20b9 15,97,080. What is the initial carrying amount of the Right-of-Use (ROU) Asset?",
+    "options": [
+      {
+        "id": "A",
+        "text": "\u20b9 15,97,080"
+      },
+      {
+        "id": "B",
+        "text": "\u20b9 16,27,080"
+      },
+      {
+        "id": "C",
+        "text": "\u20b9 15,77,080"
+      },
+      {
+        "id": "D",
+        "text": "\u20b9 16,77,080"
+      }
+    ],
+    "correctAnswer": "C",
+    "explanation": "Under Ind AS 116.24, ROU Asset = Initial Lease Liability (\u20b9 15,97,080) + Initial Direct Costs (\u20b9 30,000) - Lease Incentives Received (\u20b9 50,000) = \u20b9 15,77,080.",
+    "reference": "Ind AS 116, Para 24; ICAI RTP Nov 2024"
+  },
+  {
+    "id": "FR-PYQ-N23-01",
+    "subjectId": "FR",
+    "chapter": "Ind AS 103: Business Combinations",
+    "source": "PYQ",
+    "examSession": "Nov 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "In a business combination under Ind AS 103, an acquirer agrees to pay contingent consideration of \u20b9 5,00,000 if the target's post-acquisition profit exceeds \u20b9 2 Crores within 2 years. At the acquisition date, the fair value of this contingent consideration is \u20b9 3,20,000 (classified as a financial liability). At the end of Year 1, due to exceptional sales, the fair value is remeasured to \u20b9 4,10,000. How should the change in fair value of \u20b9 90,000 be recognized?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Adjusted retrospectively against Goodwill"
+      },
+      {
+        "id": "B",
+        "text": "Recognized in Profit or Loss for the period"
+      },
+      {
+        "id": "C",
+        "text": "Recognized in Other Comprehensive Income (OCI)"
+      },
+      {
+        "id": "D",
+        "text": "Transferred directly to Capital Reserve in Equity"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Ind AS 103, paragraph 58(b), contingent consideration classified as an asset or a liability that is a financial instrument within the scope of Ind AS 109 shall be measured at fair value with changes recognized in Profit or Loss.",
+    "reference": "Ind AS 103, Para 58(b); CA Final Exam Nov 2023"
+  },
+  {
+    "id": "AFM-MTP-M25-01",
+    "subjectId": "AFM",
+    "chapter": "Foreign Exchange Exposure and Risk Management",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "An Indian firm has a 3-month payable of GBP 1,00,000. Spot rate: GBP/INR 105.20 / 105.30. 3-Month forward rate: GBP/INR 106.10 / 106.25. Annual interest rates: INR Borrowing 9%, Deposit 7.5%; GBP Borrowing 5%, Deposit 4%. What is the forward premium/discount annualized on GBP with respect to INR based on the Ask rate?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Premium of 3.61% p.a."
+      },
+      {
+        "id": "B",
+        "text": "Discount of 3.61% p.a."
+      },
+      {
+        "id": "C",
+        "text": "Premium of 4.25% p.a."
+      },
+      {
+        "id": "D",
+        "text": "Discount of 2.80% p.a."
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Annualized Forward Premium = [(Forward Ask - Spot Ask) / Spot Ask] \u00d7 (12 / Months) \u00d7 100 = [(106.25 - 105.30) / 105.30] \u00d7 (12 / 3) \u00d7 100 = (0.95 / 105.30) \u00d7 4 \u00d7 100 = 3.608% \u2248 3.61% p.a. premium.",
+    "reference": "AFM Forex Management; ICAI Model Test Paper May 2025"
+  },
+  {
+    "id": "AFM-PYQ-M24-01",
+    "subjectId": "AFM",
+    "chapter": "Portfolio Management & Security Analysis",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "A stock has a beta of 1.25. The market return (Rm) is 14% and the risk-free rate of return (Rf) is 6%. If the stock is currently offering an expected return of 17.50%, what is Jensen's Alpha of the security and how is it valued?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Alpha = +1.50%; Underpriced (Buy)"
+      },
+      {
+        "id": "B",
+        "text": "Alpha = -1.50%; Overpriced (Sell)"
+      },
+      {
+        "id": "C",
+        "text": "Alpha = +2.25%; Underpriced (Buy)"
+      },
+      {
+        "id": "D",
+        "text": "Alpha = 0.00%; Fairly priced"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Required Return under CAPM = Rf + \u03b2(Rm - Rf) = 6% + 1.25 \u00d7 (14% - 6%) = 6% + 10% = 16.00%. Jensen's Alpha = Expected Return - Required Return = 17.50% - 16.00% = +1.50%. A positive alpha indicates the security is underpriced and should be purchased.",
+    "reference": "AFM Security Analysis; CA Final Past Exam Paper May 2024"
+  },
+  {
+    "id": "AFM-RTP-N24-01",
+    "subjectId": "AFM",
+    "chapter": "Derivatives & Option Pricing",
+    "source": "RTP",
+    "examSession": "Nov 2024 RTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "According to the Put-Call Parity theorem for European options on non-dividend paying stocks, which of the following equations correctly defines the relationship between the Call price (C), Put price (P), Spot price (S), Strike price (X), risk-free rate (r), and time to expiration (t)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "C + X \u00b7 e^(-rt) = P + S"
+      },
+      {
+        "id": "B",
+        "text": "C + S = P + X \u00b7 e^(-rt)"
+      },
+      {
+        "id": "C",
+        "text": "P - C = S + X \u00b7 e^(-rt)"
+      },
+      {
+        "id": "D",
+        "text": "C - P = X - S \u00b7 e^(-rt)"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Under Put-Call Parity: Portfolio A (Call option + Present Value of Strike Price X\u00b7e^(-rt)) equals Portfolio B (Put option + Underlying Share S). Hence: C + X \u00b7 e^(-rt) = P + S.",
+    "reference": "AFM Derivatives; ICAI RTP Nov 2024"
+  },
+  {
+    "id": "AFM-PYQ-N23-01",
+    "subjectId": "AFM",
+    "chapter": "Advanced Capital Budgeting (APV)",
+    "source": "PYQ",
+    "examSession": "Nov 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under the Adjusted Present Value (APV) method, the base case NPV evaluates the project assuming that it is:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Financed entirely with debt capital at the borrowing rate"
+      },
+      {
+        "id": "B",
+        "text": "Financed entirely with equity capital (all-equity financed) at the unlevered cost of equity"
+      },
+      {
+        "id": "C",
+        "text": "Discounted at the Weighted Average Cost of Capital (WACC)"
+      },
+      {
+        "id": "D",
+        "text": "Discounted at the internal rate of return (IRR) without tax shield"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "In APV methodology, Base Case NPV evaluates project cash flows discounting at the all-equity unlevered cost of capital (Keu), separating investment decisions from financing decisions.",
+    "reference": "AFM Advanced Capital Budgeting; CA Final Exam Nov 2023"
+  },
+  {
+    "id": "AUDIT-MTP-M25-01",
+    "subjectId": "AUDIT",
+    "chapter": "Professional Ethics & Code of Ethics",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Clause (8) of Part I of the First Schedule to the Chartered Accountants Act, 1949, a Chartered Accountant in practice is deemed guilty of misconduct if he accepts a position as auditor previously held by another member without:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Obtaining prior written consent from the Registrar of Companies (ROC)"
+      },
+      {
+        "id": "B",
+        "text": "First communicating with him in writing"
+      },
+      {
+        "id": "C",
+        "text": "Waiting for a mandatory cooling-off period of 60 days"
+      },
+      {
+        "id": "D",
+        "text": "Inspecting the previous auditor's working papers"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Clause (8) of Part I of the First Schedule, a member in practice is guilty of misconduct if he accepts a position as auditor previously held by another chartered accountant without first communicating with him in writing.",
+    "reference": "CA Act 1949 First Schedule Part I Cl (8); ICAI Model Test Paper May 2025"
+  },
+  {
+    "id": "AUDIT-PYQ-M24-01",
+    "subjectId": "AUDIT",
+    "chapter": "Audit Planning, Strategy and Execution (SA 570)",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "When the auditor concludes that the use of the going concern basis of accounting is appropriate but a material uncertainty exists, and adequate disclosure of the uncertainty is made in the financial statements, the auditor shall:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Express a qualified opinion or adverse opinion"
+      },
+      {
+        "id": "B",
+        "text": "Express an unmodified opinion and include a separate section headed 'Material Uncertainty Related to Going Concern'"
+      },
+      {
+        "id": "C",
+        "text": "Include the matter in the Key Audit Matters (KAM) section without any other disclosure"
+      },
+      {
+        "id": "D",
+        "text": "Issue a disclaimer of opinion"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under SA 570 (Revised), paragraph 22, if adequate disclosure is made, the auditor shall express an unmodified opinion and include a dedicated section with the heading 'Material Uncertainty Related to Going Concern'.",
+    "reference": "SA 570 (Revised), Para 22; CA Final Past Exam Paper May 2024"
+  },
+  {
+    "id": "AUDIT-RTP-N24-01",
+    "subjectId": "AUDIT",
+    "chapter": "Companies (Auditor's Report) Order (CARO 2020)",
+    "source": "RTP",
+    "examSession": "Nov 2024 RTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Clause 3(ii)(b) of CARO 2020, the auditor is required to report whether quarterly returns or statements filed by the company with banks/FIs agree with books of account if the company has been sanctioned working capital limits in excess of:",
+    "options": [
+      {
+        "id": "A",
+        "text": "\u20b9 1 Crore in aggregate on the basis of security of current assets"
+      },
+      {
+        "id": "B",
+        "text": "\u20b9 5 Crores in aggregate on the basis of security of current assets"
+      },
+      {
+        "id": "C",
+        "text": "\u20b9 10 Crores in aggregate on any security"
+      },
+      {
+        "id": "D",
+        "text": "\u20b9 2 Crores in aggregate"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Clause 3(ii)(b) of CARO 2020, reporting is mandatory where the company has been sanctioned working capital limits in excess of \u20b9 5 Crores, in aggregate, from banks or financial institutions on the basis of security of current assets.",
+    "reference": "CARO 2020, Clause 3(ii)(b); ICAI RTP Nov 2024"
+  },
+  {
+    "id": "AUDIT-PYQ-N23-01",
+    "subjectId": "AUDIT",
+    "chapter": "Audit of Banks & NBFCs",
+    "source": "PYQ",
+    "examSession": "Nov 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "In the statutory audit of a scheduled commercial bank, an agricultural term loan for short-duration crops shall be classified as a Non-Performing Asset (NPA) if the installment of principal or interest thereon remains overdue for:",
+    "options": [
+      {
+        "id": "A",
+        "text": "More than 90 days from the due date"
+      },
+      {
+        "id": "B",
+        "text": "Two crop seasons"
+      },
+      {
+        "id": "C",
+        "text": "One crop season"
+      },
+      {
+        "id": "D",
+        "text": "180 days from the harvesting date"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under RBI Master Circular on IRAC Norms, an agricultural loan granted for short duration crops is classified as an NPA if the installment of principal or interest remains unpaid for two crop seasons.",
+    "reference": "RBI IRAC Norms; CA Final Exam Nov 2023"
+  },
+  {
+    "id": "DT-MTP-M25-01",
+    "subjectId": "DT",
+    "chapter": "Transfer Pricing & Other Anti-Avoidance Measures (GAAR)",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Section 92CE(2A) of the Income-tax Act, 1961, what is the effective rate of additional income-tax payable on excess money not repatriated into India in lieu of annual interest inclusion under secondary adjustment?",
+    "options": [
+      {
+        "id": "A",
+        "text": "18.0000%"
+      },
+      {
+        "id": "B",
+        "text": "20.9664%"
+      },
+      {
+        "id": "C",
+        "text": "22.8800%"
+      },
+      {
+        "id": "D",
+        "text": "25.1680%"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Section 92CE(2A): Base tax rate = 18%. Mandatory Surcharge @ 12% on 18% = 2.16% (Subtotal = 20.16%). Health & Education Cess @ 4% on 20.16% = 0.8064%. Effective tax rate = 18% + 2.16% + 0.8064% = 20.9664%.",
+    "reference": "Income-tax Act 1961, Section 92CE(2A); ICAI Model Test Paper May 2025"
+  },
+  {
+    "id": "DT-PYQ-M24-01",
+    "subjectId": "DT",
+    "chapter": "Profits and Gains of Business or Profession (PGBP)",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "An employer deducted employees' contribution to Provident Fund from salaries for the month of August 2023. The due date under the PF Act was 15th September 2023, but the amount was deposited on 25th September 2023 (before the due date of filing the return of income under Section 139(1)). What is the tax treatment under the Income-tax Act, 1961?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Allowable as deduction under Section 43B since deposited before the return filing due date"
+      },
+      {
+        "id": "B",
+        "text": "Disallowed permanently and treated as income under Section 2(24)(x) r.w.s. 36(1)(va)"
+      },
+      {
+        "id": "C",
+        "text": "Allowable subject to payment of 1% interest under Section 234B"
+      },
+      {
+        "id": "D",
+        "text": "Allowed as deduction in the subsequent assessment year upon actual payment"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "As per Supreme Court ruling in Checkmate Services P. Ltd. and Explanation 5 to Section 43B / Explanation 2 to Section 36(1)(va), Section 43B does not apply to employees' contribution. Since deposited after the PF Act due date, it is deemed income u/s 2(24)(x) and disallowed permanently.",
+    "reference": "Sections 36(1)(va), 43B; Checkmate Services (SC); CA Final Exam May 2024"
+  },
+  {
+    "id": "DT-RTP-N24-01",
+    "subjectId": "DT",
+    "chapter": "Non-Resident Taxation & DTAA",
+    "source": "RTP",
+    "examSession": "Nov 2024 RTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "Under Section 90(2) of the Income-tax Act, 1961, where the Central Government has entered into a Double Taxation Avoidance Agreement (DTAA) with the government of any foreign country, the provisions of the Act shall apply to the assessee to the extent they are:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Specifically ratified by the CBDT through a notified circular"
+      },
+      {
+        "id": "B",
+        "text": "More beneficial to that assessee"
+      },
+      {
+        "id": "C",
+        "text": "Stricter than the provisions of the tax treaty"
+      },
+      {
+        "id": "D",
+        "text": "Applicable only to Indian residents having foreign source income"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Section 90(2) explicitly provides that where a DTAA is entered into, the provisions of the Act shall apply to the assessee only to the extent they are more beneficial to that assessee (subject to Chapter X-A GAAR).",
+    "reference": "Income-tax Act 1961, Section 90(2); ICAI RTP Nov 2024"
+  },
+  {
+    "id": "DT-PYQ-N23-01",
+    "subjectId": "DT",
+    "chapter": "Minimum Alternate Tax (MAT - Sec 115JB)",
+    "source": "PYQ",
+    "examSession": "Nov 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Which of the following items is NOT deducted from Net Profit in computing 'Book Profit' for the purpose of Minimum Alternate Tax (MAT) under Section 115JB?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The amount of profit of sick industrial company during the period of sickness"
+      },
+      {
+        "id": "B",
+        "text": "The amount of loss brought forward or unabsorbed depreciation, whichever is less as per books"
+      },
+      {
+        "id": "C",
+        "text": "Expenditure incurred to earn exempt dividend income under Section 14A"
+      },
+      {
+        "id": "D",
+        "text": "Amount withdrawn from reserves or provisions created before 1st April 1997"
+      }
+    ],
+    "correctAnswer": "C",
+    "explanation": "Expenditure relatable to exempt income is ADDED back to net profit under Explanation 1(f) to Section 115JB, NOT deducted.",
+    "reference": "Income-tax Act 1961, Section 115JB Explanation 1; CA Final Exam Nov 2023"
+  },
+  {
+    "id": "IDT-MTP-M25-01",
+    "subjectId": "IDT",
+    "chapter": "GST: Input Tax Credit (ITC - Sec 16, 17, 18 & Rules)",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Section 17(5)(a) of the CGST Act, 2017, input tax credit is blocked in respect of motor vehicles for transportation of persons having approved seating capacity of:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Not more than 13 persons (including the driver), with specified exceptions"
+      },
+      {
+        "id": "B",
+        "text": "Not more than 20 persons (including the driver)"
+      },
+      {
+        "id": "C",
+        "text": "Any seating capacity if used by corporate executives"
+      },
+      {
+        "id": "D",
+        "text": "Less than 7 persons only"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Section 17(5)(a) blocks ITC on motor vehicles for transportation of persons having approved seating capacity of not more than 13 persons (including the driver), except when used for making taxable supplies of transportation, driving training, etc.",
+    "reference": "CGST Act 2017, Section 17(5)(a); ICAI Model Test Paper May 2025"
+  },
+  {
+    "id": "IDT-PYQ-M24-01",
+    "subjectId": "IDT",
+    "chapter": "GST: Place of Supply & Cross-Border Transactions (IGST Act)",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Section 12(3)(c) of the IGST Act, 2017, what is the Place of Supply of services provided by way of lodging accommodation by a hotel to a guest registered in a different State?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Location of the registered recipient"
+      },
+      {
+        "id": "B",
+        "text": "Location at which the immovable property (hotel) is located or intended to be located"
+      },
+      {
+        "id": "C",
+        "text": "Location where the billing invoice is generated"
+      },
+      {
+        "id": "D",
+        "text": "Place where the guest makes online advance payment"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Section 12(3)(c) of the IGST Act, the place of supply of services by way of lodging accommodation by a hotel, inn, or guest house is the location at which the immovable property is located.",
+    "reference": "IGST Act 2017, Section 12(3)(c); CA Final Past Exam Paper May 2024"
+  },
+  {
+    "id": "IDT-RTP-N24-01",
+    "subjectId": "IDT",
+    "chapter": "Customs: Valuation & Import Duty Computation",
+    "source": "RTP",
+    "examSession": "Nov 2024 RTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "In determining the assessable value for customs duty under Rule 10(2) of the Customs Valuation (Determination of Value of Imported Goods) Rules, 2007, where the actual cost of transport / freight is not ascertainable, what percentage of the FOB value of the goods is added?",
+    "options": [
+      {
+        "id": "A",
+        "text": "1.125% of FOB value"
+      },
+      {
+        "id": "B",
+        "text": "20% of FOB value"
+      },
+      {
+        "id": "C",
+        "text": "10% of FOB value"
+      },
+      {
+        "id": "D",
+        "text": "15% of FOB value"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under the proviso to Rule 10(2) of Customs Valuation Rules, where the cost of transport is not ascertainable, it shall be taken as 20% of the FOB value of the goods.",
+    "reference": "Customs Valuation Rules 2007, Rule 10(2); ICAI RTP Nov 2024"
+  },
+  {
+    "id": "IDT-PYQ-N23-01",
+    "subjectId": "IDT",
+    "chapter": "GST: Charge of GST & Reverse Charge Mechanism (RCM)",
+    "source": "PYQ",
+    "examSession": "Nov 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Which of the following inward supplies received by a business entity located in the taxable territory is NOT liable to GST under Reverse Charge Mechanism (RCM) under Notification No. 13/2017-CT(R)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Services provided by an arbitral tribunal to a business entity"
+      },
+      {
+        "id": "B",
+        "text": "Legal services provided by an individual advocate by way of representational services to a business entity with turnover exceeding threshold"
+      },
+      {
+        "id": "C",
+        "text": "Renting of residential dwelling for commercial office use to an unregistered sole proprietor"
+      },
+      {
+        "id": "D",
+        "text": "Services provided by a Director of a company to the said company in capacity of a director"
+      }
+    ],
+    "correctAnswer": "C",
+    "explanation": "Renting of residential dwelling is covered under RCM only when supplied to a REGISTERED person. When supplied to an unregistered person, RCM does not apply.",
+    "reference": "Notification No. 13/2017-Central Tax (Rate); CA Final Exam Nov 2023"
+  },
+  {
+    "id": "IBS-MTP-M25-01",
+    "subjectId": "IBS",
+    "chapter": "Multidisciplinary Case Study: Corporate Restructuring, Forex Hedging & Taxation",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "In a cross-border group corporate restructuring involving the acquisition of a foreign subsidiary and supply of intellectual property: An Indian company incurs foreign exchange risk on ECB borrowings and transfer pricing adjustments on royalty. Which multidisciplinary combination of standards correctly governs the accounting and tax compliances?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ind AS 103 for acquisition, Ind AS 109 for ECB currency swap, Section 92C for royalty ALP, and Rule 43 for GST credit"
+      },
+      {
+        "id": "B",
+        "text": "Ind AS 21 for acquisition, AS 11 for ECB, Section 40(a)(ia) for royalty, and Rule 37 for GST"
+      },
+      {
+        "id": "C",
+        "text": "Ind AS 115 for acquisition, Ind AS 32 for ECB, and Section 90 unilateral relief only"
+      },
+      {
+        "id": "D",
+        "text": "Ind AS 38 for acquisition, Ind AS 116 for lease, and Section 115JB MAT only"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "In an integrated transaction: Business acquisition is governed by Ind AS 103; Currency Swap hedging is governed by Ind AS 109; Transfer Pricing arm's length price is governed by Section 92C; and Capital goods common credit is governed by CGST Rule 43.",
+    "reference": "ICAI Final Paper 6: Integrated Business Solutions; Model Test Paper May 2025"
+  },
+  {
+    "id": "IBS-PYQ-M24-01",
+    "subjectId": "IBS",
+    "chapter": "Multidisciplinary Case Study: Corporate Restructuring, Forex Hedging & Taxation",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "In a scheme of demerger under Companies Act 2013, an accumulated business loss of the demerged company is transferred to the resulting company under Section 72A(4). Which condition is NOT required for tax neutrality under Section 2(19AA)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "All property of the undertaking transferred must become property of the resulting company"
+      },
+      {
+        "id": "B",
+        "text": "The transfer must be at book values (except for Ind AS compliance fair value adjustments)"
+      },
+      {
+        "id": "C",
+        "text": "The resulting company must pay consideration in cash to the shareholders of the demerged company"
+      },
+      {
+        "id": "D",
+        "text": "The resulting company must issue shares to the shareholders of the demerged company on a proportionate basis"
+      }
+    ],
+    "correctAnswer": "C",
+    "explanation": "Under Section 2(19AA), consideration MUST be dischargeable by the issue of shares to the shareholders of the demerged company on a proportionate basis. Cash consideration to shareholders violates the condition of tax neutrality under Section 2(19AA).",
+    "reference": "Income-tax Act 1961, Section 2(19AA), 72A(4); CA Final IBS May 2024 Exam"
+  },
+  {
+    "id": "IBS-RTP-N24-01",
+    "subjectId": "IBS",
+    "chapter": "Multidisciplinary Case Study: Corporate Restructuring, Forex Hedging & Taxation",
+    "source": "RTP",
+    "examSession": "Nov 2024 RTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "A listed entity issues stock options (ESOPs) to senior employees of its wholly-owned subsidiary. How is this transaction recognized in the Separate Financial Statements of the parent company under Ind AS 102?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Recognized as employee benefits expense in the parent's Profit or Loss"
+      },
+      {
+        "id": "B",
+        "text": "Recognized as an addition to the carrying amount of investment in the subsidiary, with a corresponding credit to equity"
+      },
+      {
+        "id": "C",
+        "text": "Recognized as a loan/receivable from the subsidiary"
+      },
+      {
+        "id": "D",
+        "text": "Ignored in the separate financial statements of the parent"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Ind AS 102, paragraph 43B, in the parent's separate financial statements, the grant of share-based payments to subsidiary employees is treated as a capital contribution, recognized as an increase in the investment in subsidiary with a corresponding credit to equity.",
+    "reference": "Ind AS 102, Para 43B; ICAI RTP Nov 2024 IBS"
+  },
+  {
+    "id": "FR-MTP-M25-02",
+    "subjectId": "FR",
+    "chapter": "Ind AS 108: Operating Segments",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Ind AS 108, which of the following quantitative thresholds mandates the separate reporting of an operating segment?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Reported revenue is 5% or more of the combined revenue of all operating segments"
+      },
+      {
+        "id": "B",
+        "text": "Reported revenue is 10% or more of the combined internal and external revenue of all operating segments"
+      },
+      {
+        "id": "C",
+        "text": "Segment assets are 15% or more of combined assets of all operating segments"
+      },
+      {
+        "id": "D",
+        "text": "Absolute amount of reported profit or loss is 5% of combined profit or loss"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Ind AS 108.13, an entity shall report separately information about an operating segment that meets any of the following quantitative thresholds: its reported revenue, including both sales to external customers and intersegment sales or transfers, is 10 per cent or more of the combined revenue, internal and external, of all operating segments.",
+    "reference": "Ind AS 108, Para 13(a); ICAI MTP May 2025"
+  },
+  {
+    "id": "FR-PYQ-N22-01",
+    "subjectId": "FR",
+    "chapter": "Ind AS 19: Employee Benefits",
+    "source": "PYQ",
+    "examSession": "Nov 2022 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Ind AS 19, how are remeasurements of the net defined benefit liability (asset) comprising actuarial gains and losses recognized?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Recognized in Profit or Loss and amortized over the average remaining service period"
+      },
+      {
+        "id": "B",
+        "text": "Recognized in Other Comprehensive Income (OCI) and not reclassified to profit or loss in subsequent periods"
+      },
+      {
+        "id": "C",
+        "text": "Recognized in Other Comprehensive Income (OCI) and reclassified to profit or loss when settled"
+      },
+      {
+        "id": "D",
+        "text": "Recognized directly in Capital Reserve without passing through OCI"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Ind AS 19, paragraph 120(c) and 122, remeasurements of the net defined benefit liability (asset) recognized in other comprehensive income shall not be reclassified to profit or loss in a subsequent period.",
+    "reference": "Ind AS 19, Paras 120-122; CA Final Exam Nov 2022"
+  },
+  {
+    "id": "AFM-MTP-M25-02",
+    "subjectId": "AFM",
+    "chapter": "Mergers, Acquisitions and Corporate Restructuring",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Firm A is acquiring Firm B. Firm A has 10,00,000 shares selling at \u20b9 80 per share with EPS of \u20b9 8. Firm B has 5,00,000 shares selling at \u20b9 40 per share with EPS of \u20b9 5. If the exchange ratio is based on the Market Price per share, what is the share exchange ratio (shares of Firm A for each share of Firm B)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "0.50 share of A for 1 share of B"
+      },
+      {
+        "id": "B",
+        "text": "0.625 share of A for 1 share of B"
+      },
+      {
+        "id": "C",
+        "text": "2.00 shares of A for 1 share of B"
+      },
+      {
+        "id": "D",
+        "text": "1.00 share of A for 1 share of B"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Share Exchange Ratio based on Market Price = Market Price of Target (B) / Market Price of Acquirer (A) = \u20b9 40 / \u20b9 80 = 0.50. Firm A will issue 0.50 shares for every 1 share of Firm B.",
+    "reference": "AFM Mergers & Corporate Restructuring; ICAI MTP May 2025"
+  },
+  {
+    "id": "AFM-PYQ-M23-01",
+    "subjectId": "AFM",
+    "chapter": "Interest Rate Risk Management",
+    "source": "PYQ",
+    "examSession": "May 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "An Indian borrower enters into a 3 x 9 Forward Rate Agreement (FRA) at 7.50% p.a. for a notional principal of \u20b9 10 Crores. At the end of 3 months, the 6-month MIBOR fixing is 8.25% p.a. The settlement amount to be paid by the seller to the buyer (assuming 360-day year count and 180 days period) is:",
+    "options": [
+      {
+        "id": "A",
+        "text": "\u20b9 3,75,000"
+      },
+      {
+        "id": "B",
+        "text": "\u20b9 3,60,144"
+      },
+      {
+        "id": "C",
+        "text": "\u20b9 3,85,500"
+      },
+      {
+        "id": "D",
+        "text": "\u20b9 4,12,500"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Settlement Amount = [Notional \u00d7 (Reference Rate - FRA Rate) \u00d7 (d / 360)] / [1 + Reference Rate \u00d7 (d / 360)] = [\u20b9 10,00,00,000 \u00d7 (8.25% - 7.50%) \u00d7 (180 / 360)] / [1 + 8.25% \u00d7 (180 / 360)] = [\u20b9 10 Cr \u00d7 0.75% \u00d7 0.5] / [1 + 0.04125] = \u20b9 3,75,000 / 1.04125 = \u20b9 3,60,144.",
+    "reference": "AFM Interest Rate Risk Management; CA Final Exam May 2023"
+  },
+  {
+    "id": "AUDIT-MTP-M25-02",
+    "subjectId": "AUDIT",
+    "chapter": "Special Features of Audit of Banks & NBFCs",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under RBI guidelines, what is the mandatory provisioning required on a 'Sub-Standard' advance that is fully secured?",
+    "options": [
+      {
+        "id": "A",
+        "text": "10%"
+      },
+      {
+        "id": "B",
+        "text": "15%"
+      },
+      {
+        "id": "C",
+        "text": "25%"
+      },
+      {
+        "id": "D",
+        "text": "40%"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under RBI Master Circular on IRAC Norms, a general provision of 15% on total outstanding is required for secured sub-standard assets. (For unsecured exposure in sub-standard category, provision is 25%).",
+    "reference": "RBI IRAC Guidelines; ICAI MTP May 2025"
+  },
+  {
+    "id": "AUDIT-PYQ-N22-01",
+    "subjectId": "AUDIT",
+    "chapter": "Standards on Auditing (SA 701)",
+    "source": "PYQ",
+    "examSession": "Nov 2022 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under SA 701, the communication of Key Audit Matters (KAM) in the auditor's report is mandatory for audits of:",
+    "options": [
+      {
+        "id": "A",
+        "text": "All private limited companies with paid up capital > \u20b9 10 Crores"
+      },
+      {
+        "id": "B",
+        "text": "Complete sets of general purpose financial statements of listed entities"
+      },
+      {
+        "id": "C",
+        "text": "All non-governmental charitable organizations"
+      },
+      {
+        "id": "D",
+        "text": "Branch audits of nationalized banks"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under SA 701, paragraph 5, this standard applies to audits of complete sets of general purpose financial statements of listed entities and circumstances when the auditor otherwise decides to communicate key audit matters.",
+    "reference": "SA 701, Para 5; CA Final Exam Nov 2022"
+  },
+  {
+    "id": "DT-MTP-M25-02",
+    "subjectId": "DT",
+    "chapter": "Assessment of Various Entities & Trusts",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "Under Section 115BBC of the Income-tax Act, 1961, what is the rate of tax on anonymous donations received by a charitable trust in excess of the permissible non-taxable limit (higher of 5% of total donations or \u20b9 1,00,000)?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Flat 30% plus applicable surcharge and cess"
+      },
+      {
+        "id": "B",
+        "text": "Normal slab rates applicable to individuals"
+      },
+      {
+        "id": "C",
+        "text": "Flat 20% without surcharge"
+      },
+      {
+        "id": "D",
+        "text": "Exempt if utilized for charitable objectives"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Under Section 115BBC(1), the tax payable on anonymous donations exceeding the limit specified in clause (i) is calculated at the rate of thirty percent (30%) plus surcharge and health and education cess.",
+    "reference": "Income-tax Act 1961, Section 115BBC; ICAI MTP May 2025"
+  },
+  {
+    "id": "DT-PYQ-M23-01",
+    "subjectId": "DT",
+    "chapter": "Penalties, Offences & Prosecution (Sec 270A)",
+    "source": "PYQ",
+    "examSession": "May 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Section 270A of the Income-tax Act, 1961, penalty for under-reporting of income is leviable at what rate of the tax payable in respect of the under-reported income?",
+    "options": [
+      {
+        "id": "A",
+        "text": "50% of the tax payable on under-reported income"
+      },
+      {
+        "id": "B",
+        "text": "100% of the tax payable on under-reported income"
+      },
+      {
+        "id": "C",
+        "text": "200% of the tax payable on under-reported income"
+      },
+      {
+        "id": "D",
+        "text": "25% of the under-reported income"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Under Section 270A(7), the penalty for under-reporting of income is a sum equal to fifty per cent (50%) of the amount of tax payable on under-reported income. (If under-reporting is in consequence of misreporting, penalty is 200% u/s 270A(8)).",
+    "reference": "Income-tax Act 1961, Section 270A(7); CA Final Exam May 2023"
+  },
+  {
+    "id": "IDT-MTP-M25-02",
+    "subjectId": "IDT",
+    "chapter": "GST: Value of Supply (Sec 15 & Valuation Rules)",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Section 15(2)(e) of the CGST Act, 2017, which of the following subsidies is EXCLUDED from the value of taxable supply?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Subsidy directly linked to the price provided by the Central Government or a State Government"
+      },
+      {
+        "id": "B",
+        "text": "Subsidy provided by a non-profit charitable trust"
+      },
+      {
+        "id": "C",
+        "text": "Subsidy provided by an industry trade association"
+      },
+      {
+        "id": "D",
+        "text": "Corporate social responsibility grant from a private company"
+      }
+    ],
+    "correctAnswer": "A",
+    "explanation": "Section 15(2)(e) states that the value of supply shall include subsidies directly linked to the price, EXCEPT subsidies provided by the Central Government and State Governments.",
+    "reference": "CGST Act 2017, Section 15(2)(e); ICAI MTP May 2025"
+  },
+  {
+    "id": "IDT-PYQ-M23-01",
+    "subjectId": "IDT",
+    "chapter": "Customs: Concessions, Exemptions & Special Economic Zones",
+    "source": "PYQ",
+    "examSession": "May 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Medium",
+    "question": "Under Section 25 of the Customs Act, 1962, an exemption notification issued by the Central Government in public interest comes into force on the date of its:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Issue by the Central Board of Indirect Taxes and Customs (CBIC)"
+      },
+      {
+        "id": "B",
+        "text": "Publication in the Official Gazette, unless otherwise provided"
+      },
+      {
+        "id": "C",
+        "text": "Introduction in the Parliament"
+      },
+      {
+        "id": "D",
+        "text": "Approval by the GST Council"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "Under Section 25(4) of the Customs Act, 1962, every notification issued under sub-section (1) or (2A) shall come into force on the date of its publication in the Official Gazette unless otherwise provided therein.",
+    "reference": "Customs Act 1962, Section 25(4); CA Final Exam May 2023"
+  },
+  {
+    "id": "IBS-PYQ-M23-01",
+    "subjectId": "IBS",
+    "chapter": "Multidisciplinary Case Study: Corporate Restructuring, Forex Hedging & Taxation",
+    "source": "PYQ",
+    "examSession": "May 2023 Exam",
+    "type": "standalone",
+    "marks": 2,
+    "difficulty": "Hard",
+    "question": "In a corporate turnaround, an Indian company settles debts of \u20b9 50 Crores with lenders for \u20b9 30 Crores. Under Ind AS 109, the \u20b9 20 Crores difference on extinguishment of financial liability is credited to Profit or Loss. Under Section 115JB of the Income-tax Act, how is this waiver treated for MAT purposes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Fully deducted from book profits as capital receipt"
+      },
+      {
+        "id": "B",
+        "text": "Remains included in Book Profit unless the company is an applicant under IBC (Insolvency and Bankruptcy Code) or sick company"
+      },
+      {
+        "id": "C",
+        "text": "Subject to flat 50% deduction"
+      },
+      {
+        "id": "D",
+        "text": "Exempt from MAT under Section 10(38)"
+      }
+    ],
+    "correctAnswer": "B",
+    "explanation": "In computing Book Profit under Section 115JB, net profit as per P&L is the starting point. Only specific statutory adjustments listed in Explanation 1 are allowed. Loan waivers credited to P&L remain taxable under MAT unless the company is undergoing CIRP under IBC with an approved resolution plan (Clause (iih) to Explanation 1).",
+    "reference": "Income-tax Act 1961, Section 115JB; Ind AS 109; CA Final IBS Exam May 2023"
   }
 ];
 

@@ -2978,13 +2978,132 @@ a[href*="netlify.com"] {
   font-size: 0.95rem;
 }
 
+.wq-solution-box {
+  background-color: var(--bg-surface);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-left: 4px solid #10b981;
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+  margin-top: 16px;
+  transition: all 0.25s ease;
+}
+
+.wq-solution-box.hidden {
+  display: none !important;
+}
+
 .wq-solution-content {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px dashed var(--border-color);
-  line-height: 1.7;
-  font-size: 0.9rem;
-  white-space: pre-line;
+  line-height: 1.75;
+  font-size: 0.92rem;
+  color: var(--text-color);
+}
+
+.wq-solution-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 0.88rem;
+}
+
+.wq-solution-content th,
+.wq-solution-content td {
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.wq-solution-content th {
+  background-color: var(--bg-muted);
+  font-weight: 700;
+}
+
+.wq-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wq-toggle-ans-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.wq-fullview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.badge-page {
+  background: rgba(14, 165, 233, 0.15) !important;
+  color: #0284c7 !important;
+  border: 1px solid rgba(14, 165, 233, 0.3) !important;
+  font-weight: 700 !important;
+}
+
+.badge-ill {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: #4f46e5 !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  font-weight: 700 !important;
+}
+
+.badge-attempt {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #059669 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  font-weight: 700 !important;
+}
+
+/* ================= WRITING FULL VIEW MODAL ================= */
+.wq-fullview-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+}
+
+.wq-fullview-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.wq-fullview-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wq-fullview-stem-wrap {
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.wq-fullview-solution-wrap {
+  background-color: var(--bg-surface);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-left: 5px solid #10b981;
+  border-radius: var(--radius);
+  padding: 22px;
+  font-size: 0.96rem;
+  line-height: 1.8;
+}
+
+.wq-fullview-solution-wrap.hidden {
+  display: none !important;
 }
 
 /* ================= CHAPTER SERIAL BADGE ================= */

@@ -1,310 +1,234 @@
 /**
  * Descriptive / Practical Writing Questions Database
- * Covers Study Material, RTP, MTP, and PYQ (with explicit Exam Session/Year)
+ * Covers Study Material (with Page No & Ill./Example No), PYQ (with Exam Session), RTP, and MTP
+ * Relevant for CA Final Examination (New Scheme / NSET)
+ * Total Questions: 16
  */
 
 const DEFAULT_WRITING_QUESTIONS = [
-  // ================= FINANCIAL REPORTING (FR) =================
   {
-    id: "FR-WQ-001",
-    subjectId: "FR",
-    chapter: "Ind AS 115: Revenue from Contracts with Customers",
-    source: "RTP",
-    examSession: "Nov 2024",
-    marks: 8,
-    title: "Practical Question on Variable Consideration & Significant Financing Component",
-    question: `Zenith Infrastructure Ltd. enters into a contract with Metro Rail Corporation on 1st April 2023 to construct an elevated viaduct for a fixed consideration of ₹ 120 Crores. In addition, the contract stipulates that if the project is completed within 20 months (i.e., on or before 30th November 2024), Zenith Ltd. will receive a performance bonus of ₹ 15 Crores.
-
-Contract facts and estimates:
-1. At inception, based on historical construction execution, Zenith Ltd. estimates an 85% probability that the project will be completed within 20 months and concludes it is highly probable that a significant reversal of cumulative revenue will not occur.
-2. Zenith Ltd. measures progress toward completion using the input method based on costs incurred relative to total estimated costs.
-3. Total expected construction costs at inception were ₹ 90 Crores.
-4. As of 31st March 2024, cumulative costs incurred amounted to ₹ 54 Crores.
-5. On 30th June 2024, an unforeseen geological fault caused a 3-month halt. Zenith Ltd. reassessed the project timeline and concluded that it is no longer probable that the project will be completed within 20 months. Total estimated costs were revised to ₹ 96 Crores, and cumulative costs incurred up to 30th June 2024 were ₹ 60 Crores.
-
-Required:
-(i) Compute the transaction price and revenue to be recognized for the financial year ended 31st March 2024.
-(ii) Determine the cumulative catch-up adjustment required for the quarter ended 30th June 2024 in accordance with Ind AS 115.`,
-    solution: `**Suggested Answer / Working Notes:**
-
-**(i) For the year ended 31st March 2024:**
-
-1. **Determination of Transaction Price:**
-   Under Ind AS 115, paragraph 56, an entity includes variable consideration (bonus) in the transaction price only to the extent that it is highly probable that a significant reversal in the cumulative revenue recognized will not occur.
-   Since Zenith Ltd. assesses an 85% probability of achieving the milestone and satisfies the constraint threshold:
-   - Fixed Consideration = ₹ 120 Crores
-   - Incentive Bonus = ₹ 15 Crores
-   - **Total Transaction Price at 31st March 2024 = ₹ 135 Crores.**
-
-2. **Measuring Progress (Input Method):**
-   - Percentage of Completion = (Cumulative Costs Incurred / Total Estimated Costs) × 100
-   - Progress = (₹ 54 Crores / ₹ 90 Crores) = **60%**
-
-3. **Revenue to be recognized for FY 2023-24:**
-   - Revenue Recognized = 60% of ₹ 135 Crores = **₹ 81.00 Crores.**
-
----
-
-**(ii) For the quarter ended 30th June 2024:**
-
-1. **Revision of Transaction Price:**
-   Due to the geological disruption, it is no longer probable that the bonus will be earned. In accordance with Ind AS 115.56, the variable consideration must be excluded from the transaction price.
-   - Revised Transaction Price = **₹ 120 Crores** (bonus of ₹ 15 Cr excluded).
-
-2. **Revised Progress of Completion as on 30th June 2024:**
-   - Revised Total Estimated Costs = ₹ 96 Crores
-   - Cumulative Costs Incurred up to 30th June 2024 = ₹ 60 Crores
-   - Revised Progress = (₹ 60 Cr / ₹ 96 Cr) = **62.50%**
-
-3. **Cumulative Revenue allowable up to 30th June 2024:**
-   - Allowable Cumulative Revenue = 62.50% × ₹ 120 Crores = **₹ 75.00 Crores.**
-
-4. **Accounting Adjustment in Q1 (Quarter ended 30th June 2024):**
-   - Cumulative Revenue recognized up to 31st March 2024 = ₹ 81.00 Crores
-   - Revised Cumulative Revenue required = ₹ 75.00 Crores
-   - **Revenue Reversal / Negative Revenue in Q1 = ₹ 81.00 Cr - ₹ 75.00 Cr = ₹ 6.00 Crores (Debit to Revenue).**
-
-*Conclusion:* In accordance with Ind AS 115 paragraph 59, the reduction of ₹ 6 Crores is recognized as a cumulative catch-up adjustment against revenue in the period of estimate revision.`,
-    reference: "Ind AS 115, Paras 56-59; ICAI RTP Nov 2024"
+    "id": "FR-SM-001",
+    "subjectId": "FR",
+    "chapter": "Ind AS 115: Revenue from Contracts with Customers",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 9.42",
+    "itemRef": "Illustration 14",
+    "marks": 10,
+    "title": "Variable Consideration & Constraint on Reversal in Long-term Turnkey Projects",
+    "question": "Zenith Infrastructure Ltd. enters into a contract with Metro Rail Corporation on 1st April 2023 to construct an elevated viaduct for a fixed consideration of \u20b9 120 Crores. In addition, the contract stipulates that if the project is completed within 20 months (i.e., on or before 30th November 2024), Zenith Ltd. will receive a performance bonus of \u20b9 15 Crores.\n\nContract facts and estimates:\n1. At inception, based on historical construction execution, Zenith Ltd. estimates an 85% probability that the project will be completed within 20 months and concludes it is highly probable that a significant reversal of cumulative revenue will not occur.\n2. Zenith Ltd. measures progress toward completion using the input method based on costs incurred relative to total estimated costs.\n3. Total expected construction costs at inception were \u20b9 90 Crores.\n4. As of 31st March 2024, cumulative costs incurred amounted to \u20b9 54 Crores.\n5. On 30th June 2024, an unforeseen geological fault caused a 3-month halt. Zenith Ltd. reassessed the project timeline and concluded that it is no longer probable that the project will be completed within 20 months. Total estimated costs were revised to \u20b9 96 Crores, and cumulative costs incurred up to 30th June 2024 were \u20b9 60 Crores.\n\nRequired:\n(i) Compute the transaction price and revenue to be recognized for the financial year ended 31st March 2024.\n(ii) Determine the cumulative catch-up adjustment required for the quarter ended 30th June 2024 in accordance with Ind AS 115.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) For the financial year ended 31st March 2024:**\n\n1. **Determination of Transaction Price:**\n   Under Ind AS 115, paragraph 56, an entity includes variable consideration (bonus) in the transaction price only to the extent that it is highly probable that a significant reversal in the cumulative revenue recognized will not occur.\n   Since Zenith Ltd. assesses an 85% probability of achieving the milestone and satisfies the constraint threshold:\n   - Fixed Consideration = \u20b9 120.00 Crores\n   - Variable Consideration (Bonus) = \u20b9 15.00 Crores\n   - **Total Transaction Price at 31st March 2024 = \u20b9 135.00 Crores.**\n\n2. **Measuring Progress (Input Method):**\n   - Percentage of Completion = (Cumulative Costs Incurred / Total Estimated Costs) \u00d7 100\n   - Progress = (\u20b9 54 Crores / \u20b9 90 Crores) = **60%**\n\n3. **Revenue recognized for FY 2023-24:**\n   - Revenue Recognized = 60% \u00d7 \u20b9 135 Crores = **\u20b9 81.00 Crores.**\n\n---\n\n**(ii) For the quarter ended 30th June 2024:**\n\n1. **Revision of Transaction Price:**\n   Due to the unforeseen geological disruption, it is no longer probable that the bonus will be earned. Under Ind AS 115.56, variable consideration must be excluded:\n   - Revised Transaction Price = **\u20b9 120.00 Crores** (bonus excluded).\n\n2. **Revised Progress of Completion:**\n   - Revised Total Estimated Costs = \u20b9 96.00 Crores\n   - Cumulative Costs Incurred up to 30th June 2024 = \u20b9 60.00 Crores\n   - Revised Progress = (\u20b9 60 Cr / \u20b9 96 Cr) = **62.50%**\n\n3. **Allowable Cumulative Revenue up to 30th June 2024:**\n   - Cumulative Revenue = 62.50% \u00d7 \u20b9 120.00 Crores = **\u20b9 75.00 Crores.**\n\n4. **Catch-up Adjustment in Q1 (Quarter ended 30th June 2024):**\n   - Cumulative Revenue recognized up to 31st March 2024 = \u20b9 81.00 Crores\n   - Revised Cumulative Revenue required = \u20b9 75.00 Crores\n   - **Revenue Reversal / Negative Revenue adjustment = \u20b9 81.00 Cr - \u20b9 75.00 Cr = \u20b9 6.00 Crores (Debit to Revenue).**\n\n*Conclusion:* In accordance with Ind AS 115 paragraph 59, the reduction of \u20b9 6 Crores is recognized as a cumulative catch-up adjustment against revenue in the period of estimate change.",
+    "reference": "Ind AS 115, Paras 56-59; ICAI Study Material Module 4, Page 9.42, Illustration 14"
   },
-
   {
-    id: "FR-WQ-002",
-    subjectId: "FR",
-    chapter: "Ind AS 116: Leases",
-    source: "PYQ",
-    examSession: "May 2024",
-    marks: 10,
-    title: "Comprehensive Lease Accounting: Lessee Books with Initial Direct Costs and Restoration Provision",
-    question: `On 1st April 2023, Delta Ltd. entered into an agreement to lease an industrial manufacturing plant for a term of 5 years. Annual lease payments of ₹ 25,00,000 are payable at the end of each year.
-
-Additional facts:
-1. Delta Ltd. incurred initial direct costs of ₹ 3,50,000 in negotiating and executing the lease agreement.
-2. The lease agreement mandates that Delta Ltd. dismantle the installed heavy equipment and restore the site to its original condition at the end of Year 5. Delta Ltd. estimates that the present value of the restoration obligation at 1st April 2023 is ₹ 6,00,000 (discount rate 10%).
-3. The interest rate implicit in the lease is 9% per annum.
-4. Cumulative Present Value factors at 9%:
-   - Year 1: 0.9174
-   - Year 2: 0.8417
-   - Year 3: 0.7722
-   - Year 4: 0.7084
-   - Year 5: 0.6499
-   - Total PV of Annuity for 5 years @ 9% = 3.8896
-5. Delta Ltd. depreciates the Right-of-Use (ROU) asset on a straight-line basis over 5 years.
-
-Required:
-(i) Compute the initial value of Lease Liability and Right-of-Use (ROU) Asset on 1st April 2023.
-(ii) Prepare the Lease Liability amortization schedule for all 5 years.
-(iii) Compute the amounts to be charged to the Statement of Profit and Loss for Year 1 (FY 2023-24).`,
-    solution: `**Suggested Answer / Working Notes:**
-
-**(i) Initial Measurement on 1st April 2023:**
-
-1. **Initial Lease Liability:**
-   - Annual payment = ₹ 25,00,000
-   - PVAF (5 years, 9%) = 3.8896
-   - Initial Lease Liability = ₹ 25,00,000 × 3.8896 = **₹ 97,24,000**
-
-2. **Initial Right-of-Use (ROU) Asset:**
-   Under Ind AS 116, paragraph 24:
-   ROU Asset = Initial Lease Liability + Initial Direct Costs + PV of Restoration Obligation (Ind AS 37)
-   - Initial Lease Liability: ₹ 97,24,000
-   - Initial Direct Costs: ₹ 3,50,000
-   - Dismantling / Restoration Provision: ₹ 6,00,000
-   - **Total Carrying Amount of ROU Asset = ₹ 1,06,74,000**
-
----
-
-**(ii) Lease Liability Amortization Schedule (in ₹):**
-
-| Year | Opening Balance | Finance Cost @ 9% | Lease Payment | Closing Balance |
-| :--- | :--- | :--- | :--- | :--- |
-| **Year 1** | 97,24,000 | 8,75,160 | 25,00,000 | 80,99,160 |
-| **Year 2** | 80,99,160 | 7,28,924 | 25,00,000 | 63,28,084 |
-| **Year 3** | 63,28,084 | 5,69,528 | 25,00,000 | 43,97,612 |
-| **Year 4** | 43,97,612 | 3,95,785 | 25,00,000 | 22,93,397 |
-| **Year 5** | 22,93,397 | 2,06,603* | 25,00,000 | 0 |
-*(Adjusted for rounding)*
-
----
-
-**(iii) Amounts Charged to Statement of Profit and Loss for Year 1 (FY 2023-24):**
-
-1. **Depreciation on ROU Asset:**
-   - Straight-line depreciation = ₹ 1,06,74,000 / 5 years = **₹ 21,34,800**
-2. **Finance Cost on Lease Liability:**
-   - 9% on ₹ 97,24,000 = **₹ 8,75,160**
-3. **Unwinding of Discount on Restoration Provision (Ind AS 37):**
-   - 10% on ₹ 6,00,000 = **₹ 60,000**
-
-**Total Charge to Statement of Profit and Loss for Year 1 = ₹ 30,69,960.**`,
-    reference: "Ind AS 116, Paras 24-26; Past Exam Paper May 2024"
+    "id": "FR-SM-002",
+    "subjectId": "FR",
+    "chapter": "Ind AS 116: Leases",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 5.88",
+    "itemRef": "Illustration 8",
+    "marks": 10,
+    "title": "Sale and Leaseback Transactions with Variable Lease Payments and Off-Market Terms",
+    "question": "An entity, Seller-Lessee, sells an office building to an unrelated party, Buyer-Lessore, for cash of \u20b9 40,00,000. Immediately prior to the transaction, the carrying amount of the building in the books of Seller-Lessee was \u20b9 24,00,000.\n\nAdditional facts:\n1. At the date of the transaction, the fair value of the building is determined to be \u20b9 36,00,000.\n2. The transfer of the building meets the requirements in Ind AS 115 to be accounted for as a sale of the asset.\n3. Seller-Lessee enters into a contract with Buyer-Lessor for the right to use the building for 10 years, with annual lease payments of \u20b9 3,60,000 payable at the end of each year.\n4. The interest rate implicit in the lease is 8% per annum (PVAF for 10 years @ 8% = 6.710).\n5. The present value of the annual lease payments of \u20b9 3,60,000 for 10 years discounted @ 8% is \u20b9 24,15,600.\n\nRequired:\n(i) Determine whether the transaction involves additional financing or prepayments of lease payments in accordance with Ind AS 116.\n(ii) Compute the initial carrying amount of the Right-of-Use (ROU) Asset retained by Seller-Lessee.\n(iii) Compute the gain or loss on sale to be recognized by Seller-Lessee in profit or loss on the transfer date.\n(iv) Pass the initial journal entry in the books of Seller-Lessee.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Classification of Terms (Ind AS 116, Paragraph 101):**\nUnder Ind AS 116.101, if the fair value of the sales consideration does not equal the fair value of the asset, an entity shall make adjustments:\n- Sale proceeds received = \u20b9 40,00,000\n- Fair value of the building = \u20b9 36,00,000\n- **Excess of sales proceeds over fair value = \u20b9 40,00,000 - \u20b9 36,00,000 = \u20b9 4,00,000.**\nUnder Ind AS 116.101(b), this excess \u20b9 4,00,000 is accounted for as **additional financing provided by Buyer-Lessor to Seller-Lessee**.\n\n---\n\n**(ii) Apportionment of Lease Liability:**\n- Total Present Value of 10 annual payments @ 8% = \u20b9 24,15,600\n- Less: Additional Financing component = \u20b9 4,00,000\n- **Present Value of Lease Liability relating to the lease of the building = \u20b9 20,15,600.**\n\n---\n\n**(iii) Measurement of Right-of-Use (ROU) Asset (Ind AS 116.100(a)):**\nThe seller-lessee measures the ROU asset arising from the leaseback at the proportion of the previous carrying amount of the asset that relates to the right of use retained:\n- ROU Asset = Previous Carrying Amount \u00d7 (PV of Lease Liability / Fair Value of Asset)\n- ROU Asset = \u20b9 24,00,000 \u00d7 (\u20b9 20,15,600 / \u20b9 36,00,000)\n- ROU Asset = \u20b9 24,00,000 \u00d7 0.559889 = **\u20b9 13,43,733**\n\n---\n\n**(iv) Gain on Sale of Building (Ind AS 116.100(a)):**\nThe seller-lessee recognizes only the amount of any gain or loss that relates to the rights transferred to the buyer-lessor:\n- Total gain if 100% sold at fair value = Fair Value - Carrying Amount = \u20b9 36,00,000 - \u20b9 24,00,000 = \u20b9 12,00,000\n- Proportion of rights retained = \u20b9 20,15,600 / \u20b9 36,00,000 = 55.9889%\n- Proportion of rights transferred to Buyer = 100% - 55.9889% = **44.0111%**\n- **Gain recognized in Profit or Loss = \u20b9 12,00,000 \u00d7 44.0111% = \u20b9 5,28,133.**\n\n---\n\n**(v) Initial Journal Entry in the books of Seller-Lessee:**\n```\nBank A/c ..................................... Dr.  \u20b9 40,00,000\nRight-of-Use (ROU) Asset A/c ................ Dr.  \u20b9 13,43,733\n   To Building (PPE) A/c (Carrying Amount) ........  \u20b9 24,00,000\n   To Lease Liability A/c (\u20b9 20,15,600 + \u20b9 4,00,000) \u20b9 24,15,600\n   To Profit on Sale and Leaseback (P&L) ..........  \u20b9  5,28,133\n(Being sale and leaseback accounted for under Ind AS 116)\n```",
+    "reference": "Ind AS 116, Paras 98-102; ICAI Study Material Module 2, Page 5.88, Illustration 8"
   },
-
-  // ================= ADVANCED FINANCIAL MANAGEMENT (AFM) =================
   {
-    id: "AFM-WQ-001",
-    subjectId: "AFM",
-    chapter: "Foreign Exchange Exposure and Risk Management",
-    source: "MTP",
-    examSession: "May 2025",
-    marks: 10,
-    title: "Practical Hedging Strategy: Forward Contract vs Money Market Hedge",
-    question: `An Indian exporting firm, Hind Exports Ltd., has an invoice receivable of USD 4,00,000 due in 6 months.
-
-The financial manager obtains the following market quotes:
-- Spot Rate: USD/INR 83.40 / 83.45
-- 6-Month Forward Rate: USD/INR 83.95 / 84.05
-
-Annual interest rates (6 months):
-- India (INR): Borrowing 8.50% p.a., Deposit 7.00% p.a.
-- United States (USD): Borrowing 5.50% p.a., Deposit 4.00% p.a.
-
-Required:
-(i) Calculate the rupee inflow if Hind Exports Ltd. covers the exposure using a Forward Contract.
-(ii) Show step-by-step how a Money Market Hedge can be constructed and compute the net rupee realization.
-(iii) Advise the financial manager on which hedging alternative is more beneficial.`,
-    solution: `**Suggested Answer / Working Notes:**
-
-**(i) Alternative 1: Forward Contract Hedge:**
-The Indian exporter will sell USD 4,00,000 forward to the bank.
-- Applicable 6-month forward rate (Bank buys USD at BID rate) = **USD/INR 83.95**
-- **Total Rupee Realization = USD 4,00,000 × 83.95 = ₹ 3,35,80,000.**
-
----
-
-**(ii) Alternative 2: Money Market Hedge (MMH):**
-Since the company has a foreign currency *receivable*, the steps are:
-1. **Borrow USD today** such that the borrowed amount plus 6 months interest equals exactly USD 4,00,000.
-   - 6-month USD borrowing rate = 5.50% / 2 = 2.75%
-   - Amount of USD to borrow today = USD 4,00,000 / (1 + 0.0275) = **USD 3,89,294.40**
-
-2. **Convert borrowed USD into INR at the Spot Rate today:**
-   - Spot BID rate = USD/INR 83.40
-   - INR Inflow today = USD 3,89,294.40 × 83.40 = **₹ 3,24,67,153**
-
-3. **Invest INR in Indian money market for 6 months at the deposit rate:**
-   - 6-month INR deposit rate = 7.00% / 2 = 3.50%
-   - Future INR Value in 6 months = ₹ 3,24,67,153 × (1 + 0.035) = **₹ 3,36,03,503**
-
-4. **Settlement in 6 months:**
-   - The export receivable of USD 4,00,000 is used directly to repay the USD loan with interest.
-
----
-
-**(iii) Comparison & Recommendation:**
-- Realization via Forward Contract = ₹ 3,35,80,000
-- Realization via Money Market Hedge = ₹ 3,36,03,503
-- **Net Gain under Money Market Hedge = ₹ 23,503.**
-
-**Advice:** Hind Exports Ltd. should select the **Money Market Hedge** as it delivers an additional ₹ 23,503 over the Forward Contract.`,
-    reference: "AFM Chapter 10: Foreign Exchange Exposure; ICAI MTP May 2025"
+    "id": "FR-SM-003",
+    "subjectId": "FR",
+    "chapter": "Ind AS 103: Business Combinations",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 12.30",
+    "itemRef": "Test Your Knowledge Q4",
+    "marks": 12,
+    "title": "Business Combination Achieved in Stages (Step Acquisition) & NCI Measurement",
+    "question": "On 1st April 2022, Alpha Ltd. acquired a 25% non-controlling equity interest in Beta Ltd. for \u20b9 30 Crores in cash and classified this investment as an associate accounted for using the equity method under Ind AS 28.\nDuring FY 2022-23 and FY 2023-24, Alpha Ltd.'s share of Beta Ltd.'s post-acquisition profit was \u20b9 6 Crores and its share of Other Comprehensive Income (OCI - revaluation surplus) was \u20b9 2 Crores. Consequently, on 31st March 2024, the carrying value of the investment was \u20b9 38 Crores.\n\nOn 1st April 2024, Alpha Ltd. acquired an additional 50% equity interest in Beta Ltd. for \u20b9 95 Crores cash, thereby obtaining control (total holding 75%).\nOn 1st April 2024, the following fair values are determined:\n1. The fair value of Alpha Ltd.'s previously held 25% interest in Beta Ltd. was determined to be \u20b9 45 Crores.\n2. The fair value of the identifiable net assets of Beta Ltd. under Ind AS 103 was \u20b9 160 Crores.\n3. Alpha Ltd. elects to measure the Non-Controlling Interest (NCI - 25%) at its acquisition-date Fair Value, which is appraised at \u20b9 44 Crores.\n\nRequired:\n(i) Compute the gain or loss on remeasurement of the previously held 25% equity interest on the acquisition date (1st April 2024) and explain its accounting treatment.\n(ii) Calculate the Goodwill arising on the acquisition of Beta Ltd. under Ind AS 103 on 1st April 2024.\n(iii) Pass the necessary accounting journal entries in the books of Alpha Ltd. on 1st April 2024.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Remeasurement of Previously Held Equity Interest (Ind AS 103.41-42):**\nUnder Ind AS 103, paragraph 42, in a business combination achieved in stages, the acquirer shall remeasure its previously held equity interest in the acquiree at its acquisition-date fair value and recognize the resulting gain or loss in profit or loss:\n- Fair value of previously held 25% interest on 1st April 2024 = \u20b9 45.00 Crores\n- Carrying amount of investment in associate under equity method = \u20b9 38.00 Crores\n- **Gain on remeasurement to Fair Value = \u20b9 45.00 Cr - \u20b9 38.00 Cr = \u20b9 7.00 Crores (credited to P&L).**\n\n*Reclassification of OCI:*\nUnder Ind AS 103.42, any amount previously recognized in Other Comprehensive Income (OCI) relating to the associate (revaluation surplus of \u20b9 2 Crores) shall be recognized on the same basis as would be required if the acquirer had disposed directly of the previously held interest. Since revaluation surplus is transferred directly to retained earnings upon derecognition, \u20b9 2 Crores is reclassified to Retained Earnings.\n\n---\n\n**(ii) Computation of Goodwill under Ind AS 103 (Fair Value Method for NCI):**\n\n| Particulars | Amount (\u20b9 in Crores) |\n| :--- | :--- |\n| Purchase consideration for new 50% interest transferred in cash | 95.00 |\n| Fair value of previously held 25% equity interest | 45.00 |\n| Fair value of Non-Controlling Interest (NCI - 25%) | 44.00 |\n| **Total Aggregate Consideration & NCI** | **184.00** |\n| Less: Fair value of identifiable net assets acquired | (160.00) |\n| **Goodwill on Acquisition Date** | **24.00** |\n\n---\n\n**(iii) Journal Entries in Consolidated Financial Statements on 1st April 2024:**\n```\n1. Remeasurement of Investment in Beta Ltd.:\nInvestment in Beta Ltd. A/c ................... Dr.  \u20b9 7.00 Cr\n   To Profit and Loss A/c (Remeasurement Gain) ......  \u20b9 7.00 Cr\n(Being previously held 25% interest remeasured to acquisition-date fair value)\n\n2. Reclassification of OCI:\nOCI - Revaluation Surplus A/c ................ Dr.  \u20b9 2.00 Cr\n   To Retained Earnings A/c .........................  \u20b9 2.00 Cr\n(Being reclassification of cumulative OCI to retained earnings)\n\n3. Recognition of Assets, Liabilities, NCI and Goodwill:\nIdentifiable Net Assets A/c .................. Dr.  \u20b9 160.00 Cr\nGoodwill A/c ................................. Dr.  \u20b9  24.00 Cr\n   To Cash / Bank A/c ...............................  \u20b9  95.00 Cr\n   To Investment in Beta Ltd. A/c (Fair Value) .......  \u20b9  45.00 Cr\n   To Non-Controlling Interest (NCI) A/c ............  \u20b9  44.00 Cr\n(Being acquisition of Beta Ltd. accounted for under Ind AS 103)\n```",
+    "reference": "Ind AS 103, Paras 32, 41-42; ICAI Study Material Module 5, Page 12.30, Test Your Knowledge Q4"
   },
-
-  // ================= DIRECT TAX LAWS (DT) =================
   {
-    id: "DT-WQ-001",
-    subjectId: "DT",
-    chapter: "Transfer Pricing & Other Anti-Avoidance Measures (GAAR)",
-    source: "SM",
-    examSession: "ICAI New Scheme 2024-26 Edition",
-    marks: 8,
-    title: "Secondary Adjustment under Section 92CE & Additional Income Tax",
-    question: `M/s Vistara India Ltd. ('VIL') is an Indian subsidiary of Vistara Global Inc., USA. During the previous year 2023-24, VIL sold customized precision microchips to its parent company for ₹ 42 Crores.
-
-During the assessment proceedings, the Transfer Pricing Officer (TPO) applied the Transactional Net Margin Method (TNMM) and computed the Arm's Length Price (ALP) at ₹ 48 Crores. The primary adjustment of ₹ 6 Crores was determined and accepted by VIL in an order dated 31st January 2025.
-
-Facts:
-1. The primary adjustment exceeds ₹ 1 Crore and pertains to AY 2024-25.
-2. VIL did not repatriate the excess money of ₹ 6 Crores from Vistara Global Inc. into India within the prescribed time limit of 90 days from the date of the assessment order.
-3. The marginal cost of funds lending rate of SBI as on 1st April 2024 was 8.50%.
-4. VIL chose to pay the additional income-tax under Section 92CE(2A) in lieu of continuous secondary adjustment interest.
-
-Required:
-(i) What is the prescribed time limit for repatriation of excess money under Rule 10CB?
-(ii) What are the tax consequences if the excess money is not repatriated within the time limit?
-(iii) Compute the additional income-tax payable by VIL under Section 92CE(2A).`,
-    solution: `**Suggested Answer / Working Notes:**
-
-**(i) Prescribed Time Limit for Repatriation (Rule 10CB):**
-Under Rule 10CB of the Income-tax Rules, 1962, where the primary adjustment is determined by an assessment order made by the Assessing Officer / TPO and accepted by the assessee, the excess money shall be repatriated to India within **90 days from the date of the order** (i.e., within 90 days from 31st January 2025).
-
----
-
-**(ii) Tax Consequences of Non-Repatriation:**
-Under Section 92CE(1), where primary adjustment exceeds ₹ 1 Crore and the excess money is not repatriated within the prescribed 90 days:
-1. Such excess money is deemed to be an advance made by the Indian company to the Associated Enterprise (AE).
-2. Interest on such advance is charged every year at the prescribed rate:
-   - For transactions in INR: SBI 1-year MCLR on 1st April + 325 basis points (i.e., 8.50% + 3.25% = **11.75% p.a.**).
-   - This interest is added annually to the total income of the Indian company until repatriation.
-
----
-
-**(iii) Additional Income-Tax under Section 92CE(2A):**
-Under Section 92CE(2A), the assessee has the option to pay additional income-tax on the excess money in lieu of continuous annual interest inclusion:
-- **Base Tax Rate:** 18%
-- **Mandatory Surcharge:** 12% (irrespective of income level)
-- **Health and Education Cess:** 4%
-
-**Effective Tax Rate Computation:**
-- Tax = 18%
-- Surcharge @ 12% on 18% = 2.16%
-- Subtotal = 20.16%
-- Cess @ 4% on 20.16% = 0.8064%
-- **Effective Tax Rate = 20.9664%**
-
-**Computation of Tax Amount on ₹ 6 Crores:**
-- Additional Income-Tax = ₹ 6,00,00,000 × 20.9664% = **₹ 1,25,79,840**
-
-*Key Legal Note:* Once this additional income-tax is paid, no further interest under Section 92CE(1) shall be calculated, and no deduction or credit shall be allowed for this tax under any provision of the Act.`,
-    reference: "Income-tax Act 1961, Section 92CE; Rule 10CB; ICAI Study Material"
+    "id": "FR-PYQ-001",
+    "subjectId": "FR",
+    "chapter": "Ind AS 12: Income Taxes",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "pageNo": "May 2024 Exam",
+    "itemRef": "Question 1(b)",
+    "marks": 10,
+    "title": "Deferred Tax Asset Recognition on Unused Tax Losses with Tax Planning Opportunities",
+    "question": "Bharat Synthetics Ltd. incurred a tax loss of \u20b9 40,00,000 for the financial year ended 31st March 2024. Under local tax laws, tax losses can be carried forward for a maximum period of 8 assessment years to be set off only against future business profits.\n\nThe financial controller compiles the following projections and tax positions:\n1. Expected taxable business profits for the next 4 years:\n   - FY 2024-25: \u20b9 6,00,000\n   - FY 2025-26: \u20b9 9,00,000\n   - FY 2026-27: \u20b9 11,00,000\n   - FY 2027-28: \u20b9 10,00,000\n2. In addition, the company has existing taxable temporary differences (reversal of accelerated tax depreciation) of \u20b9 8,00,000 that are expected to reverse equally over FY 2024-25 and FY 2025-26.\n3. The company has a prudent tax planning strategy to sell an unutilized industrial freehold plot in FY 2026-27, which will generate a taxable business capital gain of \u20b9 5,00,000.\n4. The enacted tax rate applicable to the company is 25% (plus applicable cess @ 4%, effective rate = 26%).\n\nRequired:\n(i) Evaluate whether Bharat Synthetics Ltd. should recognize a Deferred Tax Asset (DTA) on the tax loss of \u20b9 40,00,000 at 31st March 2024 under Ind AS 12.\n(ii) Compute the amount of DTA that can be recognized on 31st March 2024.\n(iii) State the disclosure requirements mandated by Ind AS 12 in respect of unrecognized tax losses.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Criteria for DTA Recognition on Tax Losses (Ind AS 12, Paragraphs 34-36):**\nUnder Ind AS 12, paragraph 34, a deferred tax asset shall be recognized for the carryforward of unused tax losses to the extent that it is probable that future taxable profit will be available against which the unused tax losses can be utilized.\nWhen an entity has a history of recent losses, paragraph 35 requires convincing other evidence that sufficient future taxable profit will be available.\nFuture taxable profit is assessed by considering:\n1. Existence of sufficient taxable temporary differences relating to the same taxation authority.\n2. Forecast of future operational taxable profits.\n3. Prudent and feasible tax planning opportunities.\n\n---\n\n**(ii) Computation of Assessable Future Taxable Profit:**\n- Taxable temporary differences reversing within carryforward window = \u20b9 8,00,000\n- Projected operational taxable profits (FY 2024-25 to 2027-28) = \u20b9 6,00,000 + \u20b9 9,00,000 + \u20b9 11,00,000 + \u20b9 10,00,000 = \u20b9 36,00,000\n- Tax planning opportunity (sale of freehold industrial plot) = \u20b9 5,00,000\n- **Total Future Taxable Profits Available = \u20b9 8,00,000 + \u20b9 36,00,000 + \u20b9 5,00,000 = \u20b9 49,00,000.**\n\nSince the total available future taxable income of \u20b9 49,00,000 exceeds the accumulated tax loss of \u20b9 40,00,000:\n- **Eligible Tax Loss for DTA recognition = Full \u20b9 40,00,000.**\n- Applicable Effective Tax Rate = 26% (25% + 4% cess).\n- **Deferred Tax Asset to be recognized at 31st March 2024 = \u20b9 40,00,000 \u00d7 26% = \u20b9 10,40,000.**\n\n---\n\n**(iii) Disclosure Requirements (Ind AS 12, Paragraph 81(e)):**\nThe entity must disclose:\n1. The amount of a deferred tax asset and the nature of the evidence supporting its recognition when the entity has suffered a loss in the current or preceding period.\n2. The amount of deductible temporary differences, unused tax losses, and unused tax credits for which no deferred tax asset is recognized in the balance sheet, along with expiry dates.",
+    "reference": "Ind AS 12, Paras 34-36, 81(e); ICAI CA Final Past Exam Paper May 2024"
   },
-
-  // ================= INDIRECT TAX LAWS (IDT) =================
   {
-    id: "IDT-WQ-001",
-    subjectId: "IDT",
-    chapter: "GST: Input Tax Credit (ITC - Sec 16, 17, 18 & Rules)",
-    source: "RTP",
-    examSession: "May 2025",
-    marks: 10,
-    title: "Computation of Eligible and Ineligible ITC under Section 17(5) and Rule 37",
-    question: `M/s Shaurya Manufacturing Ltd., a registered supplier in Pune (Maharashtra), provides the following details of inputs, capital goods, and input services received during the month of October 2024:
-
-| S.No | Description of Inward Supply | GST Amount (₹) |
-| :--- | :--- | :--- |
-| 1 | Raw materials purchased from vendor (Invoice received, goods received in factory in two lots; first lot received in Oct 2024, second lot received in Nov 2024) | 4,50,000 |
-| 2 | Motor vehicles purchased for transportation of factory employees (seating capacity: 25 persons including driver) | 3,20,000 |
-| 3 | Outdoor catering services availed for Annual General Meeting (AGM) of shareholders (not statutorily mandatory under any law) | 65,000 |
-| 4 | Life and health insurance for factory workers (obligatory for employer under Factories Act, 1948) | 90,000 |
-| 5 | Specialized equipment purchased for pollution control in factory | 2,80,000 |
-| 6 | Goods stolen from factory raw material store (proper FIR lodged) | 75,000 |
-| 7 | Payment for an inward supply of ₹ 2,00,000 (GST ₹ 36,000) received on 10th March 2024 was not paid to the vendor within 180 days from the invoice date | 36,000 |
-
-Compute the net eligible Input Tax Credit (ITC) available to M/s Shaurya Manufacturing Ltd. for the month of October 2024 with detailed statutory reasons for each item.`,
-    solution: `**Suggested Answer / Working Notes:**
-
-### Computation of Eligible ITC for October 2024:
-
-| Item | Particulars | Eligible ITC (₹) | Ineligible / Reversed (₹) | Legal Provision & Statutory Reason |
-| :--- | :--- | :--- | :--- | :--- |
-| **1** | Raw materials received in lots | **0** | 4,50,000 | Under first proviso to Section 16(2), where goods are received in lots/installments, ITC can be availed only upon receipt of the **last lot**. Since the second lot is received in Nov 2024, ITC cannot be claimed in Oct 2024. |
-| **2** | Motor vehicles (25 persons) | **3,20,000** | 0 | Under Section 17(5)(a), ITC is blocked only on motor vehicles with seating capacity <= 13 persons. Since seating capacity is 25 persons (> 13), ITC is fully eligible. |
-| **3** | Outdoor catering for AGM | **0** | 65,000 | Blocked under Section 17(5)(b)(i) unless used in the same category of outward taxable supply or obligatory under statutory law. |
-| **4** | Health insurance for workers | **90,000** | 0 | Under proviso to Section 17(5)(b), ITC on insurance is allowed where it is obligatory for an employer to provide the same to its employees under any law for the time being in force (Factories Act, 1948). |
-| **5** | Pollution control equipment | **2,80,000** | 0 | Plant & Machinery used in the course or furtherance of business. Eligible under Section 16(1). |
-| **6** | Stolen goods | **0** | 75,000 | Blocked explicitly under Section 17(5)(h) (goods lost, stolen, destroyed, written off or disposed of by way of gift or free samples). |
-| **7** | Unpaid supply > 180 days | **-36,000** | 36,000 | Second proviso to Section 16(2) read with Rule 37: If payment to vendor is not made within 180 days from invoice date, an amount equal to ITC availed must be paid along with interest under Section 50. |
-
----
-
-### Net Available ITC Calculation:
-- Motor Vehicles: ₹ 3,20,000
-- Health Insurance: ₹ 90,000
-- Pollution Control Equipment: ₹ 2,80,000
-- **Gross Eligible ITC:** ₹ 6,90,000
-- Less: Rule 37 Reversal (Unpaid > 180 days): (₹ 36,000)
-- **Net ITC Available to be credited to Electronic Credit Ledger for Oct 2024 = ₹ 6,54,000.**`,
-    reference: "CGST Act 2017, Sections 16(2), 17(5); Rule 37; ICAI RTP May 2025"
+    "id": "FR-MTP-001",
+    "subjectId": "FR",
+    "chapter": "Ind AS 16: Property, Plant and Equipment",
+    "source": "MTP",
+    "examSession": "May 2025 MTP",
+    "pageNo": "MTP Series 1",
+    "itemRef": "MTP 1 Question 1",
+    "marks": 14,
+    "title": "Comprehensive Capitalization of Costs of Production Line, Decommissioning & Borrowing Costs",
+    "question": "Flywing Airways Ltd. is constructing a specialized robotic production line for manufacturing titanium aircraft engine parts. Construction began on 1st April 2023.\n\nThe following expenditures were incurred during the year ended 31st March 2024:\n1. Purchase cost of basic raw materials and robotic machinery: List price \u20b9 1,25,00,000 less trade discount 10%.\n2. Goods and Services Tax (GST) paid on machinery \u20b9 20,25,000 (recoverable ITC available under CGST/SGST Act).\n3. Employment costs for assembling and testing the production line over a 3-month period: \u20b9 12,00,000. (The production line was ready for its intended use after 2 months; the final 1 month was spent training operators).\n4. Abnormal material wastage incurred due to initial calibration errors: \u20b9 3,50,000.\n5. Fees paid to external German engineering advisors for machinery installation: \u20b9 6,00,000.\n6. Site preparation and civil foundation costs: \u20b9 8,00,000.\n7. Decommissioning and environmental restoration obligation: The company is contractually obligated to dismantle the machinery at the end of its 10-year useful life. Estimated dismantling cost at Year 10 is \u20b9 25,00,000. The risk-adjusted discount rate is 8% (PV factor for 10 years @ 8% = 0.4632).\n8. Specific borrowing: On 1st April 2023, the company borrowed \u20b9 80,00,000 at 9% p.a. specifically to finance this qualifying asset. The installation was completed and ready for use on 31st January 2024. Surplus funds from the loan were temporarily deposited in a short-term bank deposit, earning interest income of \u20b9 1,20,000 up to 31st January 2024.\n\nRequired:\n(i) Compute the total initial cost of the robotic production line to be capitalized in the Balance Sheet under Ind AS 16.\n(ii) Calculate the finance cost and other expenses to be recognized in the Statement of Profit and Loss for the year ended 31st March 2024.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Statement Showing Initial Cost of Robotic Production Line (Ind AS 16):**\n\n| Item | Cost Component | Amount (\u20b9) | Statutory Accounting Reason |\n| :--- | :--- | :--- | :--- |\n| 1 | Purchase Cost of Machinery | 1,12,50,000 | Net of 10% trade discount (\u20b9 1,25,00,000 - \u20b9 12,50,000) under Ind AS 16.16(a). |\n| 2 | GST Paid | Nil | Recoverable taxes/ITC are excluded from asset cost under Ind AS 16.16(a). |\n| 3 | Employment Costs | 8,00,000 | Only costs incurred up to the date when asset is capable of operating (2 months out of 3 = 2/3 \u00d7 \u20b9 12,00,000). Training costs of \u20b9 4,00,000 expensed to P&L. |\n| 4 | Abnormal Wastage | Nil | Abnormal costs of wasted material are expensed under Ind AS 16.19(a). |\n| 5 | External Technical Advisors | 6,00,000 | Professional fees directly attributable to bringing asset to working condition (Ind AS 16.17(e)). |\n| 6 | Site Preparation & Foundation | 8,00,000 | Directly attributable cost of site preparation (Ind AS 16.17(b)). |\n| 7 | Decommissioning Provision (Ind AS 37) | 11,58,000 | Initial estimate of dismantling obligation discounted to present value = \u20b9 25,00,000 \u00d7 0.4632 (Ind AS 16.16(c)). |\n| 8 | Net Capitalizable Borrowing Cost (Ind AS 23) | 4,80,000 | Specific borrowing interest for 10 months (April to Jan = \u20b9 80,00,000 \u00d7 9% \u00d7 10/12 = \u20b9 6,00,000) less temporary investment income of \u20b9 1,20,000. |\n| **Total** | **Capitalized Cost of PPE** | **1,50,88,000** | **Total initial carrying amount capitalized.** |\n\n---\n\n**(ii) Amounts to be Recognized in Statement of Profit and Loss for FY 2023-24:**\n\n1. **Staff Training Costs:** \u20b9 4,00,000 (1 month employment costs incurred after asset was ready).\n2. **Abnormal Material Wastage:** \u20b9 3,50,000 (expensed as incurred).\n3. **Borrowing Cost for Post-Completion Period:**\n   - February and March (2 months) = \u20b9 80,00,000 \u00d7 9% \u00d7 2/12 = **\u20b9 1,20,000** (Finance cost).\n4. **Unwinding of Discount on Dismantling Provision (Ind AS 37):**\n   - 8% on \u20b9 11,58,000 for 1 year = **\u20b9 92,640** (Finance charge).\n5. **Depreciation for 2 Months (February & March 2024):**\n   - Depreciable amount = \u20b9 1,50,88,000 / 10 years \u00d7 2/12 = **\u20b9 2,51,467**.\n\n**Total Charge to Statement of Profit and Loss = \u20b9 12,14,107.**",
+    "reference": "Ind AS 16 Paras 16-19; Ind AS 23; Ind AS 37; ICAI Model Test Paper 1 (GP-I)"
+  },
+  {
+    "id": "AFM-SM-001",
+    "subjectId": "AFM",
+    "chapter": "Foreign Exchange Exposure and Risk Management",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 10.32",
+    "itemRef": "Illustration 9",
+    "marks": 10,
+    "title": "Comprehensive Hedging: Forward Cover vs Money Market Hedge vs Option Strategy",
+    "question": "An Indian exporting firm, Hind Exports Ltd., has an invoice receivable of USD 4,00,000 due in 6 months.\n\nThe financial manager obtains the following market quotes:\n- Spot Rate: USD/INR 83.40 / 83.45\n- 6-Month Forward Rate: USD/INR 83.95 / 84.05\n\nAnnual interest rates (6 months):\n- India (INR): Borrowing 8.50% p.a., Deposit 7.00% p.a.\n- United States (USD): Borrowing 5.50% p.a., Deposit 4.00% p.a.\n\nPut option on USD 4,00,000 with strike price USD/INR 83.80 is available at a premium of \u20b9 0.35 per USD.\n\nRequired:\n(i) Calculate the rupee inflow if Hind Exports Ltd. covers the exposure using a Forward Contract.\n(ii) Construct a Money Market Hedge and compute the net rupee realization.\n(iii) Calculate the net rupee realization under the Currency Put Option if spot rate after 6 months is (a) USD/INR 83.20, and (b) USD/INR 84.50.\n(iv) Advise the financial manager on the best hedging alternative.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Alternative 1: Forward Contract Hedge:**\nThe Indian exporter will sell USD 4,00,000 forward to the bank at BID rate.\n- 6-Month Forward Bid Rate = **USD/INR 83.95**\n- **Net Rupee Realization = USD 4,00,000 \u00d7 83.95 = \u20b9 3,35,80,000.**\n\n---\n\n**(ii) Alternative 2: Money Market Hedge (MMH):**\nBecause it is a foreign currency *receivable*:\n1. **Borrow USD today:**\n   - 6-month USD borrowing rate = 5.50% / 2 = 2.75%\n   - Amount to borrow = USD 4,00,000 / 1.0275 = **USD 3,89,294.40**\n2. **Convert USD into INR at Spot Bid Rate (83.40):**\n   - Rupee Inflow today = USD 3,89,294.40 \u00d7 83.40 = **\u20b9 3,24,67,153**\n3. **Invest INR in India at deposit rate for 6 months (7.00% / 2 = 3.50%):**\n   - Future Value = \u20b9 3,24,67,153 \u00d7 (1 + 0.035) = **\u20b9 3,36,03,503**\n4. The USD export receivable of USD 4,00,000 pays off the USD loan.\n- **Net Rupee Realization under MMH = \u20b9 3,36,03,503.**\n\n---\n\n**(iii) Alternative 3: Currency Put Option Hedge:**\n- Option Premium paid upfront = USD 4,00,000 \u00d7 \u20b9 0.35 = \u20b9 1,40,000\n- Future value of premium paid (compounded at INR borrowing rate 8.50% / 2 = 4.25%) = \u20b9 1,40,000 \u00d7 1.0425 = **\u20b9 1,45,950**\n\n*Case (a): If Spot Rate is 83.20 (below strike 83.80):*\n- Exercise Put Option at 83.80:\n  - Inflow from sale = USD 4,00,000 \u00d7 83.80 = \u20b9 3,35,20,000\n  - Less: Cost of Option = (\u20b9 1,45,950)\n  - **Net Rupee Realization = \u20b9 3,33,74,050.**\n\n*Case (b): If Spot Rate is 84.50 (above strike 83.80):*\n- Lapse Put Option, sell in spot market at 84.50:\n  - Inflow from sale = USD 4,00,000 \u00d7 84.50 = \u20b9 3,38,00,000\n  - Less: Cost of Option = (\u20b9 1,45,950)\n  - **Net Rupee Realization = \u20b9 3,36,54,050.**\n\n---\n\n**(iv) Recommendation:**\nComparing the guaranteed alternatives:\n- Money Market Hedge: \u20b9 3,36,03,503\n- Forward Contract: \u20b9 3,35,80,000\n- Gain under MMH over Forward = **\u20b9 23,503**.\n**Advice:** The Money Market Hedge is recommended as it provides the highest guaranteed locked-in rupee inflow.",
+    "reference": "AFM Study Material Module 3, Page 10.32, Illustration 9; ICAI New Scheme"
+  },
+  {
+    "id": "AFM-SM-002",
+    "subjectId": "AFM",
+    "chapter": "Advanced Capital Budgeting (APV)",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 7.22",
+    "itemRef": "Illustration 11",
+    "marks": 10,
+    "title": "Adjusted Present Value (APV) Technique with Subsidized Concessional Loan & Issue Costs",
+    "question": "Tesla Engineering Ltd. is considering a modernization project requiring an initial capital outlay of \u20b9 500 Lakhs. The project has an expected economic life of 5 years.\n\nKey Financial Parameters:\n1. Annual operating cash inflows before depreciation and taxes are \u20b9 160 Lakhs for each of the 5 years.\n2. The project's unlevered cost of equity (Keu) is 15%.\n3. Corporate income tax rate is 30%. Straight-line depreciation is allowable for tax purposes over 5 years (zero salvage value).\n4. Financing arrangements:\n   - The company secures a concessional government debt of \u20b9 200 Lakhs carrying a subsidized interest rate of 6% p.a. (Market interest rate for equivalent debt is 10% p.a.). The principal is repayable in 5 equal annual installments of \u20b9 40 Lakhs each.\n   - The balance \u20b9 300 Lakhs is financed through an equity rights issue incurring underwriting and issue costs of 3% of the gross equity raised.\n\nDiscount factors at 15% and 10%:\n- PVAF (5 years, 15%) = 3.3522\n- PV factors at 10%: Y1 = 0.9091, Y2 = 0.8264, Y3 = 0.7513, Y4 = 0.6830, Y5 = 0.6209\n\nRequired:\nEvaluate whether the project should be accepted using the Adjusted Present Value (APV) technique.",
+    "solution": "**Suggested Answer / Working Notes:**\n\nUnder the APV approach:\n**APV = Base Case NPV (Unlevered) + Present Value of Financing Side Effects (Tax Shield + Subsidized Loan Benefit - Issue Costs)**\n\n---\n\n### Step 1: Base Case NPV (Unlevered @ 15%):\n1. Annual Depreciation = \u20b9 500 Lakhs / 5 years = \u20b9 100 Lakhs.\n2. Operating Cash Flow After Tax (CFAT):\n   - Operating Inflow before Tax = \u20b9 160 Lakhs\n   - Less: Depreciation = (\u20b9 100 Lakhs)\n   - Taxable Profit = \u20b9 60 Lakhs\n   - Less: Tax @ 30% = (\u20b9 18 Lakhs)\n   - Profit After Tax = \u20b9 42 Lakhs\n   - Add back: Depreciation = \u20b9 100 Lakhs\n   - **Annual Operating CFAT = \u20b9 142 Lakhs.**\n3. PV of Operating CFAT = \u20b9 142 Lakhs \u00d7 3.3522 = **\u20b9 476.01 Lakhs.**\n4. **Base Case NPV = \u20b9 476.01 Lakhs - \u20b9 500.00 Lakhs = -\u20b9 23.99 Lakhs (Negative).**\n\n---\n\n### Step 2: Present Value of Financing Effects:\n\n**1. PV of Tax Shield on Interest (Discounted at pre-tax cost of debt 10%):**\n\n| Year | Opening Debt (\u20b9 L) | Interest @ 6% (\u20b9 L) | Tax Shield @ 30% (\u20b9 L) | PVF @ 10% | PV of Tax Shield (\u20b9 L) |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| 1 | 200 | 12.00 | 3.60 | 0.9091 | 3.27 |\n| 2 | 160 | 9.60 | 2.88 | 0.8264 | 2.38 |\n| 3 | 120 | 7.20 | 2.16 | 0.7513 | 1.62 |\n| 4 | 80 | 4.80 | 1.44 | 0.6830 | 0.98 |\n| 5 | 40 | 2.40 | 0.72 | 0.6209 | 0.45 |\n| **Total** | | | | | **\u20b9 8.70 Lakhs** |\n\n**2. Benefit of Subsidized Concessional Loan (Savings of 4% interest per annum discounted @ 10% after-tax):**\n- Interest saved = 10% - 6% = 4% on debt balance:\n  - Y1: \u20b9 200 L \u00d7 4% \u00d7 (1 - 0.30) = \u20b9 5.60 L \u00d7 0.9091 = \u20b9 5.09 L\n  - Y2: \u20b9 160 L \u00d7 4% \u00d7 0.70 = \u20b9 4.48 L \u00d7 0.8264 = \u20b9 3.70 L\n  - Y3: \u20b9 120 L \u00d7 4% \u00d7 0.70 = \u20b9 3.36 L \u00d7 0.7513 = \u20b9 2.52 L\n  - Y4: \u20b9 80 L \u00d7 4% \u00d7 0.70 = \u20b9 2.24 L \u00d7 0.6830 = \u20b9 1.53 L\n  - Y5: \u20b9 40 L \u00d7 4% \u00d7 0.70 = \u20b9 1.12 L \u00d7 0.6209 = \u20b9 0.70 L\n- **Total PV of Concession Benefit = \u20b9 13.54 Lakhs.**\n\n**3. Equity Issue Flotation Costs:**\n- Issue cost = 3% on gross equity raised = (\u20b9 300 L / 0.97) \u00d7 0.03 = **\u20b9 9.28 Lakhs.**\n\n---\n\n### Step 3: APV Synthesis & Recommendation:\n- Base Case NPV = -\u20b9 23.99 Lakhs\n- Add: PV of Tax Shields = +\u20b9 8.70 Lakhs\n- Add: PV of Concession Benefit = +\u20b9 13.54 Lakhs\n- Less: Flotation Costs = -\u20b9 9.28 Lakhs\n- **Adjusted Present Value (APV) = -\u20b9 23.99 + \u20b9 8.70 + \u20b9 13.54 - \u20b9 9.28 = -\u20b9 11.03 Lakhs.**\n\n**Conclusion & Decision:** Since the APV is **negative (-\u20b9 11.03 Lakhs)** even after incorporating the concessional loan financing benefits, the project will destroy shareholder value and should be **rejected**.",
+    "reference": "AFM Study Material Module 2, Page 7.22, Illustration 11; ICAI Final Course"
+  },
+  {
+    "id": "AFM-PYQ-001",
+    "subjectId": "AFM",
+    "chapter": "Portfolio Management & Security Analysis",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "pageNo": "May 2024 Exam",
+    "itemRef": "Question 3(a)",
+    "marks": 8,
+    "title": "Portfolio Risk, Systematic vs Unsystematic Risk & Performance Evaluation",
+    "question": "An investment analyst is evaluating two equity mutual fund schemes, Scheme Zenith and Scheme Apex, over a 5-year evaluation period:\n\n| Parameters | Scheme Zenith | Scheme Apex | Market Index (Nifty 50) |\n| :--- | :--- | :--- | :--- |\n| Average Annual Return (Rp) | 18.50% | 15.20% | 13.00% |\n| Standard Deviation (\u03c3p) | 22.00% | 16.00% | 14.00% |\n| Beta (\u03b2p) | 1.30 | 0.90 | 1.00 |\n\nThe risk-free rate of return (Rf) during the period is 6.50% p.a.\n\nRequired:\n(i) Compute Sharpe's Ratio, Treynor's Ratio, and Jensen's Alpha for both schemes and the market index.\n(ii) Decompose the total risk of Scheme Zenith into Systematic Risk and Unsystematic Risk (assume correlation with market r = 0.827).\n(iii) Provide an evaluation of which scheme outperformed based on total risk versus systematic risk.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Performance Ratios Computation:**\n\n1. **Sharpe Ratio = (Rp - Rf) / \u03c3p:**\n   - Scheme Zenith = (18.50% - 6.50%) / 22.00% = **0.5455**\n   - Scheme Apex = (15.20% - 6.50%) / 16.00% = **0.5438**\n   - Market Index = (13.00% - 6.50%) / 14.00% = **0.4643**\n\n2. **Treynor Ratio = (Rp - Rf) / \u03b2p:**\n   - Scheme Zenith = (18.50% - 6.50%) / 1.30 = **9.23%**\n   - Scheme Apex = (15.20% - 6.50%) / 0.90 = **9.67%**\n   - Market Index = (13.00% - 6.50%) / 1.00 = **6.50%**\n\n3. **Jensen's Alpha (\u03b1 = Rp - [Rf + \u03b2(Rm - Rf)]):**\n   - Scheme Zenith: Expected Return = 6.50% + 1.30 \u00d7 (13.00% - 6.50%) = 14.95%\n     - Alpha (\u03b1) = 18.50% - 14.95% = **+3.55%**\n   - Scheme Apex: Expected Return = 6.50% + 0.90 \u00d7 (13.00% - 6.50%) = 12.35%\n     - Alpha (\u03b1) = 15.20% - 12.35% = **+2.85%**\n\n---\n\n**(ii) Decomposition of Total Risk for Scheme Zenith:**\n- Total Variance (\u03c3p\u00b2) = (22%)\u00b2 = 484\n- Systematic Variance = (\u03b2p \u00d7 \u03c3m)\u00b2 = (1.30 \u00d7 14%)\u00b2 = (18.2%)\u00b2 = **331.24 (68.44% of total risk)**\n- Unsystematic Variance = Total Variance - Systematic Variance = 484 - 331.24 = **152.76 (31.56% of total risk)**\n- Systematic Risk in terms of standard deviation = **18.20%**\n- Unsystematic Risk (Specific Risk) = \u221a(152.76) = **12.36%**\n\n---\n\n**(iii) Evaluation & Conclusion:**\n1. Under **Sharpe Ratio** (Reward to total risk), Scheme Zenith marginally edges out Scheme Apex (0.5455 vs 0.5438), indicating superior return per unit of total volatility.\n2. Under **Treynor Ratio** (Reward to systematic risk), Scheme Apex outperforms Zenith (9.67% vs 9.23%) because Zenith carries higher unsystematic risk that was not fully diversified away.\n3. Both schemes have positive Jensen's Alpha, with Scheme Zenith generating higher active excess return (+3.55% vs +2.85%).",
+    "reference": "AFM Chapter 6: Portfolio Management; Past Exam Paper May 2024"
+  },
+  {
+    "id": "AUDIT-SM-001",
+    "subjectId": "AUDIT",
+    "chapter": "Professional Ethics & Code of Ethics",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 16.42",
+    "itemRef": "Illustration 7",
+    "marks": 8,
+    "title": "Professional Misconduct: Contingent Fees, Referral Kickbacks and Substantial Interest",
+    "question": "CA. Ramesh is a practicing Chartered Accountant and sole proprietor of M/s Ramesh & Co. During the financial year 2023-24, he engaged in the following professional assignments:\n\n1. He accepted the statutory audit of Zen Global Ltd. for an audit fee structured as 1.5% of the net profit before tax reported in the audited financial statements.\n2. He referred a prospective debt restructuring client to an investment banking boutique and received a referral commission of \u20b9 2,50,000 without obtaining prior written approval from the client.\n3. His wife holds 22% of the paid-up voting equity share capital in Matrix Infotech Pvt. Ltd. CA. Ramesh accepted an assignment to issue a solvency certificate and net worth report for Matrix Infotech Pvt. Ltd. required for a bank credit facility.\n\nRequired:\nExamine whether CA. Ramesh is guilty of professional misconduct under the Chartered Accountants Act, 1949 and relevant Regulations with specific reference to Clauses and Schedules.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Case 1: Fees Structured as Percentage of Net Profit:**\n- **Legal Provision:** Under Clause (10) of Part I of the First Schedule to the Chartered Accountants Act, 1949, a Chartered Accountant in practice is deemed to be guilty of professional misconduct if he charges or offers to charge, accepts or offers to accept in respect of any professional employment, fees which are based on a percentage of profits, or which are contingent upon the findings, except as permitted under Regulation 192.\n- **Application:** Regulation 192 allows percentage-based fees only in specific non-audit cases such as acting as liquidator, debt recovery agent, or valuer for direct taxes. Statutory audit fees based on percentage of profits are strictly prohibited.\n- **Conclusion:** CA. Ramesh is **guilty of professional misconduct** under Clause (10) of Part I of the First Schedule.\n\n---\n\n**(ii) Case 2: Acceptance of Referral Commission / Kickback:**\n- **Legal Provision:** Under Clause (2) of Part I of the First Schedule to the Act, a member in practice is guilty of professional misconduct if he pays or allows or agrees to pay or allow, directly or indirectly, any share, commission or brokerage in the fees or profits of his professional business to any person other than a member or partner.\n- Furthermore, under Clause (3) of Part I of the First Schedule, a member is guilty of misconduct if he accepts or agrees to accept any part of the profits of the professional work of a person who is not a member of the Institute.\n- **Application:** Accepting a referral commission of \u20b9 2,50,000 from an investment banker is a clear violation.\n- **Conclusion:** CA. Ramesh is **guilty of professional misconduct** under Clause (3) of Part I of the First Schedule.\n\n---\n\n**(iii) Case 3: Solvency Certificate for Company in which Spouse Holds Substantial Interest:**\n- **Legal Provision:** Under Clause (4) of Part I of the Second Schedule to the Act, a member in practice is guilty of professional misconduct if he expresses his opinion on financial statements of any business or enterprise in which he, his firm, or a partner in his firm has a substantial interest.\n- Under the Code of Ethics, \"relative\" includes spouse, and substantial interest is defined as holding 20% or more voting power.\n- **Application:** Since his wife holds 22% voting equity in Matrix Infotech Pvt. Ltd., CA. Ramesh has a substantial interest through his spouse. Issuing a net worth and solvency certificate involves expressing an assurance opinion.\n- **Conclusion:** CA. Ramesh is **guilty of professional misconduct** under Clause (4) of Part I of the Second Schedule.",
+    "reference": "CA Act 1949, First Schedule (Part I, Cl 2, 3, 10); Second Schedule (Part I, Cl 4); ICAI Code of Ethics Module 16, Page 16.42"
+  },
+  {
+    "id": "AUDIT-PYQ-001",
+    "subjectId": "AUDIT",
+    "chapter": "Audit Planning, Strategy and Execution (SA 570)",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "pageNo": "May 2024 Exam",
+    "itemRef": "Question 2(a)",
+    "marks": 10,
+    "title": "Auditor Reporting on Going Concern Material Uncertainty under SA 570 (Revised) & Key Audit Matters",
+    "question": "During the statutory audit of Blue Sky Aviation Ltd. for the financial year ended 31st March 2024, the audit team observes the following conditions:\n\n1. The company has incurred substantial operating losses of \u20b9 450 Crores during the year, resulting in negative net worth of \u20b9 180 Crores and current liabilities exceeding current assets by \u20b9 220 Crores.\n2. The company defaulted on term loan interest payments to a consortium of lenders and breached debt covenants. Lenders issued a notice demanding immediate repayment of \u20b9 300 Crores.\n3. Management has prepared the financial statements on a Going Concern basis and disclosed a note in the draft financial statements explaining that a comprehensive debt restructuring plan is under active negotiation with the lenders, and an infusion of fresh equity of \u20b9 250 Crores from a strategic investor is expected by October 2024.\n4. The auditor performed additional audit procedures under SA 570 (Revised), reviewed the term sheet of the prospective equity investor, evaluated management's cash flow forecasts, and concluded that a **Material Uncertainty exists related to events or conditions that may cast significant doubt on the entity's ability to continue as a going concern**, but the use of the going concern basis of accounting is appropriate.\n\nRequired:\n(i) If management provides adequate disclosure in the notes to accounts, what type of audit opinion should the auditor express? Illustrate the exact wording and placement of the 'Material Uncertainty Related to Going Concern' section in the Audit Report.\n(ii) Can the matter be reported under Key Audit Matters (KAM) in accordance with SA 701 instead of a separate Going Concern section? Discuss.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Audit Opinion & Wording of Auditor's Report (SA 570 Revised, Paragraphs 21-23):**\n1. **Nature of Audit Opinion:**\n   When the auditor concludes that the use of the going concern basis of accounting is appropriate, a material uncertainty exists, and adequate disclosure is made in the financial statements, the auditor shall express an **Unmodified (Clean) Opinion**.\n2. **Dedicated Reporting Section:**\n   The auditor's report must include a separate section with the heading **\"Material Uncertainty Related to Going Concern\"**.\n   - This section must be placed immediately after the \"Basis for Opinion\" section.\n\n**Illustrative Wording:**\n> **\"Material Uncertainty Related to Going Concern**\n> We draw attention to Note 34 in the financial statements, which indicates that the Company incurred a net loss of \u20b9 450 Crores during the year ended 31st March 2024 and, as of that date, the Company's current liabilities exceeded its current assets by \u20b9 220 Crores and its net worth has been fully eroded. As stated in Note 34, these events or conditions, along with other matters as set forth in Note 34, indicate that a material uncertainty exists that may cast significant doubt on the Company's ability to continue as a going concern. Our opinion is not modified in respect of this matter.\"\n\n---\n\n**(ii) Interaction with Key Audit Matters (SA 701, Paragraph 15 & SA 570.21):**\n- **Strict Prohibition:** Under SA 701 (Communicating Key Audit Matters in the Independent Auditor's Report), paragraph 15, matters giving rise to a material uncertainty related to going concern are by their very nature key audit matters; **however**, they **shall not** be included in the Key Audit Matters section of the report.\n- **Reporting Mechanism:** Instead, such matters shall be reported exclusively under the dedicated section **\"Material Uncertainty Related to Going Concern\"** in accordance with SA 570 (Revised).\n- In the Key Audit Matters section, the auditor must include a cross-reference stating that the matter has been addressed in the 'Material Uncertainty Related to Going Concern' section.",
+    "reference": "SA 570 (Revised) Paras 21-23; SA 701 Para 15; ICAI Past Examination May 2024"
+  },
+  {
+    "id": "DT-SM-001",
+    "subjectId": "DT",
+    "chapter": "Transfer Pricing & Other Anti-Avoidance Measures (GAAR)",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 9.15",
+    "itemRef": "Illustration 5",
+    "marks": 8,
+    "title": "Secondary Adjustment under Section 92CE, Imputed Interest vs Additional Income-Tax",
+    "question": "M/s Vistara India Ltd. ('VIL') is an Indian subsidiary of Vistara Global Inc., USA. During previous year 2023-24, VIL sold customized precision microchips to its parent company for \u20b9 42 Crores.\n\nDuring assessment proceedings, the Transfer Pricing Officer (TPO) applied the Transactional Net Margin Method (TNMM) and computed the Arm's Length Price (ALP) at \u20b9 48 Crores. The primary adjustment of \u20b9 6 Crores was determined and accepted by VIL in an order dated 31st January 2025.\n\nFacts:\n1. The primary adjustment exceeds \u20b9 1 Crore and pertains to AY 2024-25.\n2. VIL did not repatriate the excess money of \u20b9 6 Crores from Vistara Global Inc. into India within the prescribed time limit of 90 days from the date of the assessment order.\n3. The 1-year marginal cost of funds lending rate (MCLR) of State Bank of India as on 1st April 2024 was 8.50%.\n4. VIL chose to pay the additional income-tax under Section 92CE(2A) in lieu of continuous secondary adjustment interest.\n\nRequired:\n(i) State the time limit for repatriation of excess money under Rule 10CB.\n(ii) What are the tax consequences if excess money is not repatriated?\n(iii) Compute the effective tax rate and additional income-tax payable by VIL under Section 92CE(2A).",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Prescribed Time Limit for Repatriation (Rule 10CB):**\nUnder Rule 10CB of the Income-tax Rules, 1962, where the primary adjustment to transfer price has been determined by an assessment order made by the AO / TPO and accepted by the assessee, the excess money shall be repatriated to India within **90 days from the date of the order** (i.e., within 90 days from 31st January 2025).\n\n---\n\n**(ii) Tax Consequences of Non-Repatriation:**\nUnder Section 92CE(1), where primary adjustment exceeds \u20b9 1 Crore and the excess money is not repatriated within 90 days:\n1. Such excess money is deemed to be an advance made by the Indian company to the Associated Enterprise (AE).\n2. Interest on such advance is charged every year at the prescribed rate:\n   - For transactions denominated in INR: 1-year SBI MCLR as on 1st April + 325 basis points = 8.50% + 3.25% = **11.75% p.a.**\n   - This imputed interest income is added annually to total taxable income until repatriation.\n\n---\n\n**(iii) Additional Income-Tax under Section 92CE(2A):**\nUnder Section 92CE(2A), the assessee has the option to pay additional income-tax on the excess money in lieu of continuous annual interest inclusion:\n- **Base Tax Rate:** 18%\n- **Mandatory Surcharge:** 12% (irrespective of income level)\n- **Health and Education Cess:** 4%\n\n**Effective Tax Rate Computation:**\n- Base Tax = 18%\n- Surcharge @ 12% on 18% = 2.16%\n- Subtotal = 20.16%\n- Health & Education Cess @ 4% on 20.16% = 0.8064%\n- **Effective Tax Rate = 20.9664%**\n\n**Tax Amount on \u20b9 6 Crores:**\n- Additional Income-Tax = \u20b9 6,00,00,000 \u00d7 20.9664% = **\u20b9 1,25,79,840.**\n\n*Legal Consequences:*\nOnce this tax is paid, no further interest under Section 92CE(1) will be imputed, no credit or deduction will be allowed under any other provision, and no excess money repatriation will be demanded.",
+    "reference": "Income-tax Act 1961, Section 92CE; Rule 10CB; ICAI Study Material Module 3, Page 9.15, Illustration 5"
+  },
+  {
+    "id": "DT-PYQ-001",
+    "subjectId": "DT",
+    "chapter": "Profits and Gains of Business or Profession (PGBP)",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "pageNo": "May 2024 Exam",
+    "itemRef": "Question 1(a)",
+    "marks": 14,
+    "title": "Computation of Total Income & Tax Liability of Domestic Manufacturing Company (Sec 115BAA vs Normal)",
+    "question": "Zenith Pharma Ltd., a resident domestic manufacturing company, reports a net profit of \u20b9 85,00,000 in its Statement of Profit and Loss for the year ended 31st March 2024.\n\nScrutiny of the accounts reveals the following details:\n1. Depreciation debited to Profit and Loss account is \u20b9 14,50,000. Depreciation allowable under Section 32 (including additional depreciation of \u20b9 3,00,000 on new machinery installed in factory) is \u20b9 18,20,000.\n2. Employer's contribution to Recognized Provident Fund of \u20b9 2,80,000 was deposited on 20th November 2024 (Due date of filing return of income u/s 139(1) is 31st October 2024).\n3. Employee's contribution to PF deducted from salary of \u20b9 1,20,000 was remitted to PF authorities on 25th of the following month (statutory due date under PF Act was 15th of the following month).\n4. Purchase of active pharmaceutical raw material of \u20b9 12,00,000 from a related party (brother of Director). The prevailing arm's length market value of identical grade material was \u20b9 9,50,000.\n5. Incurred advertisement expenditure of \u20b9 4,50,000 paid to a digital agency in cash on a single day.\n6. Royalty of \u20b9 6,00,000 paid to a non-resident foreign company on which TDS was not deducted during FY 2023-24.\n7. CSR expenditure debited to P&L account in compliance with Section 135 of Companies Act, 2013: \u20b9 5,00,000.\n\nRequired:\nCompute the Total Income and tax liability of Zenith Pharma Ltd. under the normal provisions of the Income-tax Act, 1961 for Assessment Year 2024-25.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n### Computation of Total Income for Assessment Year 2024-25:\n\n| Particulars | Working / Legal Provision | Amount (\u20b9) | Amount (\u20b9) |\n| :--- | :--- | :--- | :--- |\n| **Net Profit as per P&L Account** | | | **85,00,000** |\n| **Add: Inadmissible Expenses / Disallowances:** | | | |\n| 1. Depreciation debited in P&L | To be considered separately | 14,50,000 | |\n| 2. Employer's contribution to PF | Disallowed u/s 43B as paid after return filing date (31st Oct) | 2,80,000 | |\n| 3. Employee's contribution to PF | Deemed income u/s 2(24)(x) r.w.s 36(1)(va) as deposited past PF due date (Checkmate Services SC ruling) | 1,20,000 | |\n| 4. Excessive payment to related party | Disallowance u/s 40A(2)(b) for excess over fair market value (\u20b9 12,00,000 - \u20b9 9,50,000) | 2,50,000 | |\n| 5. Cash payment for advertisement | Disallowed u/s 40A(3) as single-day cash payment exceeds \u20b9 10,000 | 4,50,000 | |\n| 6. Royalty to non-resident without TDS | 100% disallowance u/s 40(a)(i) for failure to deduct tax at source | 6,00,000 | |\n| 7. CSR Expenditure | Explicitly disallowed under Explanation 2 to Section 37(1) | 5,00,000 | |\n| **Total Additions** | | | **36,50,000** |\n| **Sub-Total** | | | **1,21,50,000** |\n| **Less: Allowable Deductions:** | | | |\n| Tax Depreciation under Section 32 | Allowable as per IT Rules | (18,20,000) | (18,20,000) |\n| **Gross Total Income / Total Income** | | | **1,03,30,000** |\n\n---\n\n### Computation of Tax Liability under Normal Provisions:\n- Base Tax @ 30% on \u20b9 1,03,30,000 (Turnover exceeds \u20b9 400 Cr threshold) = \u20b9 30,99,000\n- Add: Surcharge @ 7% (Total income exceeds \u20b9 1 Cr but <= \u20b9 10 Cr) = \u20b9 2,16,930\n- Tax + Surcharge = \u20b9 33,15,930\n- Marginal Relief check: Tax on \u20b9 1 Cr = \u20b9 30,00,000. Excess income = \u20b9 3,30,000. Marginal relief = \u20b9 33,15,930 - (\u20b9 30,00,000 + \u20b9 3,30,000) = \u20b9 33,15,930 - \u20b9 33,30,000 (No marginal relief applicable).\n- Add: Health & Education Cess @ 4% on \u20b9 33,15,930 = **\u20b9 1,32,637**\n- **Total Tax Liability = \u20b9 34,48,567 (Rounded off u/s 288B to \u20b9 34,48,570).**",
+    "reference": "Income-tax Act 1961, Sections 32, 36(1)(va), 37(1), 40(a)(i), 40A(2), 40A(3), 43B; May 2024 Exam Q1(a)"
+  },
+  {
+    "id": "IDT-SM-001",
+    "subjectId": "IDT",
+    "chapter": "GST: Input Tax Credit (ITC - Sec 16, 17, 18 & Rules)",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 8.44",
+    "itemRef": "Illustration 12",
+    "marks": 10,
+    "title": "Comprehensive ITC Apportionment for Common Inputs and Capital Goods (Rules 42 & 43)",
+    "question": "M/s Apex Synthetics Ltd., a registered taxpayer in Vadodara (Gujarat), manufactures both taxable and exempt synthetic fabrics.\nDuring the tax period September 2024, the company recorded the following Input Tax details:\n\n1. Total Input Tax Credit (ITC) on inward supplies received during the month (T): \u20b9 14,00,000.\n2. Inward supplies used exclusively for non-business / personal purposes (T1): \u20b9 80,000.\n3. Inward supplies used exclusively for manufacturing exempt outward supplies (T2): \u20b9 2,20,000.\n4. Inward supplies on which credit is blocked under Section 17(5) (T3): \u20b9 1,50,000.\n5. Inward supplies used exclusively for taxable outward supplies (including zero-rated exports) (T4): \u20b9 6,50,000.\n6. The balance ITC constitutes common credit (C2).\n7. Turnover details for September 2024:\n   - Turnover of exempt supplies (E): \u20b9 40,00,000.\n   - Total turnover in the State during the tax period (F): \u20b9 2,00,00,000.\n\nRequired:\nCalculate the following under Rule 42 of the CGST Rules, 2017:\n(i) Common credit available for apportionment (C2).\n(ii) Ineligible common credit attributable to exempt supplies (D1).\n(iii) Credit attributable to non-business purpose (D2).\n(iv) Net eligible ITC credited to the Electronic Credit Ledger.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n### Step 1: Computation of Common Credit (C2) under Rule 42:\n- Total Input Tax on inward supplies (T) = \u20b9 14,00,000\n- Less: ITC exclusively for non-business purpose (T1) = (\u20b9 80,00,000)\n- Less: ITC exclusively for exempt supplies (T2) = (\u20b9 2,20,000)\n- Less: Blocked credits under Section 17(5) (T3) = (\u20b9 1,50,000)\n- **Total Ineligible / Blocked ITC (T1 + T2 + T3) = \u20b9 4,50,000.**\n\nEligible ITC credited to Electronic Credit Ledger (C1):\n- C1 = T - (T1 + T2 + T3) = \u20b9 14,00,000 - \u20b9 4,50,000 = **\u20b9 9,50,000.**\n\nLess: ITC exclusively for taxable / zero-rated supplies (T4) = (\u20b9 6,50,000).\n- **Common Credit (C2) = C1 - T4 = \u20b9 9,50,000 - \u20b9 6,50,000 = \u20b9 3,00,000.**\n\n---\n\n### Step 2: Apportionment of Common Credit under Rule 42(1):\n\n1. **Credit attributable to exempt supplies (D1):**\n   - Formula: D1 = (E / F) \u00d7 C2\n   - E (Exempt turnover) = \u20b9 40,00,000\n   - F (Total turnover) = \u20b9 2,00,00,000\n   - D1 = (\u20b9 40,00,000 / \u20b9 2,00,00,000) \u00d7 \u20b9 3,00,000 = 20% \u00d7 \u20b9 3,00,000 = **\u20b9 60,000.**\n\n2. **Credit attributable to non-business purpose (D2):**\n   - Under Rule 42(1)(j), D2 = 5% of common credit C2:\n   - D2 = 5% \u00d7 \u20b9 3,00,000 = **\u20b9 15,00,000.**\n\n---\n\n### Step 3: Reversal & Net Eligible Credit:\n- Total amount to be added to output tax liability / reversed in GSTR-3B = D1 + D2 = \u20b9 60,000 + \u20b9 15,000 = **\u20b9 75,000.**\n- **Net Eligible Common Credit (C3) = C2 - (D1 + D2) = \u20b9 3,00,000 - \u20b9 75,000 = \u20b9 2,25,000.**\n- **Total Net ITC Available to Taxpayer = T4 + C3 = \u20b9 6,50,000 + \u20b9 2,25,000 = \u20b9 8,75,000.**",
+    "reference": "CGST Rules 2017, Rule 42; CGST Act Section 17(2); ICAI Study Material Module 2, Page 8.44, Illustration 12"
+  },
+  {
+    "id": "IDT-PYQ-001",
+    "subjectId": "IDT",
+    "chapter": "GST: Place of Supply & Cross-Border Transactions (IGST Act)",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "pageNo": "May 2024 Exam",
+    "itemRef": "Question 2(b)",
+    "marks": 8,
+    "title": "Determination of Place of Supply for Inter-State vs Intra-State Services & Export Qualification",
+    "question": "Determine the Place of Supply (POS), nature of supply (Inter-State or Intra-State), and applicable tax (CGST+SGST or IGST) for the following independent cases under the IGST Act, 2017:\n\n1. Apex Software Solutions Ltd., registered in Bengaluru (Karnataka), provides cloud server maintenance and software development services to German Automotive AG located in Munich, Germany. The payment is received in convertible foreign currency (Euros), and the supplier and recipient are distinct entities.\n2. Grand Palace Hotel, located in Udaipur (Rajasthan), provides banquet, accommodation, and catering services to a corporate client, Quick Commerce Ltd., registered in Mumbai (Maharashtra), for its annual national leadership conference held at Udaipur.\n3. SpeedEx Cargo Logistics Ltd., registered in New Delhi, provides goods transportation services by road to an unregistered person residing in Lucknow (Uttar Pradesh). The goods are handed over to the transporter in Jaipur (Rajasthan) for delivery to Lucknow.\n4. Mr. Rohan, residing in Bhopal (Madhya Pradesh), travels from New Delhi to London on a flight operated by FlyAir Ltd., registered in New Delhi. The ticket was booked through FlyAir's online portal while Mr. Rohan was at Bhopal.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n### Determination of Place of Supply & Tax Liability:\n\n| Case | Location of Supplier | Location of Recipient | Place of Supply (POS) | Nature of Supply & Tax | Statutory Legal Provision |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| **1** | Bengaluru (Karnataka) | Munich (Germany) | **Outside India (Germany)** | **Zero-Rated Supply (Export of Services)** | Under Section 13(2) of IGST Act, general rule for POS is location of recipient. Since all 5 conditions of Section 2(6) are fulfilled (convertible forex, recipient outside India, supplier in India), it qualifies as **Export of Services**. |\n| **2** | Udaipur (Rajasthan) | Mumbai (Maharashtra) | **Udaipur (Rajasthan)** | **Intra-State Supply (CGST + Rajasthan SGST)** | Section 12(3)(c) of IGST Act: POS of restaurant, catering, and hotel accommodation services is the **location at which the immovable property is located** (Udaipur). Even though recipient is in Maharashtra, supply is Intra-State in Rajasthan. |\n| **3** | New Delhi | Lucknow (Uttar Pradesh - Unregistered) | **Jaipur (Rajasthan)** | **Inter-State Supply (IGST)** | Section 12(8) of IGST Act: For transportation of goods to an unregistered person, POS is the **location where goods are handed over for their transportation** (Jaipur). Since Supplier is in Delhi and POS is in Rajasthan, it is an Inter-State supply. |\n| **4** | New Delhi | Bhopal (Madhya Pradesh) | **New Delhi** | **Inter-State Supply (IGST)** | Section 12(9) of IGST Act: POS of passenger transportation service to an unregistered person is the **place where the passenger embarks on the conveyance for a continuous journey** (New Delhi). Since flight embarks at Delhi, POS is New Delhi. |",
+    "reference": "IGST Act 2017, Sections 2(6), 12(3), 12(8), 12(9), 13(2); May 2024 Exam Question 2(b)"
+  },
+  {
+    "id": "IBS-SM-001",
+    "subjectId": "IBS",
+    "chapter": "Multidisciplinary Case Study: Corporate Restructuring, Forex Hedging & Taxation",
+    "source": "SM",
+    "examSession": "ICAI May 2026 Edition",
+    "pageNo": "Page 3.18",
+    "itemRef": "Comprehensive Case Study 2",
+    "marks": 14,
+    "title": "Integrated Case Study: Cross-Border Acquisition, Ind AS 103, Transfer Pricing & GST Input Tax Reversal",
+    "question": "Mega Pharma Ltd. (MPL), an Indian multinational engaged in API manufacturing, acquired 80% equity interest in a US biotech firm, BioGen Inc., for USD 12 Million on 1st October 2023 when the spot exchange rate was USD/INR 83.00.\n\nScenario & Operational Issues:\n1. **Acquisition & Ind AS 103:** The fair value of BioGen Inc.'s net identifiable assets on 1st October 2023 was USD 10 Million. Non-Controlling Interest (NCI) is measured at proportionate share of net assets.\n2. **Transfer Pricing & Section 92C:** During H2 FY 2023-24, MPL sold bulk raw materials to BioGen Inc. for USD 2 Million. The Transfer Pricing Officer determined that the Arm's Length Price was USD 2.6 Million. The primary adjustment of USD 0.60 Million was accepted by MPL.\n3. **Forex Risk:** MPL has an ECB loan liability of USD 5 Million repayable on 31st March 2025. The CFO wants to hedge using a Currency Swap.\n4. **GST Issue:** MPL's factory at Bharuch received specialized testing machines from an overseas vendor on which IGST was paid under reverse charge. 25% of the machine's capacity is used to manufacture exempt pharmaceutical formulations.\n\nRequired:\n(i) Compute the acquisition-date Goodwill in INR under Ind AS 103.\n(ii) Explain the secondary adjustment provisions under Section 92CE if the excess money is not repatriated within 90 days.\n(iii) Advise on how the Currency Swap mechanism eliminates exchange rate risk for the ECB loan.\n(iv) State the GST input tax credit reversal rules applicable to the testing machinery under Rule 43 of CGST Rules.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Financial Reporting (Ind AS 103):**\n- Purchase consideration = USD 12 Million \u00d7 83.00 = **\u20b9 99.60 Crores.**\n- Fair value of identifiable net assets = USD 10 Million \u00d7 83.00 = \u20b9 83.00 Crores.\n- NCI (20% proportionate share) = 20% \u00d7 \u20b9 83.00 Crores = \u20b9 16.60 Crores.\n- **Goodwill = Purchase Consideration (\u20b9 99.60 Cr) + NCI (\u20b9 16.60 Cr) - Net Assets (\u20b9 83.00 Cr) = \u20b9 33.20 Crores.**\n\n---\n\n**(ii) Direct Taxation (Section 92CE - Secondary Adjustment):**\n1. Primary adjustment accepted = USD 0.60 Million (\u20b9 4.98 Crores @ 83.00). Since it exceeds \u20b9 1 Crore, Section 92CE applies.\n2. If the excess money of USD 0.60 Million is not repatriated to India within 90 days from the order date, it will be treated as a **deemed advance** made by MPL to BioGen Inc.\n3. Imputed interest will be added to MPL's taxable income annually at SBI MCLR + 3.25% (if denominated in INR) or 6-month LIBOR/SOFR + 300 bps (if in USD).\n4. Alternatively, MPL can pay additional tax @ 20.9664% under Section 92CE(2A) to extinguish the repatriation obligation.\n\n---\n\n**(iii) AFM (Currency Swap Hedging):**\n- MPL enters into a Currency Swap with a bank:\n  - At inception, MPL swaps USD 5 Million for INR at the agreed spot rate.\n  - During the tenor, MPL pays fixed/floating INR interest and receives USD interest matching its ECB obligation.\n  - At maturity (31st March 2025), MPL re-exchanges principal at the predetermined rate, effectively locking in its rupee repayment obligation and completely eliminating foreign exchange volatility.\n\n---\n\n**(iv) GST Law (Rule 43 Capital Goods Credit Reversal):**\nUnder Rule 43 of CGST Rules, 2017:\n- Since the testing machinery is used for both taxable and exempt supplies, it is a **Common Capital Asset**.\n- Full ITC is initially credited to the Electronic Credit Ledger.\n- Useful life is taken as 60 months (5 years).\n- Monthly common credit = Total ITC / 60.\n- Ineligible monthly credit reversed = (Exempt Turnover / Total Turnover) \u00d7 Monthly Common Credit.\n- This reversal is added to output tax liability every month along with applicable interest.",
+    "reference": "ICAI Final Paper 6: IBS Comprehensive Case 2, Page 3.18; Ind AS 103, Sec 92CE, Rule 43"
+  },
+  {
+    "id": "IBS-PYQ-001",
+    "subjectId": "IBS",
+    "chapter": "Multidisciplinary Case Study: Corporate Restructuring, Forex Hedging & Taxation",
+    "source": "PYQ",
+    "examSession": "May 2024 Exam",
+    "pageNo": "May 2024 Exam",
+    "itemRef": "Case Study 1",
+    "marks": 14,
+    "title": "Comprehensive Multidisciplinary Case Study: Demerger, Section 79, Ind AS 102 & CARO 2020 Reporting",
+    "question": "Omega Conglomerate Ltd. ('OCL') is an Indian public listed company with two distinct divisions: Infrastructure Division and IT Services Division.\n\nEvents during FY 2023-24:\n1. **Corporate Demerger:** OCL approves a scheme of demerger under Sections 230-232 of the Companies Act, 2013 to transfer the IT Services Division into a newly incorporated entity, Omega Tech Ltd. ('OTL').\n2. **Direct Taxation (Section 79 & 72A):** OCL had accumulated business losses of \u20b9 45 Crores relating to the IT division. Due to subsequent equity issuances, shareholding changed by 55%.\n3. **Share Based Payment (Ind AS 102):** Prior to demerger, OCL granted 5,00,000 stock options to key senior developers with a 3-year vesting period. In the demerger scheme, OTL replaces these options with its own options of equivalent fair value.\n4. **Auditing & CARO 2020:** The statutory auditor notices that during the year, OCL was sanctioned a working capital limit of \u20b9 12 Crores against hypothecation of current assets, and quarterly statements submitted to the bank differed materially from the books of accounts.\n\nRequired:\n(i) Examine whether the demerger qualifies as a tax-neutral demerger under Section 2(19AA) and discuss carry-forward of losses under Section 72A(4).\n(ii) How should the modification and replacement of share options be accounted for under Ind AS 102?\n(iii) State the auditor's reporting duty under Clause (ii)(b) of CARO 2020 regarding working capital differences.",
+    "solution": "**Suggested Answer / Working Notes:**\n\n**(i) Direct Tax - Tax Neutrality of Demerger & Loss Carryforward:**\n1. Under Section 2(19AA) of the Income-tax Act, 1961, a demerger is tax-neutral if:\n   - All property and liabilities of the undertaking being transferred become the property/liabilities of the resulting company at book values.\n   - Resulting company issues shares to shareholders of demerged company on a proportionate basis.\n   - The transfer is on a going concern basis.\n2. Under Section 72A(4), accumulated business loss and unabsorbed depreciation directly attributable to the demerged undertaking shall be allowed to be carried forward and set off by the resulting company (OTL) for the remaining period out of 8 years.\n3. Section 79 (change in 51% shareholding) does not apply to an unabsorbed loss transferred in a scheme of demerger under the explicit proviso to Section 79.\n\n---\n\n**(ii) Financial Reporting - Modification of Share-Based Payments (Ind AS 102):**\nUnder Ind AS 102 (Appendix B, B42-B44):\n- If an entity modifies the terms of an equity-settled share-based payment, it shall recognize, as a minimum, the services received measured at the grant date fair value of the original equity instruments granted.\n- If the replacement options granted by OTL have a fair value equal to the fair value of the cancelled OCL options on the modification date, **no incremental fair value** is recognized.\n- The company continues to recognize the original grant date fair value over the remaining vesting period.\n\n---\n\n**(iii) Auditing - CARO 2020 Reporting Duty (Clause (ii)(b)):**\nUnder Clause 3(ii)(b) of CARO 2020:\n- Whether during any point of time of the year, the company has been sanctioned working capital limits in excess of \u20b9 5 Crores, in aggregate, from banks or financial institutions on the basis of security of current assets.\n- Since OCL was sanctioned \u20b9 12 Crores (> \u20b9 5 Crores), the auditor must verify:\n  1. Whether quarterly returns or statements filed by the company with such banks are in agreement with the books of account of the company.\n  2. If not, the auditor **must report the details of material differences, variances, and reason for discrepancy in the CARO report**.",
+    "reference": "ICAI Final Paper 6: IBS May 2024 Exam; Sections 2(19AA), 72A(4); Ind AS 102; CARO 2020 Cl 3(ii)(b)"
   }
 ];
 

@@ -484,6 +484,14 @@
                 <option value="ALL">All Chapters in Subject</option>
               </select>
 
+              <select id="repoSourceFilter" class="form-control case-filter-select" onchange="App.handleRepoSourceFilterChange(this.value)" title="Filter by Source (Booklet, PYQ, RTP, MTP)">
+                <option value="ALL">All Sources (Booklet, PYQ, RTP, MTP)</option>
+                <option value="BOOKLET">ICAI MCQ Booklet</option>
+                <option value="PYQ">Past Exam Papers (PYQ)</option>
+                <option value="RTP">Revision Test Papers (RTP)</option>
+                <option value="MTP">Model Test Papers (MTP)</option>
+              </select>
+
               <select id="repoStatusFilter" class="form-control case-filter-select" onchange="App.handleRepoStatusFilterChange(this.value)" title="Filter Case Scenarios & MCQs">
                 <option value="ALL">All Case Scenarios</option>
                 <option value="COMPLETED">✅ Completed Cases</option>
@@ -531,7 +539,15 @@
 
               <select id="writingSourceFilter" class="form-control" style="width: auto;">
                 <option value="ALL">All Sources (SM, RTP, MTP, PYQ)</option>
+                <option value="SM">Study Material (SM)</option>
+                <option value="PYQ">Past Exam Papers (PYQ)</option>
+                <option value="RTP">Revision Test Papers (RTP)</option>
+                <option value="MTP">Model Test Papers (MTP)</option>
               </select>
+
+              <button type="button" class="btn btn-outline" id="btnToggleAllWritingAnswers" onclick="App.toggleAllWritingAnswers()" title="Toggle visibility of all solutions on this page">
+                <i class="fa-solid fa-eye-slash"></i> <span>Hide All Answers</span>
+              </button>
 
               <button class="btn btn-primary" onclick="App.openAddWritingModal()">
                 <i class="fa-solid fa-plus"></i> Add Writing Question
@@ -1130,6 +1146,42 @@
           <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Update Lecture Count</button>
         </div>
       </form>
+    </div>
+  <!-- WRITING QUESTION FULL VIEW MODAL (DISTRACTION-FREE READING & STUDY MODE) -->
+  <div id="wqFullViewModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog wq-fullview-dialog" style="max-width: 980px; width: 95vw; height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header wq-fullview-header">
+        <div class="wq-fullview-title-wrap">
+          <div id="wqFullViewBadges" class="tags-group" style="margin-bottom: 6px;"></div>
+          <h3 id="wqFullViewTitle" style="font-size: 1.25rem; font-weight: 700; color: var(--text-color); margin: 0;"></h3>
+        </div>
+        <div class="wq-fullview-header-actions" style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-sm btn-outline" id="wqFullViewToggleAnsBtn" onclick="App.toggleFullViewAnswer()">
+            <i class="fa-solid fa-eye-slash"></i> <span>Hide Solution</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Print
+          </button>
+          <button type="button" class="icon-btn close-modal-btn" onclick="App.closeWritingFullView()" title="Close Full View (Esc)">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body wq-fullview-body" style="flex: 1; overflow-y: auto; padding: 24px;">
+        <div class="wq-fullview-section wq-fullview-stem-wrap">
+          <div class="wq-fullview-label"><i class="fa-solid fa-file-invoice"></i> PROBLEM STATEMENT & DATA</div>
+          <div id="wqFullViewStem" class="wq-stem-content"></div>
+        </div>
+        <div id="wqFullViewSolutionWrap" class="wq-fullview-section wq-fullview-solution-wrap" style="margin-top: 24px;">
+          <div class="wq-fullview-label text-success"><i class="fa-solid fa-graduation-cap"></i> OFFICIAL ICAI SUGGESTED SOLUTION & WORKING NOTES</div>
+          <div id="wqFullViewSolution" class="wq-solution-content"></div>
+          <div id="wqFullViewRef" class="reference-tag" style="margin-top: 14px;"></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="wqFullViewFooterMeta" class="text-muted" style="font-size: 0.85rem;"></span>
+        <button type="button" class="btn btn-secondary" onclick="App.closeWritingFullView()">Close Full View</button>
+      </div>
     </div>
   </div>
 

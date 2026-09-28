@@ -25,6 +25,7 @@ const App = {
       reviewStatus: {},
       skippedStatus: {},
       chapterFilter: "ALL",
+      sourceFilter: "ALL",
       statusFilter: "ALL",
       impFilter: "ALL",
       searchTerm: "",
@@ -44,6 +45,9 @@ const App = {
       chapter: "ALL",
       source: "ALL"
     },
+    writingHiddenAnswers: new Set(),
+    writingGlobalAnswersHidden: false,
+    activeFullViewWqId: null,
     practiceFilter: {
       subject: "ALL",
       source: "ALL",
@@ -309,16 +313,81 @@ const App = {
       .replace(/>/g, "&gt;");
   },
 
-  formatMarkdown(text) {
-    if (!text) return "";
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/---/g, '<hr style="margin: 14px 0; border: none; border-top: 1px dashed var(--border-color);">');
+  formatMarkdown(raw) {
+    if (!raw) return "";
+    let text = raw.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+    // Replace backtick currency marks: ` 500 or `500 with ₹
+    text = text.replace(/`\s*(\d)/g, '₹$1');
+
+    // Fenced code blocks
+    text = text.replace(/```([a-z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+      const esc = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return `<pre class="wq-code-block" style="background: var(--bg-muted); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); overflow-x: auto; font-family: monospace; font-size: 0.88rem; margin: 12px 0;"><code>${esc}</code></pre>`;
+    });
+
+    // Tables: lines starting and ending with |
+    const lines = text.split("\n");
+    let inTable = false;
+    let tableHtml = "";
+    const newLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith("|") && line.endsWith("|")) {
+        if (!inTable) {
+          inTable = true;
+          tableHtml = `<table class="wq-table" style="width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88rem;">`;
+          // Header row
+          const cells = line.split("|").slice(1, -1).map(c => `<th style="border: 1px solid var(--border-color); padding: 8px 12px; background: var(--bg-muted); font-weight: 700; text-align: left;">${c.trim()}</th>`).join("");
+          tableHtml += `<thead><tr>${cells}</tr></thead><tbody>`;
+          // Skip divider line like |:---|:---|
+          if (i + 1 < lines.length && lines[i + 1].trim().startsWith("|") && lines[i + 1].includes("---")) {
+            i++;
+          }
+        } else {
+          const cells = line.split("|").slice(1, -1).map(c => `<td style="border: 1px solid var(--border-color); padding: 8px 12px; text-align: left;">${c.trim()}</td>`).join("");
+          tableHtml += `<tr>${cells}</tr>`;
+        }
+      } else {
+        if (inTable) {
+          inTable = false;
+          tableHtml += `</tbody></table>`;
+          newLines.push(tableHtml);
+          tableHtml = "";
+        }
+        newLines.push(lines[i]);
+      }
+    }
+    if (inTable) {
+      tableHtml += `</tbody></table>`;
+      newLines.push(tableHtml);
+    }
+    text = newLines.join("\n");
+
+    // Headers
+    text = text.replace(/^### (.*$)/gim, '<h4 style="font-weight: 700; margin: 14px 0 8px; color: var(--primary); font-size: 1.05rem;">$1</h4>');
+    text = text.replace(/^## (.*$)/gim, '<h3 style="font-weight: 700; margin: 18px 0 10px; color: var(--primary); font-size: 1.15rem;">$1</h3>');
+
+    // Bold, Italic, Inline Code
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    text = text.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>');
+    text = text.replace(/---/g, '<hr style="margin: 16px 0; border: none; border-top: 1px dashed var(--border-color);">');
+
+    // Convert paragraphs
+    const chunks = text.split(/(<table[\s\S]*?<\/table>|<pre[\s\S]*?<\/pre>)/i);
+    return chunks.map(chunk => {
+      if (chunk.startsWith("<table") || chunk.startsWith("<pre")) {
+        return chunk;
+      }
+      return chunk.split(/\n{2,}/).map(para => {
+        const trimmed = para.trim();
+        if (!trimmed) return "";
+        if (trimmed.startsWith("<h") || trimmed.startsWith("<hr")) return trimmed;
+        return `<p style="margin-bottom: 10px; line-height: 1.7;">${trimmed.replace(/\n/g, "<br>")}</p>`;
+      }).join("");
+    }).join("");
   },
 
   switchTab(tabId) {
@@ -663,6 +732,11 @@ const App = {
       cases = cases.filter(c => c.chapter === chFilter || c.questions.some(q => q.chapter === chFilter));
     }
 
+    const srcFilter = this.state.repositoryState.sourceFilter || "ALL";
+    if (srcFilter !== "ALL") {
+      cases = cases.filter(c => c.source === srcFilter || c.questions.some(q => q.source === srcFilter));
+    }
+
     const statusFilter = this.state.repositoryState.statusFilter || this.state.repositoryState.impFilter || "ALL";
     if (statusFilter === "COMPLETED") {
       cases = cases.filter(c => this.isCaseCompleted(c));
@@ -939,6 +1013,11 @@ const App = {
               <span class="case-hero-source-badge">
                 <i class="fa-solid fa-book-open"></i> ${caseData.source || 'ICAI Case Scenario'}
               </span>
+              ${caseData.examSession ? `
+                <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
+                  <i class="fa-regular fa-calendar-check"></i> ${caseData.examSession}
+                </span>
+              ` : ''}
               <span class="badge badge-outline" title="Chapter / Ind AS Reference">
                 <i class="fa-regular fa-folder-open"></i> ${caseData.chapter || 'Comprehensive'}
               </span>
@@ -1041,6 +1120,16 @@ const App = {
               ` : `
                 <span class="badge badge-marks">${currentQ.marks || 2} Marks</span>
               `}
+              ${currentQ.source && currentQ.source !== 'BOOKLET' ? `
+                <span class="badge badge-source" style="background-color: #8b5cf6; color: white;">
+                  ${currentQ.source}
+                </span>
+              ` : ''}
+              ${currentQ.examSession ? `
+                <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
+                  <i class="fa-regular fa-calendar-check"></i> ${currentQ.examSession}
+                </span>
+              ` : ''}
               ${userNote ? '<span class="badge badge-success badge-note-indicator" title="Personal Note Attached"><i class="fa-solid fa-note-sticky"></i> Note Added</span>' : ''}
               ${isImp ? '<span class="badge badge-imp-indicator" style="background-color: #f59e0b; color: white;" title="Marked as Important"><i class="fa-solid fa-star"></i> IMP</span>' : ''}
               ${!isCaseCompleted && isReview ? '<span class="badge badge-warning" title="Flagged to Review Later"><i class="fa-solid fa-flag"></i> Marked for Review</span>' : ''}
@@ -1527,6 +1616,13 @@ const App = {
     this.renderRepository();
   },
 
+  handleRepoSourceFilterChange(val) {
+    this.state.repositoryState.sourceFilter = val;
+    this.state.repositoryState.currentCaseIndex = 0;
+    this.state.repositoryState.currentQuestionIndex = 0;
+    this.renderRepository();
+  },
+
   handleRepoStatusFilterChange(val) {
     this.state.repositoryState.statusFilter = val;
     this.state.repositoryState.impFilter = val;
@@ -1566,6 +1662,7 @@ const App = {
     this.state.repositoryState.currentCaseIndex = 0;
     this.state.repositoryState.currentQuestionIndex = 0;
     this.state.repositoryState.chapterFilter = "ALL";
+    this.state.repositoryState.sourceFilter = "ALL";
     this.state.repositoryState.searchTerm = "";
 
     // Sync global filter
@@ -1577,6 +1674,7 @@ const App = {
 
   resetRepoFilters() {
     this.state.repositoryState.chapterFilter = "ALL";
+    this.state.repositoryState.sourceFilter = "ALL";
     this.state.repositoryState.statusFilter = "ALL";
     this.state.repositoryState.impFilter = "ALL";
     this.state.repositoryState.searchTerm = "";
@@ -1584,6 +1682,8 @@ const App = {
     this.state.repositoryState.currentQuestionIndex = 0;
     const chSelect = document.getElementById("repoChapterFilter");
     if (chSelect) chSelect.value = "ALL";
+    const srcSelect = document.getElementById("repoSourceFilter");
+    if (srcSelect) srcSelect.value = "ALL";
     const statusSelect = document.getElementById("repoStatusFilter") || document.getElementById("repoImpFilter");
     if (statusSelect) statusSelect.value = "ALL";
     const sInput = document.getElementById("repoSearchInput");
@@ -3766,9 +3866,13 @@ const App = {
       return;
     }
 
+    const hiddenSet = this.state.writingHiddenAnswers || new Set();
+
     listEl.innerHTML = filtered.map(wq => {
       const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === wq.subjectId) : null;
+      const isSM = (wq.source === "SM");
       const isOfficialAttemptSource = ["RTP", "MTP", "PYQ"].includes(wq.source);
+      const isAnswerHidden = hiddenSet.has(wq.id);
 
       return `
         <div class="writing-question-card" id="wq-${wq.id}">
@@ -3777,20 +3881,42 @@ const App = {
               <span class="badge" style="background-color: ${subMeta ? subMeta.color : '#2563eb'}; color: white;">
                 ${wq.subjectId}
               </span>
-              <span class="badge badge-source" style="background-color: #8b5cf6; color: white;">
-                ${wq.source === 'RTP' ? 'RTP' : wq.source === 'MTP' ? 'MTP' : wq.source === 'PYQ' ? 'Past Exam (PYQ)' : 'Study Material'}
+              <span class="badge badge-source" style="background-color: ${isSM ? '#0ea5e9' : '#8b5cf6'}; color: white;">
+                ${wq.source === 'RTP' ? 'RTP' : wq.source === 'MTP' ? 'MTP' : wq.source === 'PYQ' ? 'Past Exam (PYQ)' : 'Study Material (SM)'}
               </span>
-              ${isOfficialAttemptSource ? `
-                <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
-                  <i class="fa-regular fa-calendar-check"></i> ${wq.examSession || 'Session Specified'}
-                </span>
+              ${isSM ? `
+                ${wq.pageNo ? `<span class="badge badge-page" title="ICAI Study Material Page Number"><i class="fa-solid fa-file-lines"></i> ${wq.pageNo}</span>` : ''}
+                ${wq.itemRef ? `<span class="badge badge-ill" title="Illustration / Practice Problem No"><i class="fa-solid fa-shapes"></i> ${wq.itemRef}</span>` : ''}
               ` : `
-                <span class="badge badge-outline" title="Study Material Edition">
-                  <i class="fa-solid fa-book"></i> ${wq.examSession || 'ICAI Edition'}
-                </span>
+                ${wq.examSession ? `
+                  <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
+                    <i class="fa-regular fa-calendar-check"></i> ${wq.examSession}
+                  </span>
+                ` : ''}
+                ${wq.itemRef ? `<span class="badge badge-outline" title="Question Reference"><i class="fa-solid fa-tag"></i> ${wq.itemRef}</span>` : ''}
               `}
               <span class="badge badge-marks">${wq.marks || 8} Marks</span>
-              <span class="badge badge-outline"><i class="fa-regular fa-bookmark"></i> ${wq.chapter || 'Practical Question'}</span>
+              <span class="badge badge-outline"><i class="fa-regular fa-folder-open"></i> ${wq.chapter || 'Practical Problem'}</span>
+            </div>
+
+            <div class="wq-card-actions">
+              <button 
+                type="button" 
+                class="btn btn-sm btn-outline wq-toggle-ans-btn" 
+                id="wq-btn-${wq.id}" 
+                onclick="App.toggleWritingAnswer('${wq.id}')"
+                title="Hide / Show Answer for self-practice">
+                <i class="fa-solid ${isAnswerHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                <span>${isAnswerHidden ? 'Show Answer' : 'Hide Answer'}</span>
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-sm btn-primary wq-fullview-btn" 
+                onclick="App.openWritingFullView('${wq.id}')"
+                title="Open Distraction-Free Full View with complete calculations & working notes">
+                <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                <span>Full View</span>
+              </button>
             </div>
           </div>
 
@@ -3798,16 +3924,152 @@ const App = {
 
           <div class="wq-stem">${App.formatMarkdown(wq.question)}</div>
 
-          <details class="wq-solution-collapsible">
-            <summary><i class="fa-solid fa-graduation-cap"></i> View ICAI Suggested Model Solution & Detailed Working Notes</summary>
+          <!-- INLINE SOLUTION SECTION (ON SAME PAGE, WITH HIDE / SHOW OPTION) -->
+          <div class="wq-solution-box ${isAnswerHidden ? 'hidden' : ''}" id="wq-ans-${wq.id}">
+            <div class="wq-solution-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
+              <div style="font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-graduation-cap"></i> ICAI Model Suggested Solution & Step-by-Step Working Notes
+              </div>
+              <button type="button" class="btn btn-xs btn-outline" onclick="App.toggleWritingAnswer('${wq.id}')" style="font-size: 0.75rem; padding: 2px 8px;">
+                <i class="fa-solid fa-eye-slash"></i> Hide Answer
+              </button>
+            </div>
             <div class="wq-solution-content">
               ${App.formatMarkdown(wq.solution)}
-              ${wq.reference ? `<p class="reference-tag" style="margin-top: 14px;"><i class="fa-solid fa-book-bookmark"></i> <strong>Statutory Reference:</strong> ${wq.reference}</p>` : ''}
+              ${wq.reference ? `<p class="reference-tag" style="margin-top: 14px;"><i class="fa-solid fa-book-bookmark"></i> <strong>Statutory / Official Reference:</strong> ${wq.reference}</p>` : ''}
             </div>
-          </details>
+          </div>
         </div>
       `;
     }).join("");
+  },
+
+  toggleWritingAnswer(id) {
+    if (!this.state.writingHiddenAnswers) {
+      this.state.writingHiddenAnswers = new Set();
+    }
+    const isHidden = this.state.writingHiddenAnswers.has(id);
+    if (isHidden) {
+      this.state.writingHiddenAnswers.delete(id);
+    } else {
+      this.state.writingHiddenAnswers.add(id);
+    }
+    const box = document.getElementById(`wq-ans-${id}`);
+    const btn = document.getElementById(`wq-btn-${id}`);
+    if (box) {
+      box.classList.toggle("hidden", !isHidden);
+    }
+    if (btn) {
+      btn.innerHTML = `
+        <i class="fa-solid ${!isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+        <span>${!isHidden ? 'Show Answer' : 'Hide Answer'}</span>
+      `;
+    }
+  },
+
+  toggleAllWritingAnswers() {
+    if (!this.state.writingHiddenAnswers) {
+      this.state.writingHiddenAnswers = new Set();
+    }
+    this.state.writingGlobalAnswersHidden = !this.state.writingGlobalAnswersHidden;
+    const hideAll = this.state.writingGlobalAnswersHidden;
+
+    (this.state.allWritingQuestions || []).forEach(q => {
+      if (hideAll) {
+        this.state.writingHiddenAnswers.add(q.id);
+      } else {
+        this.state.writingHiddenAnswers.delete(q.id);
+      }
+    });
+
+    const btn = document.getElementById("btnToggleAllWritingAnswers");
+    if (btn) {
+      btn.innerHTML = `
+        <i class="fa-solid ${hideAll ? 'fa-eye' : 'fa-eye-slash'}"></i>
+        <span>${hideAll ? 'Show All Answers' : 'Hide All Answers'}</span>
+      `;
+    }
+
+    this.renderWritingQuestions();
+  },
+
+  openWritingFullView(id) {
+    const wq = (this.state.allWritingQuestions || []).find(q => q.id === id);
+    if (!wq) return;
+
+    this.state.activeFullViewWqId = id;
+    const modal = document.getElementById("wqFullViewModal");
+    if (!modal) return;
+
+    const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === wq.subjectId) : null;
+    const isSM = (wq.source === "SM");
+
+    const badgesContainer = document.getElementById("wqFullViewBadges");
+    if (badgesContainer) {
+      badgesContainer.innerHTML = `
+        <span class="badge" style="background-color: ${subMeta ? subMeta.color : '#2563eb'}; color: white;">
+          ${wq.subjectId} • ${subMeta ? subMeta.name : ''}
+        </span>
+        <span class="badge badge-source" style="background-color: ${isSM ? '#0ea5e9' : '#8b5cf6'}; color: white;">
+          ${wq.source === 'RTP' ? 'RTP' : wq.source === 'MTP' ? 'MTP' : wq.source === 'PYQ' ? 'Past Exam (PYQ)' : 'Study Material (SM)'}
+        </span>
+        ${isSM ? `
+          ${wq.pageNo ? `<span class="badge badge-page"><i class="fa-solid fa-file-lines"></i> ${wq.pageNo}</span>` : ''}
+          ${wq.itemRef ? `<span class="badge badge-ill"><i class="fa-solid fa-shapes"></i> ${wq.itemRef}</span>` : ''}
+        ` : `
+          ${wq.examSession ? `<span class="badge badge-attempt"><i class="fa-regular fa-calendar-check"></i> ${wq.examSession}</span>` : ''}
+          ${wq.itemRef ? `<span class="badge badge-outline"><i class="fa-solid fa-tag"></i> ${wq.itemRef}</span>` : ''}
+        `}
+        <span class="badge badge-marks">${wq.marks || 8} Marks</span>
+        <span class="badge badge-outline"><i class="fa-regular fa-folder-open"></i> ${wq.chapter || 'Practical Problem'}</span>
+      `;
+    }
+
+    const titleEl = document.getElementById("wqFullViewTitle");
+    if (titleEl) titleEl.textContent = wq.title || "Practical Descriptive Problem";
+
+    const stemEl = document.getElementById("wqFullViewStem");
+    if (stemEl) stemEl.innerHTML = App.formatMarkdown(wq.question);
+
+    const solEl = document.getElementById("wqFullViewSolution");
+    if (solEl) solEl.innerHTML = App.formatMarkdown(wq.solution);
+
+    const refEl = document.getElementById("wqFullViewRef");
+    if (refEl) {
+      refEl.innerHTML = wq.reference ? `<i class="fa-solid fa-book-bookmark"></i> <strong>Statutory / Official Reference:</strong> ${wq.reference}` : '';
+    }
+
+    const footerMeta = document.getElementById("wqFullViewFooterMeta");
+    if (footerMeta) {
+      footerMeta.textContent = `${wq.subjectId} • ${wq.chapter} • ${wq.source} (${wq.examSession || wq.pageNo || ''})`;
+    }
+
+    const toggleBtn = document.getElementById("wqFullViewToggleAnsBtn");
+    const solWrap = document.getElementById("wqFullViewSolutionWrap");
+    if (solWrap) solWrap.classList.remove("hidden");
+    if (toggleBtn) {
+      toggleBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> <span>Hide Solution</span>';
+    }
+
+    modal.style.display = "flex";
+  },
+
+  closeWritingFullView() {
+    const modal = document.getElementById("wqFullViewModal");
+    if (modal) modal.style.display = "none";
+    this.state.activeFullViewWqId = null;
+  },
+
+  toggleFullViewAnswer() {
+    const solWrap = document.getElementById("wqFullViewSolutionWrap");
+    const toggleBtn = document.getElementById("wqFullViewToggleAnsBtn");
+    if (!solWrap || !toggleBtn) return;
+
+    const isHidden = solWrap.classList.toggle("hidden");
+    toggleBtn.innerHTML = `
+      <i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+      <span>${isHidden ? 'Show Solution' : 'Hide Solution'}</span>
+    `;
   },
 
   openAddWritingModal() {
