@@ -39,14 +39,14 @@ const App = {
       difficulty: "ALL",
       imp: "ALL"
     },
-    writingFilter: {
-      search: "",
-      subject: "ALL",
-      chapter: "ALL",
-      source: "ALL"
+    writingState: {
+      activeSubject: "FR",
+      currentIndex: 0,
+      chapterFilter: "ALL",
+      sourceFilter: "ALL",
+      searchTerm: ""
     },
     writingHiddenAnswers: new Set(),
-    writingGlobalAnswersHidden: false,
     activeFullViewWqId: null,
     practiceFilter: {
       subject: "ALL",
@@ -415,8 +415,7 @@ const App = {
         practice: "Active Recall Practice Mode",
         exam: "Timed ICAI Exam Simulator (30 Marks)",
         cases: "Integrated Case Scenario Studies",
-        mistakes: "Mistakes Notebook Drill",
-        importer: "Add & Import Questions"
+        mistakes: "Mistakes Notebook Drill"
       };
       titleEl.textContent = titles[tabId] || "ICAI CA Final Portal";
     }
@@ -549,9 +548,6 @@ const App = {
         break;
       case "mistakes":
         this.renderMistakesView();
-        break;
-      case "importer":
-        // Importer forms already in DOM
         break;
     }
   },
@@ -929,17 +925,25 @@ const App = {
     const currentVal = this.state.repositoryState.chapterFilter || "ALL";
 
     const cases = this.getSubjectCaseStudies(activeSub);
-    const chapters = new Set();
+    const chapterCounts = {};
+    let totalQuestions = 0;
+
     cases.forEach(c => {
-      if (c.chapter) chapters.add(c.chapter);
-      c.questions.forEach(q => {
-        if (q.chapter) chapters.add(q.chapter);
+      const qCount = (c.questions || []).length;
+      totalQuestions += qCount;
+      const ch = c.chapter || "General / Integrated";
+      chapterCounts[ch] = (chapterCounts[ch] || 0) + qCount;
+      (c.questions || []).forEach(q => {
+        if (q.chapter && q.chapter !== c.chapter) {
+          chapterCounts[q.chapter] = (chapterCounts[q.chapter] || 0) + 1;
+        }
       });
     });
 
-    sel.innerHTML = '<option value="ALL">All Chapters in Subject</option>';
-    Array.from(chapters).sort().forEach(ch => {
-      sel.innerHTML += `<option value="${this.escapeHTML(ch)}" ${ch === currentVal ? 'selected' : ''}>${this.escapeHTML(ch)}</option>`;
+    sel.innerHTML = `<option value="ALL">All Chapters in Subject (${totalQuestions} MCQs)</option>`;
+    Object.keys(chapterCounts).sort().forEach(ch => {
+      const count = chapterCounts[ch];
+      sel.innerHTML += `<option value="${this.escapeHTML(ch)}" ${ch === currentVal ? 'selected' : ''}>${this.escapeHTML(ch)} (${count} MCQs)</option>`;
     });
   },
 
@@ -2597,24 +2601,6 @@ const App = {
       });
     }
 
-    // Single MCQ Form Submission
-    const singleForm = document.getElementById("addSingleMCQForm");
-    if (singleForm) {
-      singleForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        App.handleAddSingleMCQ();
-      });
-    }
-
-    // Case Scenario Form Submission
-    const caseForm = document.getElementById("addCaseScenarioForm");
-    if (caseForm) {
-      caseForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        App.handleAddCaseScenario();
-      });
-    }
-
     // Auth Forms
     const loginForm = document.getElementById("authLoginForm");
     if (loginForm) {
@@ -2648,129 +2634,6 @@ const App = {
         App.prevPracticeQuestion();
       }
     });
-  },
-
-  handleAddSingleMCQ() {
-    const subjectId = document.getElementById("modalSubjectSelect").value;
-    const chapter = document.getElementById("modalChapterSelect").value;
-    const source = document.getElementById("modalSourceSelect").value;
-    const examSession = document.getElementById("modalExamSession").value || "General";
-    const marks = parseInt(document.getElementById("modalMarks").value) || 2;
-    const difficulty = document.getElementById("modalDifficulty").value || "Medium";
-    const questionText = document.getElementById("modalQuestionText").value.trim();
-    const optA = document.getElementById("modalOptA").value.trim();
-    const optB = document.getElementById("modalOptB").value.trim();
-    const optC = document.getElementById("modalOptC").value.trim();
-    const optD = document.getElementById("modalOptD").value.trim();
-    const correctOpt = document.getElementById("modalCorrectAnswer").value;
-    const explanation = document.getElementById("modalExplanation").value.trim();
-    const reference = document.getElementById("modalReference").value.trim();
-
-    if (!questionText || !optA || !optB || !optC || !optD) {
-      alert("Please fill in question text and all 4 options.");
-      return;
-    }
-
-    const newMCQ = {
-      id: `${subjectId}-${Date.now().toString(36).toUpperCase()}`,
-      subjectId,
-      chapter,
-      source,
-      examSession,
-      type: "standalone",
-      marks,
-      difficulty,
-      question: questionText,
-      options: [
-        { id: "A", text: optA },
-        { id: "B", text: optB },
-        { id: "C", text: optC },
-        { id: "D", text: optD }
-      ],
-      correctAnswer: correctOpt,
-      explanation,
-      reference,
-      createdAt: new Date().toISOString()
-    };
-
-    this.saveCustomMCQ(newMCQ);
-    alert("MCQ saved successfully to your database!");
-    document.getElementById("addSingleMCQForm").reset();
-    this.switchTab("repository");
-  },
-
-  handleAddCaseScenario() {
-    const subjectId = document.getElementById("caseSubjectSelect").value;
-    const source = document.getElementById("caseSourceSelect").value;
-    const title = document.getElementById("caseTitleInput").value.trim();
-    const scenarioText = document.getElementById("caseNarrativeInput").value.trim();
-    const rawSubQuestions = document.getElementById("caseSubQInput").value.trim();
-
-    if (!title || !scenarioText || !rawSubQuestions) {
-      alert("Please fill in Title, Case Narrative, and at least one sub-question.");
-      return;
-    }
-
-    // Parse sub-questions using MCQImporter
-    const parsedSub = MCQImporter.parseRawText(rawSubQuestions, subjectId, source);
-
-    if (parsedSub.length === 0) {
-      alert("Could not parse sub-questions. Please format with options (A, B, C, D) and Answer: X.");
-      return;
-    }
-
-    const caseId = `CASE-${Date.now().toString(36).toUpperCase()}`;
-    const subQuestionsFormatted = parsedSub.map((sq, i) => ({
-      subId: `${caseId}-Q${i + 1}`,
-      question: sq.question,
-      options: sq.options,
-      correctAnswer: sq.correctAnswer,
-      explanation: sq.explanation,
-      marks: sq.marks || 2
-    }));
-
-    const newCase = {
-      id: caseId,
-      subjectId,
-      chapter: "Integrated Case Study",
-      source,
-      examSession: "General",
-      type: "case_scenario",
-      title,
-      scenarioText,
-      subQuestions: subQuestionsFormatted,
-      createdAt: new Date().toISOString()
-    };
-
-    this.saveCustomMCQ(newCase);
-    alert(`Case study with ${subQuestionsFormatted.length} MCQs added successfully!`);
-    document.getElementById("addCaseScenarioForm").reset();
-    this.switchTab("cases");
-  },
-
-  // Batch Raw Text Import
-  handleRawImport() {
-    const rawText = document.getElementById("rawImportTextarea").value;
-    const subjectId = document.getElementById("rawImportSubject").value;
-    const source = document.getElementById("rawImportSource").value;
-    const session = document.getElementById("rawImportSession").value;
-
-    if (!rawText.trim()) {
-      alert("Please paste text to import.");
-      return;
-    }
-
-    const parsed = MCQImporter.parseRawText(rawText, subjectId, source, session);
-
-    if (parsed.length === 0) {
-      alert("No questions could be identified. Make sure each question has 1., options (a)-(d), and Answer: line.");
-      return;
-    }
-
-    parsed.forEach(mcq => this.saveCustomMCQ(mcq));
-    alert(`Success! Imported ${parsed.length} MCQs directly into your repository.`);
-    document.getElementById("rawImportTextarea").value = "";
-    this.switchTab("repository");
   },
 
   // Export & Backup
@@ -3781,215 +3644,388 @@ const App = {
     this.loadWritingQuestions();
   },
 
-  renderWritingQuestions() {
-    const listEl = document.getElementById("writingQuestionsList");
-    const countEl = document.getElementById("writingFilteredCount");
-    const subFilter = document.getElementById("writingSubjectFilter");
-    const srcFilter = document.getElementById("writingSourceFilter");
-    const searchInput = document.getElementById("writingSearchInput");
+  setWritingSubject(subjectId) {
+    this.state.writingState.activeSubject = subjectId;
+    this.state.writingState.currentIndex = 0;
+    this.state.writingState.chapterFilter = "ALL";
+    this.state.writingState.sourceFilter = "ALL";
+    this.state.writingState.searchTerm = "";
 
-    if (!listEl) return;
+    const chSel = document.getElementById("writingChapterFilter");
+    if (chSel) chSel.value = "ALL";
+    const srcSel = document.getElementById("writingSourceFilter");
+    if (srcSel) srcSel.value = "ALL";
+    const sInput = document.getElementById("writingSearchInput");
+    if (sInput) sInput.value = "";
 
-    // Populate dropdowns once if empty
-    if (subFilter && subFilter.children.length <= 1 && typeof ICAI_METADATA !== "undefined") {
-      subFilter.innerHTML = '<option value="ALL">All Subjects</option>';
-      ICAI_METADATA.subjects.forEach(s => {
-        subFilter.innerHTML += `<option value="${s.id}">${s.paper}: ${s.name}</option>`;
-      });
-      subFilter.addEventListener("change", (e) => {
-        App.state.writingFilter.subject = e.target.value;
-        App.state.writingFilter.chapter = "ALL";
-        App.updateChapterFilterDropdown("writingChapterFilter", e.target.value);
-        App.renderWritingQuestions();
-      });
-    }
+    this.renderWritingQuestions();
+  },
 
-    const chFilter = document.getElementById("writingChapterFilter");
-    if (chFilter && !chFilter.dataset.hasListener) {
-      chFilter.dataset.hasListener = "true";
-      chFilter.addEventListener("change", (e) => {
-        App.state.writingFilter.chapter = e.target.value;
-        App.renderWritingQuestions();
-      });
-    }
+  renderWritingSubjectTabs() {
+    const tabsContainer = document.getElementById("writingSubjectTabs");
+    if (!tabsContainer || typeof ICAI_METADATA === "undefined") return;
 
-    if (srcFilter && srcFilter.children.length <= 1) {
-      srcFilter.innerHTML = `
-        <option value="ALL">All Sources (SM, RTP, MTP, PYQ)</option>
-        <option value="RTP">Revision Test Paper (RTP)</option>
-        <option value="MTP">Mock Test Paper (MTP)</option>
-        <option value="PYQ">Past Year Question (PYQ)</option>
-        <option value="SM">Study Material (SM)</option>
+    const activeSub = this.state.writingState.activeSubject || "FR";
+    const subjects = ICAI_METADATA.subjects;
+    const allQuestions = this.state.allWritingQuestions || [];
+
+    tabsContainer.innerHTML = subjects.map(sub => {
+      const isActive = sub.id === activeSub;
+      const count = allQuestions.filter(q => q.subjectId === sub.id).length;
+      return `
+        <button 
+          type="button"
+          class="repo-sub-pill ${isActive ? 'active' : ''}" 
+          style="${isActive ? `background-color: ${sub.color};` : ''}"
+          onclick="App.setWritingSubject('${sub.id}')"
+          title="${sub.paper}: ${sub.name}">
+          <i class="fa-solid ${sub.icon || 'fa-pen-to-square'}"></i>
+          <span>${sub.id}</span>
+          <span class="repo-sub-pill-count">${count} Questions</span>
+        </button>
       `;
-      srcFilter.addEventListener("change", (e) => {
-        App.state.writingFilter.source = e.target.value;
-        App.renderWritingQuestions();
-      });
-    }
+    }).join("");
+  },
 
-    if (searchInput && !searchInput.dataset.hasListener) {
-      searchInput.dataset.hasListener = "true";
-      searchInput.addEventListener("input", (e) => {
-        App.state.writingFilter.search = e.target.value;
-        App.renderWritingQuestions();
-      });
-    }
+  populateWritingChapterFilter() {
+    const sel = document.getElementById("writingChapterFilter");
+    if (!sel) return;
 
-    const searchTerm = (this.state.writingFilter.search || "").toLowerCase().trim();
-    const fSub = this.state.writingFilter.subject;
-    const fCh = this.state.writingFilter.chapter || "ALL";
-    const fSrc = this.state.writingFilter.source;
+    const activeSub = this.state.writingState.activeSubject || "FR";
+    const currentVal = this.state.writingState.chapterFilter || "ALL";
+    const allQuestions = this.state.allWritingQuestions || [];
 
-    const filtered = this.state.allWritingQuestions.filter(q => {
-      if (fSub !== "ALL" && q.subjectId !== fSub) return false;
-      if (fCh !== "ALL" && q.chapter !== fCh) return false;
-      if (fSrc !== "ALL" && q.source !== fSrc) return false;
+    const subjectQuestions = allQuestions.filter(q => q.subjectId === activeSub);
+    const chapterCounts = {};
+    subjectQuestions.forEach(q => {
+      const ch = q.chapter || "General / Practical";
+      chapterCounts[ch] = (chapterCounts[ch] || 0) + 1;
+    });
+
+    sel.innerHTML = `<option value="ALL">All Chapters (${subjectQuestions.length})</option>`;
+    Object.keys(chapterCounts).sort().forEach(ch => {
+      const count = chapterCounts[ch];
+      sel.innerHTML += `<option value="${this.escapeHTML(ch)}" ${ch === currentVal ? 'selected' : ''}>${this.escapeHTML(ch)} (${count})</option>`;
+    });
+  },
+
+  getFilteredWritingQuestions() {
+    const activeSub = this.state.writingState.activeSubject || "FR";
+    const chFilter = this.state.writingState.chapterFilter || "ALL";
+    const srcFilter = this.state.writingState.sourceFilter || "ALL";
+    const searchTerm = (this.state.writingState.searchTerm || "").toLowerCase().trim();
+
+    return (this.state.allWritingQuestions || []).filter(q => {
+      if (q.subjectId !== activeSub) return false;
+      if (chFilter !== "ALL" && q.chapter !== chFilter) return false;
+      if (srcFilter !== "ALL" && q.source !== srcFilter) return false;
       if (searchTerm) {
         const inTitle = (q.title || "").toLowerCase().includes(searchTerm);
         const inCh = (q.chapter || "").toLowerCase().includes(searchTerm);
         const inQ = (q.question || "").toLowerCase().includes(searchTerm);
-        if (!inTitle && !inCh && !inQ) return false;
+        const inRef = (q.reference || "").toLowerCase().includes(searchTerm);
+        const inItem = (q.itemRef || "").toLowerCase().includes(searchTerm);
+        if (!inTitle && !inCh && !inQ && !inRef && !inItem) return false;
       }
       return true;
     });
+  },
 
-    if (countEl) countEl.textContent = `${filtered.length} Descriptive Questions found`;
+  renderWritingQuestions() {
+    // 1. Render Subject Tabs with counts
+    this.renderWritingSubjectTabs();
 
-    if (filtered.length === 0) {
-      listEl.innerHTML = `
+    // 2. Populate Chapter Filter Dropdown with counts
+    this.populateWritingChapterFilter();
+
+    // 3. Sync Toolbar Filters
+    const chSel = document.getElementById("writingChapterFilter");
+    if (chSel && this.state.writingState.chapterFilter) {
+      chSel.value = this.state.writingState.chapterFilter;
+    }
+    const srcSel = document.getElementById("writingSourceFilter");
+    if (srcSel && this.state.writingState.sourceFilter) {
+      srcSel.value = this.state.writingState.sourceFilter;
+    }
+    const searchInput = document.getElementById("writingSearchInput");
+    if (searchInput && this.state.writingState.searchTerm !== undefined) {
+      searchInput.value = this.state.writingState.searchTerm;
+    }
+
+    // 4. Retrieve filtered descriptive questions
+    const filtered = this.getFilteredWritingQuestions();
+    const totalQs = filtered.length;
+
+    // Boundary check for current index
+    if (this.state.writingState.currentIndex >= totalQs) {
+      this.state.writingState.currentIndex = Math.max(0, totalQs - 1);
+    }
+    if (this.state.writingState.currentIndex < 0) {
+      this.state.writingState.currentIndex = 0;
+    }
+    const currentIdx = this.state.writingState.currentIndex;
+
+    // 5. Update Navigation Toolbar
+    const indexChip = document.getElementById("writingQuestionIndexChip");
+    if (indexChip) {
+      if (totalQs === 0) {
+        indexChip.innerHTML = `<i class="fa-solid fa-file-circle-question"></i> No Questions Found`;
+      } else {
+        indexChip.innerHTML = `<i class="fa-solid fa-file-pen"></i> Descriptive Question ${currentIdx + 1} of ${totalQs}`;
+      }
+    }
+
+    // Quick jump dropdown
+    const qSelect = document.getElementById("writingQuestionSelect");
+    if (qSelect) {
+      if (totalQs === 0) {
+        qSelect.innerHTML = `<option value="">No Questions</option>`;
+        qSelect.disabled = true;
+      } else {
+        qSelect.disabled = false;
+        qSelect.innerHTML = filtered.map((wq, i) => {
+          const titleSnippet = (wq.title || "Question").substring(0, 48);
+          return `<option value="${i}" ${i === currentIdx ? 'selected' : ''}>Q${i + 1}: ${this.escapeHTML(titleSnippet)} (${wq.marks || 8}M)</option>`;
+        }).join("");
+      }
+    }
+
+    // Prev / Next button states in toolbar
+    const btnPrev = document.getElementById("btnPrevWritingQuestion");
+    const btnNext = document.getElementById("btnNextWritingQuestion");
+    if (btnPrev) btnPrev.disabled = currentIdx <= 0 || totalQs === 0;
+    if (btnNext) btnNext.disabled = currentIdx >= totalQs - 1 || totalQs === 0;
+
+    // 6. Render Workspace (1 Question & Answer on 1 Page)
+    const workspace = document.getElementById("writingWorkspace");
+    if (!workspace) return;
+
+    if (totalQs === 0) {
+      workspace.innerHTML = `
         <div class="empty-state">
-          <i class="fa-solid fa-file-pen fa-3x"></i>
+          <i class="fa-solid fa-file-circle-question fa-3x" style="color: var(--text-muted); margin-bottom: 12px;"></i>
           <h3>No Descriptive Questions Found</h3>
-          <p>Try clearing your filters or click "Add Writing Question" to add new practical questions.</p>
+          <p>No questions match your current chapter, source, or search criteria. Try selecting "All Chapters" or "All Sources".</p>
+          <button class="btn btn-primary" onclick="App.resetWritingFilters()" style="margin-top: 14px;">
+            <i class="fa-solid fa-rotate-left"></i> Reset Writing Filters
+          </button>
         </div>
       `;
       return;
     }
 
-    const hiddenSet = this.state.writingHiddenAnswers || new Set();
+    const currentWQ = filtered[currentIdx];
+    const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === currentWQ.subjectId) : null;
+    const isSM = (currentWQ.source === "SM");
+    const isAnswerHidden = Boolean(this.state.writingHiddenAnswers && this.state.writingHiddenAnswers.has(currentWQ.id));
 
-    listEl.innerHTML = filtered.map(wq => {
-      const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === wq.subjectId) : null;
-      const isSM = (wq.source === "SM");
-      const isOfficialAttemptSource = ["RTP", "MTP", "PYQ"].includes(wq.source);
-      const isAnswerHidden = hiddenSet.has(wq.id);
-
+    // Jump Pills HTML
+    const jumpPillsHtml = filtered.map((wq, i) => {
+      const isActive = i === currentIdx;
       return `
-        <div class="writing-question-card" id="wq-${wq.id}">
-          <div class="wq-header">
-            <div class="tags-group">
-              <span class="badge" style="background-color: ${subMeta ? subMeta.color : '#2563eb'}; color: white;">
-                ${wq.subjectId}
-              </span>
-              <span class="badge badge-source" style="background-color: ${isSM ? '#0ea5e9' : '#8b5cf6'}; color: white;">
-                ${wq.source === 'RTP' ? 'RTP' : wq.source === 'MTP' ? 'MTP' : wq.source === 'PYQ' ? 'Past Exam (PYQ)' : 'Study Material (SM)'}
-              </span>
-              ${isSM ? `
-                ${wq.pageNo ? `<span class="badge badge-page" title="ICAI Study Material Page Number"><i class="fa-solid fa-file-lines"></i> ${wq.pageNo}</span>` : ''}
-                ${wq.itemRef ? `<span class="badge badge-ill" title="Illustration / Practice Problem No"><i class="fa-solid fa-shapes"></i> ${wq.itemRef}</span>` : ''}
-              ` : `
-                ${wq.examSession ? `
-                  <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
-                    <i class="fa-regular fa-calendar-check"></i> ${wq.examSession}
-                  </span>
-                ` : ''}
-                ${wq.itemRef ? `<span class="badge badge-outline" title="Question Reference"><i class="fa-solid fa-tag"></i> ${wq.itemRef}</span>` : ''}
-              `}
-              <span class="badge badge-marks">${wq.marks || 8} Marks</span>
-              <span class="badge badge-outline"><i class="fa-regular fa-folder-open"></i> ${wq.chapter || 'Practical Problem'}</span>
-            </div>
-
-            <div class="wq-card-actions">
-              <button 
-                type="button" 
-                class="btn btn-sm btn-outline wq-toggle-ans-btn" 
-                id="wq-btn-${wq.id}" 
-                onclick="App.toggleWritingAnswer('${wq.id}')"
-                title="Hide / Show Answer for self-practice">
-                <i class="fa-solid ${isAnswerHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                <span>${isAnswerHidden ? 'Show Answer' : 'Hide Answer'}</span>
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-sm btn-primary wq-fullview-btn" 
-                onclick="App.openWritingFullView('${wq.id}')"
-                title="Open Distraction-Free Full View with complete calculations & working notes">
-                <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                <span>Full View</span>
-              </button>
-            </div>
-          </div>
-
-          <h3 class="wq-title">${wq.title || 'Practical Descriptive Problem'}</h3>
-
-          <div class="wq-stem">${App.formatMarkdown(wq.question)}</div>
-
-          <!-- INLINE SOLUTION SECTION (ON SAME PAGE, WITH HIDE / SHOW OPTION) -->
-          <div class="wq-solution-box ${isAnswerHidden ? 'hidden' : ''}" id="wq-ans-${wq.id}">
-            <div class="wq-solution-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
-              <div style="font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 6px;">
-                <i class="fa-solid fa-graduation-cap"></i> ICAI Model Suggested Solution & Step-by-Step Working Notes
-              </div>
-              <button type="button" class="btn btn-xs btn-outline" onclick="App.toggleWritingAnswer('${wq.id}')" style="font-size: 0.75rem; padding: 2px 8px;">
-                <i class="fa-solid fa-eye-slash"></i> Hide Answer
-              </button>
-            </div>
-            <div class="wq-solution-content">
-              ${App.formatMarkdown(wq.solution)}
-              ${wq.reference ? `<p class="reference-tag" style="margin-top: 14px;"><i class="fa-solid fa-book-bookmark"></i> <strong>Statutory / Official Reference:</strong> ${wq.reference}</p>` : ''}
-            </div>
-          </div>
-        </div>
+        <button 
+          type="button" 
+          class="q-jump-pill ${isActive ? 'active' : ''}" 
+          onclick="App.jumpToWritingQuestion(${i})" 
+          title="Jump to Question ${i + 1}: ${this.escapeHTML(wq.title || '')}">
+          ${i + 1}
+        </button>
       `;
     }).join("");
+
+    workspace.innerHTML = `
+      <!-- TOP QUESTION JUMP PILLS STRIP -->
+      <div class="wq-jump-pills-row">
+        <span class="wq-jump-pills-label">
+          <i class="fa-solid fa-list-ol"></i> Question Navigator:
+        </span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          ${jumpPillsHtml}
+        </div>
+      </div>
+
+      <!-- SINGLE QUESTION & ANSWER CARD (1 PER PAGE) -->
+      <div class="writing-question-card" id="wq-${currentWQ.id}" style="margin-bottom: 0;">
+        <div class="wq-header">
+          <div class="tags-group">
+            <span class="badge" style="background-color: ${subMeta ? subMeta.color : '#2563eb'}; color: white;">
+              ${currentWQ.subjectId}
+            </span>
+            <span class="badge badge-source" style="background-color: ${isSM ? '#0ea5e9' : '#8b5cf6'}; color: white;">
+              ${currentWQ.source === 'RTP' ? 'Revision Test Paper (RTP)' : currentWQ.source === 'MTP' ? 'Model Test Paper (MTP)' : currentWQ.source === 'PYQ' ? 'Past Exam Paper (PYQ)' : 'Study Material (SM)'}
+            </span>
+            ${isSM ? `
+              ${currentWQ.pageNo ? `<span class="badge badge-page" title="ICAI Study Material Page Number"><i class="fa-solid fa-file-lines"></i> ${currentWQ.pageNo}</span>` : ''}
+              ${currentWQ.itemRef ? `<span class="badge badge-ill" title="Illustration / Practice Problem No"><i class="fa-solid fa-shapes"></i> ${currentWQ.itemRef}</span>` : ''}
+            ` : `
+              ${currentWQ.examSession ? `
+                <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
+                  <i class="fa-regular fa-calendar-check"></i> ${currentWQ.examSession}
+                </span>
+              ` : ''}
+              ${currentWQ.itemRef ? `<span class="badge badge-outline" title="Question Reference"><i class="fa-solid fa-tag"></i> ${currentWQ.itemRef}</span>` : ''}
+            `}
+            <span class="badge badge-marks">${currentWQ.marks || 8} Marks</span>
+            <span class="badge badge-outline"><i class="fa-regular fa-folder-open"></i> ${currentWQ.chapter || 'Practical Problem'}</span>
+          </div>
+
+          <div class="wq-card-actions">
+            <button 
+              type="button" 
+              class="btn btn-sm btn-outline wq-toggle-ans-btn" 
+              id="wq-btn-${currentWQ.id}" 
+              onclick="App.toggleWritingAnswer('${currentWQ.id}')"
+              title="Hide / Show Answer for self-practice">
+              <i class="fa-solid ${isAnswerHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+              <span>${isAnswerHidden ? 'Show Answer' : 'Hide Answer'}</span>
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-primary wq-fullview-btn" 
+              onclick="App.openWritingFullView('${currentWQ.id}')"
+              title="Open Distraction-Free Full View with complete calculations & working notes">
+              <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+              <span>Full View</span>
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-outline" 
+              onclick="window.print()"
+              title="Print Question and Model Solution">
+              <i class="fa-solid fa-print"></i>
+              <span>Print</span>
+            </button>
+          </div>
+        </div>
+
+        <h3 class="wq-title">${this.escapeHTML(currentWQ.title || 'Practical Descriptive Problem')}</h3>
+
+        <div class="wq-stem">${App.formatMarkdown(currentWQ.question)}</div>
+
+        <!-- INLINE SOLUTION SECTION (ON SAME PAGE, WITH HIDE / SHOW OPTION) -->
+        <div class="wq-solution-box ${isAnswerHidden ? 'hidden' : ''}" id="wq-ans-${currentWQ.id}">
+          <div class="wq-solution-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
+            <div style="font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+              <i class="fa-solid fa-graduation-cap"></i> ICAI Model Suggested Solution & Step-by-Step Working Notes
+            </div>
+            <button type="button" class="btn btn-xs btn-outline" onclick="App.toggleWritingAnswer('${currentWQ.id}')" style="font-size: 0.75rem; padding: 2px 8px;">
+              <i class="fa-solid fa-eye-slash"></i> Hide Answer
+            </button>
+          </div>
+          <div class="wq-solution-content">
+            ${App.formatMarkdown(currentWQ.solution)}
+            ${currentWQ.reference ? `<p class="reference-tag" style="margin-top: 16px;"><i class="fa-solid fa-book-bookmark"></i> <strong>Statutory / Official Reference:</strong> ${this.escapeHTML(currentWQ.reference)}</p>` : ''}
+          </div>
+        </div>
+
+        ${isAnswerHidden ? `
+          <div style="margin-top: 16px; padding: 14px 18px; background: rgba(16, 185, 129, 0.08); border: 1.5px dashed #10b981; border-radius: var(--radius-sm); text-align: center;">
+            <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--text-main);">
+              <i class="fa-solid fa-lightbulb" style="color: #f59e0b; margin-right: 6px;"></i>
+              <strong>Self-Practice Mode:</strong> The suggested solution is currently hidden. Attempt solving this question on paper, then click below to verify your workings.
+            </p>
+            <button type="button" class="btn btn-sm btn-primary" onclick="App.toggleWritingAnswer('${currentWQ.id}')">
+              <i class="fa-solid fa-eye"></i> Show Suggested Answer & Calculations
+            </button>
+          </div>
+        ` : ''}
+
+        <!-- BOTTOM NAVIGATION BAR (PREV / JUMP / NEXT) -->
+        <div class="wq-bottom-nav">
+          <button 
+            type="button" 
+            class="btn btn-outline" 
+            id="btnPrevWQBottom" 
+            onclick="App.prevWritingQuestion()" 
+            ${currentIdx <= 0 ? 'disabled' : ''}>
+            <i class="fa-solid fa-chevron-left"></i> Previous Question
+          </button>
+
+          <span class="text-muted" style="font-size: 0.85rem; font-weight: 700;">
+            Question ${currentIdx + 1} of ${totalQs}
+          </span>
+
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            id="btnNextWQBottom" 
+            onclick="App.nextWritingQuestion()" 
+            ${currentIdx >= totalQs - 1 ? 'disabled' : ''}>
+            <span>Next Question</span> <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  prevWritingQuestion() {
+    if (this.state.writingState.currentIndex > 0) {
+      this.state.writingState.currentIndex--;
+      this.renderWritingQuestions();
+      const ws = document.getElementById("writingWorkspace");
+      if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  },
+
+  nextWritingQuestion() {
+    const filtered = this.getFilteredWritingQuestions();
+    if (this.state.writingState.currentIndex < filtered.length - 1) {
+      this.state.writingState.currentIndex++;
+      this.renderWritingQuestions();
+      const ws = document.getElementById("writingWorkspace");
+      if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  },
+
+  jumpToWritingQuestion(idx) {
+    this.state.writingState.currentIndex = idx;
+    this.renderWritingQuestions();
+    const ws = document.getElementById("writingWorkspace");
+    if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
+  },
+
+  handleWritingQuestionSelectChange(val) {
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed)) {
+      this.jumpToWritingQuestion(parsed);
+    }
+  },
+
+  handleWritingChapterFilterChange(val) {
+    this.state.writingState.chapterFilter = val;
+    this.state.writingState.currentIndex = 0;
+    this.renderWritingQuestions();
+  },
+
+  handleWritingSourceFilterChange(val) {
+    this.state.writingState.sourceFilter = val;
+    this.state.writingState.currentIndex = 0;
+    this.renderWritingQuestions();
+  },
+
+  handleWritingSearch(val) {
+    this.state.writingState.searchTerm = val;
+    this.state.writingState.currentIndex = 0;
+    this.renderWritingQuestions();
+  },
+
+  resetWritingFilters() {
+    this.state.writingState.chapterFilter = "ALL";
+    this.state.writingState.sourceFilter = "ALL";
+    this.state.writingState.searchTerm = "";
+    this.state.writingState.currentIndex = 0;
+    this.renderWritingQuestions();
   },
 
   toggleWritingAnswer(id) {
     if (!this.state.writingHiddenAnswers) {
       this.state.writingHiddenAnswers = new Set();
     }
-    const isHidden = this.state.writingHiddenAnswers.has(id);
-    if (isHidden) {
+    if (this.state.writingHiddenAnswers.has(id)) {
       this.state.writingHiddenAnswers.delete(id);
     } else {
       this.state.writingHiddenAnswers.add(id);
     }
-    const box = document.getElementById(`wq-ans-${id}`);
-    const btn = document.getElementById(`wq-btn-${id}`);
-    if (box) {
-      box.classList.toggle("hidden", !isHidden);
-    }
-    if (btn) {
-      btn.innerHTML = `
-        <i class="fa-solid ${!isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
-        <span>${!isHidden ? 'Show Answer' : 'Hide Answer'}</span>
-      `;
-    }
-  },
-
-  toggleAllWritingAnswers() {
-    if (!this.state.writingHiddenAnswers) {
-      this.state.writingHiddenAnswers = new Set();
-    }
-    this.state.writingGlobalAnswersHidden = !this.state.writingGlobalAnswersHidden;
-    const hideAll = this.state.writingGlobalAnswersHidden;
-
-    (this.state.allWritingQuestions || []).forEach(q => {
-      if (hideAll) {
-        this.state.writingHiddenAnswers.add(q.id);
-      } else {
-        this.state.writingHiddenAnswers.delete(q.id);
-      }
-    });
-
-    const btn = document.getElementById("btnToggleAllWritingAnswers");
-    if (btn) {
-      btn.innerHTML = `
-        <i class="fa-solid ${hideAll ? 'fa-eye' : 'fa-eye-slash'}"></i>
-        <span>${hideAll ? 'Show All Answers' : 'Hide All Answers'}</span>
-      `;
-    }
-
     this.renderWritingQuestions();
   },
 
@@ -4011,7 +4047,7 @@ const App = {
           ${wq.subjectId} • ${subMeta ? subMeta.name : ''}
         </span>
         <span class="badge badge-source" style="background-color: ${isSM ? '#0ea5e9' : '#8b5cf6'}; color: white;">
-          ${wq.source === 'RTP' ? 'RTP' : wq.source === 'MTP' ? 'MTP' : wq.source === 'PYQ' ? 'Past Exam (PYQ)' : 'Study Material (SM)'}
+          ${wq.source === 'RTP' ? 'Revision Test Paper (RTP)' : wq.source === 'MTP' ? 'Model Test Paper (MTP)' : wq.source === 'PYQ' ? 'Past Exam Paper (PYQ)' : 'Study Material (SM)'}
         </span>
         ${isSM ? `
           ${wq.pageNo ? `<span class="badge badge-page"><i class="fa-solid fa-file-lines"></i> ${wq.pageNo}</span>` : ''}
@@ -4070,65 +4106,6 @@ const App = {
       <i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
       <span>${isHidden ? 'Show Solution' : 'Hide Solution'}</span>
     `;
-  },
-
-  openAddWritingModal() {
-    const subSel = document.getElementById("wqSubject");
-
-    if (subSel && typeof ICAI_METADATA !== "undefined") {
-      subSel.innerHTML = "";
-      ICAI_METADATA.subjects.forEach(s => {
-        subSel.innerHTML += `<option value="${s.id}">${s.paper}: ${s.name}</option>`;
-      });
-      subSel.onchange = (e) => this.updateChapterDropdown("wqChapter", e.target.value);
-      this.updateChapterDropdown("wqChapter", subSel.value || "FR");
-    }
-
-    const modal = document.getElementById("addWritingQuestionModal");
-    if (modal) modal.style.display = "flex";
-  },
-
-  closeAddWritingModal() {
-    const modal = document.getElementById("addWritingQuestionModal");
-    if (modal) modal.style.display = "none";
-  },
-
-  handleAddWritingQuestion(event) {
-    if (event) event.preventDefault();
-    const subjectId = document.getElementById("wqSubject").value;
-    const chapter = document.getElementById("wqChapter").value;
-    const source = document.getElementById("wqSource").value;
-    const examSession = document.getElementById("wqExamSession").value || "Nov 2024";
-    const marks = parseInt(document.getElementById("wqMarks").value) || 8;
-    const title = document.getElementById("wqTitle").value.trim();
-    const question = document.getElementById("wqQuestionText").value.trim();
-    const solution = document.getElementById("wqSolutionText").value.trim();
-    const reference = document.getElementById("wqReference").value.trim();
-
-    if (!title || !question || !solution) {
-      alert("Please fill in Question Title, Problem Statement, and Model Solution.");
-      return;
-    }
-
-    const newWQ = {
-      id: `${subjectId}-WQ-${Date.now().toString(36).toUpperCase()}`,
-      subjectId,
-      chapter,
-      source,
-      examSession,
-      marks,
-      title,
-      question,
-      solution,
-      reference,
-      createdAt: new Date().toISOString()
-    };
-
-    this.saveWritingQuestion(newWQ);
-    alert("Descriptive writing question saved successfully!");
-    this.closeAddWritingModal();
-    document.getElementById("addWritingQuestionForm").reset();
-    this.renderWritingQuestions();
   },
 
   resetAllData() {

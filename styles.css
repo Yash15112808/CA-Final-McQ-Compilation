@@ -4838,5 +4838,51 @@ a[href*="netlify.com"] {
   }
 }
 
+/* ================= DESCRIPTIVE QUESTIONS 1-PER-PAGE NAVIGATOR ================= */
+.writing-subject-strip {
+  margin-bottom: 16px;
+}
+
+.writing-nav-toolbar {
+  margin-bottom: 20px;
+}
+
+.wq-jump-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.wq-jump-pills-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wq-bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+
 
 

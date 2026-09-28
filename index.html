@@ -73,9 +73,6 @@
         <a href="#" class="nav-link" data-tab="mistakes">
           <i class="fa-solid fa-triangle-exclamation"></i> <span>Mistakes Notebook</span>
         </a>
-        <a href="#" class="nav-link" data-tab="importer">
-          <i class="fa-solid fa-file-import"></i> <span>Add & Import</span>
-        </a>
       </nav>
 
       <!-- Sidebar Footer Controls -->
@@ -520,24 +517,32 @@
           <div id="repositoryList"></div>
         </section>
 
-        <!-- TAB: WRITING QUESTIONS (DESCRIPTIVE & PRACTICAL) -->
+        <!-- TAB: WRITING QUESTIONS (DESCRIPTIVE & PRACTICAL - 1 QUESTION/ANSWER PER PAGE) -->
         <section id="tab-writing" class="tab-pane">
-          <div class="filter-toolbar">
-            <div class="search-box">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="writingSearchInput" placeholder="Search descriptive questions by problem stem, standard, or section...">
+          <!-- 1. SUBJECT-WISE TABS WITH QUESTION COUNTS -->
+          <div class="repo-subject-strip writing-subject-strip">
+            <div class="repo-strip-label">
+              <i class="fa-solid fa-graduation-cap"></i> Select Subject:
+            </div>
+            <div class="repo-subject-pills" id="writingSubjectTabs"></div>
+          </div>
+
+          <!-- 2. DESCRIPTIVE QUESTION NAVIGATION TOOLBAR -->
+          <div class="case-nav-toolbar writing-nav-toolbar">
+            <div class="case-nav-left">
+              <span class="case-index-chip" id="writingQuestionIndexChip">
+                <i class="fa-solid fa-file-pen"></i> Descriptive Question 1 of 5
+              </span>
+              <select id="writingQuestionSelect" class="form-control case-dropdown-select" onchange="App.handleWritingQuestionSelectChange(this.value)" title="Jump Directly to Descriptive Question">
+              </select>
             </div>
 
-            <div class="filter-dropdowns">
-              <select id="writingSubjectFilter" class="form-control" style="width: auto;">
-                <option value="ALL">All Subjects</option>
-              </select>
-
-              <select id="writingChapterFilter" class="form-control" style="width: auto; max-width: 250px;">
+            <div class="case-nav-center">
+              <select id="writingChapterFilter" class="form-control case-filter-select" onchange="App.handleWritingChapterFilterChange(this.value)" title="Filter by Chapter">
                 <option value="ALL">All Chapters</option>
               </select>
 
-              <select id="writingSourceFilter" class="form-control" style="width: auto;">
+              <select id="writingSourceFilter" class="form-control case-filter-select" onchange="App.handleWritingSourceFilterChange(this.value)" title="Filter by Source (SM, PYQ, RTP, MTP)">
                 <option value="ALL">All Sources (SM, RTP, MTP, PYQ)</option>
                 <option value="SM">Study Material (SM)</option>
                 <option value="PYQ">Past Exam Papers (PYQ)</option>
@@ -545,24 +550,24 @@
                 <option value="MTP">Model Test Papers (MTP)</option>
               </select>
 
-              <button type="button" class="btn btn-outline" id="btnToggleAllWritingAnswers" onclick="App.toggleAllWritingAnswers()" title="Toggle visibility of all solutions on this page">
-                <i class="fa-solid fa-eye-slash"></i> <span>Hide All Answers</span>
-              </button>
+              <div class="search-box case-search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="writingSearchInput" placeholder="Search descriptive questions..." oninput="App.handleWritingSearch(this.value)">
+              </div>
+            </div>
 
-              <button class="btn btn-primary" onclick="App.openAddWritingModal()">
-                <i class="fa-solid fa-plus"></i> Add Writing Question
+            <div class="case-nav-right">
+              <button class="btn btn-outline" id="btnPrevWritingQuestion" onclick="App.prevWritingQuestion()" title="Previous Descriptive Question">
+                <i class="fa-solid fa-chevron-left"></i> Prev Question
+              </button>
+              <button class="btn btn-primary" id="btnNextWritingQuestion" onclick="App.nextWritingQuestion()" title="Next Descriptive Question">
+                <span>Next Question</span> <i class="fa-solid fa-chevron-right"></i>
               </button>
             </div>
           </div>
 
-          <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-            <span id="writingFilteredCount" class="text-muted" style="font-size: 0.85rem; font-weight: 600;">0 Questions found</span>
-            <button class="btn btn-sm btn-outline" onclick="window.print()">
-              <i class="fa-solid fa-print"></i> Print Questions Sheet
-            </button>
-          </div>
-
-          <div id="writingQuestionsList"></div>
+          <!-- 3. SINGLE ACTIVE DESCRIPTIVE QUESTION & ANSWER WORKSPACE (1 Q/A PER PAGE) -->
+          <div id="writingWorkspace"></div>
         </section>
 
         <!-- TAB 3: PRACTICE MODE -->
@@ -583,177 +588,6 @@
         <!-- TAB 6: MISTAKE NOTEBOOK -->
         <section id="tab-mistakes" class="tab-pane">
           <div id="mistakesContainer"></div>
-        </section>
-
-        <!-- TAB 7: ADD & IMPORT MCQS -->
-        <section id="tab-importer" class="tab-pane">
-          <div class="importer-grid">
-            <!-- Add Single MCQ -->
-            <div class="import-box">
-              <h3><i class="fa-solid fa-circle-plus"></i> Add Single MCQ</h3>
-              <p>Add a new standalone question directly into your permanent repository.</p>
-
-              <form id="addSingleMCQForm">
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label>Subject *</label>
-                    <select id="modalSubjectSelect" class="form-control" required></select>
-                  </div>
-                  <div class="form-group col">
-                    <label>Chapter / Topic *</label>
-                    <select id="modalChapterSelect" class="form-control" required></select>
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label>Source Type *</label>
-                    <select id="modalSourceSelect" class="form-control" required></select>
-                  </div>
-                  <div class="form-group col">
-                    <label>Exam Attempt / Edition *</label>
-                    <input type="text" id="modalExamSession" class="form-control" placeholder="e.g. Nov 2024 / May 2025" required>
-                  </div>
-                  <div class="form-group col">
-                    <label>Marks *</label>
-                    <input type="number" id="modalMarks" class="form-control" value="2" min="1" max="10" required>
-                  </div>
-                  <div class="form-group col">
-                    <label>Difficulty</label>
-                    <select id="modalDifficulty" class="form-control">
-                      <option value="Easy">Easy</option>
-                      <option value="Medium" selected>Medium</option>
-                      <option value="Hard">Hard</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label>Question Text *</label>
-                  <textarea id="modalQuestionText" class="form-control" placeholder="Enter complete question statement..." required></textarea>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label>Option A *</label>
-                    <input type="text" id="modalOptA" class="form-control" required>
-                  </div>
-                  <div class="form-group col">
-                    <label>Option B *</label>
-                    <input type="text" id="modalOptB" class="form-control" required>
-                  </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label>Option C *</label>
-                    <input type="text" id="modalOptC" class="form-control" required>
-                  </div>
-                  <div class="form-group col">
-                    <label>Option D *</label>
-                    <input type="text" id="modalOptD" class="form-control" required>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label>Correct Answer *</label>
-                  <select id="modalCorrectAnswer" class="form-control">
-                    <option value="A">Option A</option>
-                    <option value="B">Option B</option>
-                    <option value="C">Option C</option>
-                    <option value="D">Option D</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label>Explanation & Statutory Rationale</label>
-                  <textarea id="modalExplanation" class="form-control" placeholder="Explain the provision, calculation, or standard..."></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label>Statutory Reference</label>
-                  <input type="text" id="modalReference" class="form-control" placeholder="e.g. Ind AS 115 Para 56 / SA 240 / Section 115BAC">
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">
-                  <i class="fa-solid fa-floppy-disk"></i> Save Question to Bank
-                </button>
-              </form>
-            </div>
-
-            <!-- Case Scenario & Batch Importer -->
-            <div class="import-box">
-              <h3><i class="fa-solid fa-layer-group"></i> Add Integrated Case Scenario</h3>
-              <p>Add a comprehensive case scenario with multiple linked sub-questions.</p>
-
-              <form id="addCaseScenarioForm">
-                <div class="form-row">
-                  <div class="form-group col">
-                    <label>Subject *</label>
-                    <select id="caseSubjectSelect" class="form-control" required></select>
-                  </div>
-                  <div class="form-group col">
-                    <label>Source Type *</label>
-                    <select id="caseSourceSelect" class="form-control" required></select>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label>Case Scenario Title *</label>
-                  <input type="text" id="caseTitleInput" class="form-control" placeholder="e.g. Comprehensive Restructuring & Ind AS 103" required>
-                </div>
-
-                <div class="form-group">
-                  <label>Case Study Narrative / Background Facts *</label>
-                  <textarea id="caseNarrativeInput" class="form-control" style="height: 120px;" placeholder="Paste the narrative case facts, financial figures, transaction details..." required></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label>Sub-Questions Text (Raw Formatted) *</label>
-                  <textarea id="caseSubQInput" class="form-control" style="height: 150px;" placeholder="Paste sub-questions formatted as:&#10;1. Question text&#10;(a) Opt 1&#10;(b) Opt 2&#10;(c) Opt 3&#10;(d) Opt 4&#10;Answer: a&#10;Explanation: ..."></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">
-                  <i class="fa-solid fa-layer-group"></i> Save Integrated Case Study
-                </button>
-              </form>
-
-              <hr style="margin: 24px 0; border: none; border-top: 1px dashed var(--border-color);">
-
-              <!-- Raw Text Parser Importer -->
-              <h3><i class="fa-solid fa-file-code"></i> Batch Import from Raw Text</h3>
-              <p class="text-muted" style="font-size: 0.85rem;">Quickly paste multiple MCQs copied from PDF, RTP, or Word docs.</p>
-
-              <div class="form-row">
-                <div class="form-group col">
-                  <select id="rawImportSubject" class="form-control"></select>
-                </div>
-                <div class="form-group col">
-                  <select id="rawImportSource" class="form-control"></select>
-                </div>
-                <div class="form-group col">
-                  <input type="text" id="rawImportSession" class="form-control" placeholder="e.g. Nov 2024" value="Nov 2024">
-                </div>
-              </div>
-
-              <div class="form-group">
-                <textarea id="rawImportTextarea" class="form-control" style="height: 120px;" placeholder="Paste raw questions here...&#10;1. Question?&#10;(a) Opt A&#10;(b) Opt B&#10;(c) Opt C&#10;(d) Opt D&#10;Answer: B"></textarea>
-              </div>
-
-              <div class="form-row">
-                <button type="button" class="btn btn-secondary col" onclick="App.handleRawImport()">
-                  <i class="fa-solid fa-bolt"></i> Parse & Import
-                </button>
-                <button type="button" class="btn btn-outline col" onclick="App.exportDataJSON()">
-                  <i class="fa-solid fa-download"></i> Backup JSON
-                </button>
-                <button type="button" class="btn btn-outline col" onclick="App.triggerJSONFileImport()">
-                  <i class="fa-solid fa-upload"></i> Restore JSON
-                </button>
-              </div>
-              <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="App.handleJSONFileUpload(event)">
-            </div>
-          </div>
         </section>
 
       </main>
@@ -931,74 +765,6 @@
           <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
       </div>
-    </div>
-  </div>
-
-  <!-- ADD WRITING QUESTION MODAL -->
-  <div id="addWritingQuestionModal" class="modal-backdrop" style="display: none;">
-    <div class="modal-dialog" style="max-width: 680px;">
-      <div class="modal-header">
-        <h3><i class="fa-solid fa-pen-to-square"></i> Add Descriptive / Writing Question</h3>
-        <button type="button" class="icon-btn close-modal-btn" onclick="App.closeAddWritingModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form id="addWritingQuestionForm" onsubmit="App.handleAddWritingQuestion(event)">
-        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-          <div class="form-row">
-            <div class="form-group col">
-              <label>Subject *</label>
-              <select id="wqSubject" class="form-control" required></select>
-            </div>
-            <div class="form-group col">
-              <label>Chapter / Topic *</label>
-              <select id="wqChapter" class="form-control" required></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col">
-              <label>Source Type *</label>
-              <select id="wqSource" class="form-control" required>
-                <option value="RTP">Revision Test Paper (RTP)</option>
-                <option value="MTP">Mock Test Paper (MTP)</option>
-                <option value="PYQ">Past Year Question (PYQ)</option>
-                <option value="SM">ICAI Study Material (SM)</option>
-              </select>
-            </div>
-            <div class="form-group col">
-              <label>Year / Exam Attempt *</label>
-              <input type="text" id="wqExamSession" class="form-control" placeholder="e.g. Nov 2024 / May 2025" required>
-            </div>
-            <div class="form-group col" style="max-width: 100px;">
-              <label>Marks *</label>
-              <input type="number" id="wqMarks" class="form-control" value="8" min="1" max="25" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Question Title *</label>
-            <input type="text" id="wqTitle" class="form-control" placeholder="e.g. Computation of Eligible ITC / Forward vs MMH" required>
-          </div>
-
-          <div class="form-group">
-            <label>Full Problem Statement / Case Question *</label>
-            <textarea id="wqQuestionText" class="form-control" style="height: 120px;" placeholder="Enter complete question facts, figures, and requirements..." required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>ICAI Suggested Answer / Model Solution & Working Notes *</label>
-            <textarea id="wqSolutionText" class="form-control" style="height: 140px;" placeholder="Enter step-by-step working notes, calculations, statutory sections..." required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Statutory Reference</label>
-            <input type="text" id="wqReference" class="form-control" placeholder="e.g. Ind AS 116 Para 24 / Section 17(5)">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="App.closeAddWritingModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Question</button>
-        </div>
-      </form>
     </div>
   </div>
 
