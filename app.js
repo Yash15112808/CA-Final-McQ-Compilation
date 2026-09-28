@@ -285,6 +285,7 @@ const App = {
   },
 
   switchTab(tabId) {
+    if (tabId === "dashboard") tabId = "study";
     this.state.currentTab = tabId;
     this.toggleSidebar(false);
 
@@ -303,7 +304,6 @@ const App = {
     if (titleEl) {
       const titles = {
         study: "Study Management Hub",
-        dashboard: "Analytics & Performance Dashboard",
         repository: "Official ICAI MCQ Master Bank",
         writing: "Descriptive & Practical Writing Problems",
         practice: "Active Recall Practice Mode",
@@ -417,8 +417,6 @@ const App = {
   renderCurrentView() {
     switch (this.state.currentTab) {
       case "dashboard":
-        this.renderDashboard();
-        break;
       case "study":
         this.renderStudyView();
         break;
@@ -2679,7 +2677,7 @@ const App = {
       localStorage.removeItem("ICAI_MCQ_USER_DATA_V1");
       this.loadMCQs();
       alert("Database reset to original ICAI master bank.");
-      this.switchTab("dashboard");
+      this.switchTab("study");
     }
   }
 };

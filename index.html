@@ -53,9 +53,6 @@
         <a href="#" class="nav-link active" data-tab="study">
           <i class="fa-solid fa-compass"></i> <span>Study Management</span>
         </a>
-        <a href="#" class="nav-link" data-tab="dashboard">
-          <i class="fa-solid fa-chart-line"></i> <span>Analytics & Coverage</span>
-        </a>
 
         <div class="nav-group-label">PRACTICE & QUESTIONS</div>
         <a href="#" class="nav-link" data-tab="repository">
@@ -384,90 +381,7 @@
           </div>
         </section>
 
-        <!-- TAB 1: DASHBOARD -->
-        <section id="tab-dashboard" class="tab-pane">
-          <div class="metrics-grid">
-            <div class="metric-card">
-              <div class="metric-icon" style="background-color: var(--primary-light); color: var(--primary);">
-                <i class="fa-solid fa-database"></i>
-              </div>
-              <div class="metric-data">
-                <h3 id="statTotalMCQs">0</h3>
-                <p>Total MCQs Stored</p>
-              </div>
-            </div>
 
-            <div class="metric-card">
-              <div class="metric-icon" style="background-color: var(--info-light); color: var(--info);">
-                <i class="fa-solid fa-pen-nib"></i>
-              </div>
-              <div class="metric-data">
-                <h3 id="statAttempted">0</h3>
-                <p>MCQs Attempted</p>
-              </div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-icon" style="background-color: var(--success-light); color: var(--success);">
-                <i class="fa-solid fa-bullseye"></i>
-              </div>
-              <div class="metric-data">
-                <h3 id="statAccuracy">0%</h3>
-                <p>Overall Accuracy</p>
-              </div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-icon" style="background-color: var(--danger-light); color: var(--danger);">
-                <i class="fa-solid fa-xmark"></i>
-              </div>
-              <div class="metric-data">
-                <h3 id="statMistakes">0</h3>
-                <p>Mistakes Logged</p>
-              </div>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-icon" style="background-color: var(--warning-light); color: var(--warning);">
-                <i class="fa-solid fa-star"></i>
-              </div>
-              <div class="metric-data">
-                <h3 id="statStarred">0</h3>
-                <p>Starred for Revision</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="dashboard-split">
-            <div class="section-box">
-              <h3><i class="fa-solid fa-bars-progress"></i> Subject-Wise Coverage & Accuracy</h3>
-              <div id="dashboardSubjectList"></div>
-            </div>
-
-            <div class="section-box">
-              <h3><i class="fa-solid fa-tags"></i> Official ICAI Sources Bank</h3>
-              <div id="dashboardSourceList" class="sources-grid"></div>
-            </div>
-          </div>
-
-          <div class="section-box">
-            <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Simulated Exam Attempts</h3>
-            <div style="overflow-x: auto;">
-              <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                <thead>
-                  <tr style="text-align: left; border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
-                    <th style="padding: 10px;">Date & Time</th>
-                    <th style="padding: 10px;">Score</th>
-                    <th style="padding: 10px;">Percentage</th>
-                    <th style="padding: 10px;">Duration</th>
-                    <th style="padding: 10px;">Questions</th>
-                  </tr>
-                </thead>
-                <tbody id="dashboardRecentExams"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
 
         <!-- TAB 2: REPOSITORY (ALL MCQs) -->
         <section id="tab-repository" class="tab-pane">
