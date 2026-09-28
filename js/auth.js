@@ -57,7 +57,7 @@ const Auth = {
     return Boolean(this.getCurrentUser());
   },
 
-  async register({ name, regNo, phone, email, dob, attempt, password }) {
+  async register({ name, regNo, phone, email, dob, attempt, examGroup, password }) {
     const normalizedRegNo = (regNo || "").trim().toUpperCase();
     const users = this.getAllUsers();
 
@@ -90,6 +90,7 @@ const Auth = {
       email: email.trim().toLowerCase(),
       dob,
       attempt,
+      examGroup: ["G1", "G2", "BOTH"].includes(examGroup) ? examGroup : "BOTH",
       passwordHash,
       registeredAt: new Date().toISOString()
     };
@@ -129,6 +130,7 @@ const Auth = {
       email: "demo.student@icai.org",
       dob: "2001-05-15",
       attempt: "Nov 2026",
+      examGroup: "BOTH",
       registeredAt: new Date().toISOString()
     };
     this.setCurrentUser(demoUser);

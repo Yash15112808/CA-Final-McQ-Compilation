@@ -4,11 +4,18 @@
  */
 
 const ICAI_METADATA = {
+  groups: {
+    G1: { id: "G1", name: "Group 1", papers: "Papers 1, 2 & 3", subjects: ["FR", "AFM", "AUDIT"] },
+    G2: { id: "G2", name: "Group 2", papers: "Papers 4, 5 & 6", subjects: ["DT", "IDT", "IBS"] },
+    BOTH: { id: "BOTH", name: "Both Groups", papers: "All 6 Papers", subjects: ["FR", "AFM", "AUDIT", "DT", "IDT", "IBS"] }
+  },
   subjects: [
     {
       id: "FR",
       name: "Financial Reporting (FR)",
       paper: "Paper 1",
+      group: "G1",
+      groupName: "Group 1",
       code: "FR",
       color: "#2563eb",
       icon: "fa-calculator",
@@ -34,6 +41,8 @@ const ICAI_METADATA = {
       id: "AFM",
       name: "Advanced Financial Management (AFM)",
       paper: "Paper 2",
+      group: "G1",
+      groupName: "Group 1",
       code: "AFM",
       color: "#059669",
       icon: "fa-chart-line",
@@ -59,6 +68,8 @@ const ICAI_METADATA = {
       id: "AUDIT",
       name: "Adv. Auditing, Assurance & Professional Ethics",
       paper: "Paper 3",
+      group: "G1",
+      groupName: "Group 1",
       code: "AUDIT",
       color: "#7c3aed",
       icon: "fa-shield-halved",
@@ -82,6 +93,8 @@ const ICAI_METADATA = {
       id: "DT",
       name: "Direct Tax Laws & International Taxation",
       paper: "Paper 4",
+      group: "G2",
+      groupName: "Group 2",
       code: "DT",
       color: "#d97706",
       icon: "fa-scale-balanced",
@@ -106,6 +119,8 @@ const ICAI_METADATA = {
       id: "IDT",
       name: "Indirect Tax Laws (GST & Customs)",
       paper: "Paper 5",
+      group: "G2",
+      groupName: "Group 2",
       code: "IDT",
       color: "#dc2626",
       icon: "fa-receipt",
@@ -131,6 +146,8 @@ const ICAI_METADATA = {
       id: "IBS",
       name: "Integrated Business Solutions (IBS)",
       paper: "Paper 6",
+      group: "G2",
+      groupName: "Group 2",
       code: "IBS",
       color: "#0891b2",
       icon: "fa-puzzle-piece",

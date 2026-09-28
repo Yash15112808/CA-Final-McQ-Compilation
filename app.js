@@ -1668,10 +1668,12 @@ const App = {
     const email = document.getElementById("regEmail").value;
     const dob = document.getElementById("regDob").value;
     const attempt = document.getElementById("regAttempt").value;
+    const examGroup = document.getElementById("regExamGroup")?.value || "BOTH";
     const password = document.getElementById("regPassword").value;
 
     try {
-      const newUser = await Auth.register({ name, regNo, phone, email, dob, attempt, password });
+      const newUser = await Auth.register({ name, regNo, phone, email, dob, attempt, examGroup, password });
+      StudyEngine.setSelectedExamGroup(examGroup);
       
       // Reset the registration form
       const regForm = document.getElementById("authRegisterForm");
@@ -1715,6 +1717,7 @@ const App = {
     const user = Auth.getCurrentUser();
     if (!user) return;
     const detailsEl = document.getElementById("studentProfileDetails");
+    const activeGroup = StudyEngine.getSelectedExamGroup();
     if (detailsEl) {
       detailsEl.innerHTML = `
         <div class="profile-field-row">
@@ -1728,6 +1731,16 @@ const App = {
         <div class="profile-field-row">
           <span class="profile-field-label">Target Exam Attempt:</span>
           <span class="profile-field-value"><span class="badge badge-primary">${user.attempt}</span></span>
+        </div>
+        <div class="profile-field-row">
+          <span class="profile-field-label">Upcoming Exam Category:</span>
+          <span class="profile-field-value">
+            <select id="profileExamGroupSelect" class="form-control" style="width: auto; display: inline-block; padding: 4px 8px; font-size: 0.85rem;" onchange="App.setExamGroupCategory(this.value); App.openProfileModal();">
+              <option value="BOTH" ${activeGroup === 'BOTH' ? 'selected' : ''}>Both Groups (All 6 Papers)</option>
+              <option value="G1" ${activeGroup === 'G1' ? 'selected' : ''}>Group 1 (Papers 1, 2 & 3)</option>
+              <option value="G2" ${activeGroup === 'G2' ? 'selected' : ''}>Group 2 (Papers 4, 5 & 6)</option>
+            </select>
+          </span>
         </div>
         <div class="profile-field-row">
           <span class="profile-field-label">Phone Number:</span>
@@ -1757,7 +1770,62 @@ const App = {
   },
 
   // ================= STUDY MANAGEMENT CONTROLLER =================
+  setExamGroupCategory(group) {
+    StudyEngine.setSelectedExamGroup(group);
+
+    // Ensure active tracker subject is within the newly selected group
+    const allowed = StudyEngine.getGroupSubjects(group);
+    if (!allowed.includes(this.state.activeTrackerSubject)) {
+      this.state.activeTrackerSubject = allowed[0] || "FR";
+    }
+
+    this.renderExamGroupSelector();
+    this.renderPreparationProgressBanner();
+    this.renderStudyCountdown();
+    this.renderChapterTracker();
+  },
+
+  renderExamGroupSelector() {
+    const activeGroup = StudyEngine.getSelectedExamGroup();
+    const groupInfo = StudyEngine.getGroupInfo(activeGroup);
+
+    const titleEl = document.getElementById("activeExamCategoryDisplay");
+    if (titleEl) {
+      titleEl.textContent = `${groupInfo.name} (${groupInfo.papersCount} Papers: ${groupInfo.subjects.join(", ")})`;
+    }
+
+    document.querySelectorAll(".category-toggle-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.group === activeGroup);
+    });
+  },
+
+  renderPreparationProgressBanner() {
+    const metrics = StudyEngine.computeSyllabusMetrics();
+    const groupInfo = metrics.groupInfo;
+
+    const readinessEl = document.getElementById("prepOverallReadinessPct");
+    const scopeEl = document.getElementById("prepCategoryScopeText");
+    const ratioEl = document.getElementById("prepLectureRatioText");
+    const barEl = document.getElementById("prepReadinessFillBar");
+    const badgeLec = document.getElementById("prepBadgeLectures");
+    const badgeR1 = document.getElementById("prepBadgeR1");
+    const badgeR2 = document.getElementById("prepBadgeR2");
+    const badgeR3 = document.getElementById("prepBadgeR3");
+
+    if (readinessEl) readinessEl.textContent = `${metrics.overallReadiness}%`;
+    if (scopeEl) scopeEl.textContent = `Target Scope: ${groupInfo.name} (${metrics.totalPapers} Papers • ${metrics.totalChapters} Chapters)`;
+    if (ratioEl) ratioEl.textContent = `${metrics.completedLecturesGlobal} / ${metrics.totalChapters} Chapters with Lectures Completed (${metrics.overallLecturePct}%)`;
+    if (barEl) barEl.style.width = `${metrics.overallReadiness}%`;
+
+    if (badgeLec) badgeLec.textContent = `${metrics.overallLecturePct}%`;
+    if (badgeR1) badgeR1.textContent = `${metrics.overallR1Pct}%`;
+    if (badgeR2) badgeR2.textContent = `${metrics.overallR2Pct}%`;
+    if (badgeR3) badgeR3.textContent = `${metrics.overallR3Pct}%`;
+  },
+
   renderStudyView() {
+    this.renderExamGroupSelector();
+    this.renderPreparationProgressBanner();
     this.switchStudySubtab(this.state.studySubtab || "countdown-calendar");
     this.renderStudyCountdown();
     this.renderCalendar();
@@ -1771,15 +1839,16 @@ const App = {
     const countdown = StudyEngine.calculateRemainingDays();
     const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
     const attempt = user ? user.attempt : "Nov 2026";
+    const groupInfo = StudyEngine.getGroupInfo();
 
     const titleEl = document.getElementById("studyTargetAttemptTitle");
     const dateTextEl = document.getElementById("studyTargetDateText");
     const daysEl = document.getElementById("countdownDays");
     const weeksEl = document.getElementById("countdownWeeks");
 
-    if (titleEl) titleEl.textContent = `CA Final ${attempt} Attempt`;
+    if (titleEl) titleEl.textContent = `CA Final ${attempt} Attempt • ${groupInfo.name}`;
     if (dateTextEl && countdown.targetDate) {
-      dateTextEl.textContent = `Target Exam Window: ${countdown.targetDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+      dateTextEl.textContent = `Target Exam Window: ${countdown.targetDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} • ${groupInfo.label}`;
     }
     if (daysEl) daysEl.textContent = countdown.totalDays;
     if (weeksEl) weeksEl.textContent = countdown.weeks;
@@ -2287,10 +2356,16 @@ const App = {
     const readinessEl = document.getElementById("trackerOverallReadiness");
 
     const metrics = StudyEngine.computeSyllabusMetrics();
-    if (readinessEl) readinessEl.textContent = `${metrics.overallReadiness}%`;
+    if (readinessEl) readinessEl.textContent = `${metrics.overallReadiness}% (${metrics.groupInfo.name})`;
 
-    const subjects = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects : [];
-    const activeSub = this.state.activeTrackerSubject || "FR";
+    const allowed = StudyEngine.getGroupSubjects();
+    const allSubjects = typeof ICAI_METADATA !== "undefined" && ICAI_METADATA.subjects ? ICAI_METADATA.subjects : [];
+    const subjects = allSubjects.filter(s => allowed.includes(s.id));
+
+    if (!allowed.includes(this.state.activeTrackerSubject)) {
+      this.state.activeTrackerSubject = (subjects[0] && subjects[0].id) || allowed[0] || "FR";
+    }
+    const activeSub = this.state.activeTrackerSubject;
 
     if (tabsContainer) {
       tabsContainer.innerHTML = subjects.map(s => {
@@ -2385,6 +2460,7 @@ const App = {
 
   handleToggleChapterLecture(subId, chId) {
     StudyEngine.toggleChapterLecture(subId, chId);
+    this.renderPreparationProgressBanner();
     this.renderChapterTracker();
     this.renderComparisonAnalytics();
   },
@@ -2395,6 +2471,7 @@ const App = {
 
   handleDeliveryModeChange(subId, chId, mode) {
     StudyEngine.setDeliveryMode(subId, chId, mode);
+    this.renderPreparationProgressBanner();
     this.renderChapterTracker();
     this.renderComparisonAnalytics();
   },
@@ -2409,6 +2486,7 @@ const App = {
 
   handleRevisionToggle(subId, chId, stage) {
     StudyEngine.toggleRevision(subId, chId, stage);
+    this.renderPreparationProgressBanner();
     this.renderChapterTracker();
     this.renderComparisonAnalytics();
   },

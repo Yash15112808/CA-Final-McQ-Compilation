@@ -39,6 +39,72 @@ const StudyEngine = {
     this.loadPomodoroSettings();
   },
 
+  // ---------------- EXAM CATEGORY (GROUP 1 / GROUP 2 / BOTH GROUPS) ----------------
+  getSelectedExamGroup() {
+    const key = `ICAI_SELECTED_EXAM_GROUP_${this.getStoragePrefix()}`;
+    const saved = localStorage.getItem(key);
+    if (saved && ["G1", "G2", "BOTH"].includes(saved)) return saved;
+    const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+    if (user && user.examGroup && ["G1", "G2", "BOTH"].includes(user.examGroup)) {
+      return user.examGroup;
+    }
+    return "BOTH";
+  },
+
+  setSelectedExamGroup(group) {
+    const valid = ["G1", "G2", "BOTH"].includes(group) ? group : "BOTH";
+    const key = `ICAI_SELECTED_EXAM_GROUP_${this.getStoragePrefix()}`;
+    localStorage.setItem(key, valid);
+
+    if (typeof Auth !== 'undefined') {
+      const user = Auth.getCurrentUser();
+      if (user) {
+        user.examGroup = valid;
+        Auth.setCurrentUser(user);
+      }
+    }
+    return valid;
+  },
+
+  getGroupSubjects(group = null) {
+    const grp = group || this.getSelectedExamGroup();
+    if (grp === "G1") return ["FR", "AFM", "AUDIT"];
+    if (grp === "G2") return ["DT", "IDT", "IBS"];
+    return ["FR", "AFM", "AUDIT", "DT", "IDT", "IBS"];
+  },
+
+  getGroupInfo(group = null) {
+    const grp = group || this.getSelectedExamGroup();
+    if (grp === "G1") {
+      return {
+        id: "G1",
+        name: "Group 1",
+        label: "Group 1 (Papers 1, 2 & 3)",
+        desc: "Paper 1 (FR) + Paper 2 (AFM) + Paper 3 (AUDIT)",
+        papersCount: 3,
+        subjects: ["FR", "AFM", "AUDIT"]
+      };
+    }
+    if (grp === "G2") {
+      return {
+        id: "G2",
+        name: "Group 2",
+        label: "Group 2 (Papers 4, 5 & 6)",
+        desc: "Paper 4 (DT) + Paper 5 (IDT) + Paper 6 (IBS)",
+        papersCount: 3,
+        subjects: ["DT", "IDT", "IBS"]
+      };
+    }
+    return {
+      id: "BOTH",
+      name: "Both Groups",
+      label: "Both Groups (All 6 Papers)",
+      desc: "Group 1 (FR, AFM, AUDIT) + Group 2 (DT, IDT, IBS)",
+      papersCount: 6,
+      subjects: ["FR", "AFM", "AUDIT", "DT", "IDT", "IBS"]
+    };
+  },
+
   // ---------------- REMAINING DAYS TO EXAM ----------------
   getTargetExamDate() {
     const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
@@ -232,8 +298,11 @@ const StudyEngine = {
     return ch;
   },
 
-  computeSyllabusMetrics() {
+  computeSyllabusMetrics(selectedGroup = null) {
+    const activeGroup = selectedGroup || this.getSelectedExamGroup();
+    const allowedSubjects = this.getGroupSubjects(activeGroup);
     const progress = this.getStudyProgress();
+
     let totalChapters = 0;
     let completedLecturesGlobal = 0;
     let r1Count = 0;
@@ -249,19 +318,34 @@ const StudyEngine = {
       let subR2 = 0;
       let subR3 = 0;
 
+      const isSubInGroup = allowedSubjects.includes(subId);
+
       Object.values(chapters).forEach(c => {
         subChCount++;
-        totalChapters++;
+        if (isSubInGroup) {
+          totalChapters++;
+        }
 
         const isDone = Boolean(c.lectureDone);
         if (isDone) {
           subLecturesDone++;
-          completedLecturesGlobal++;
+          if (isSubInGroup) {
+            completedLecturesGlobal++;
+          }
         }
 
-        if (c.r1Done) { subR1++; r1Count++; }
-        if (c.r2Done) { subR2++; r2Count++; }
-        if (c.r3Done) { subR3++; r3Count++; }
+        if (c.r1Done) {
+          subR1++;
+          if (isSubInGroup) r1Count++;
+        }
+        if (c.r2Done) {
+          subR2++;
+          if (isSubInGroup) r2Count++;
+        }
+        if (c.r3Done) {
+          subR3++;
+          if (isSubInGroup) r3Count++;
+        }
       });
 
       const lecturePct = subChCount > 0 ? Math.round((subLecturesDone / subChCount) * 100) : 0;
@@ -283,7 +367,8 @@ const StudyEngine = {
         r2Pct,
         r3Count: subR3,
         r3Pct,
-        readinessPct
+        readinessPct,
+        isInSelectedGroup: isSubInGroup
       };
     });
 
@@ -295,6 +380,10 @@ const StudyEngine = {
     const overallReadiness = Math.round((overallLecturePct * 0.4) + (overallR1Pct * 0.25) + (overallR2Pct * 0.2) + (overallR3Pct * 0.15));
 
     return {
+      selectedGroup: activeGroup,
+      groupInfo: this.getGroupInfo(activeGroup),
+      allowedSubjects,
+      totalPapers: allowedSubjects.length,
       totalChapters,
       totalLecturesGlobal,
       completedLecturesGlobal,

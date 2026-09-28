@@ -134,6 +134,82 @@
 
         <!-- TAB: STUDY MANAGEMENT -->
         <section id="tab-study" class="tab-pane active">
+          <!-- UPCOMING ATTEMPT EXAM CATEGORY (GROUP 1 / GROUP 2 / BOTH GROUPS) -->
+          <div class="exam-category-header-card">
+            <div class="exam-category-top-row">
+              <div class="exam-category-title-area">
+                <span class="category-kicker"><i class="fa-solid fa-layer-group"></i> Upcoming Examination Category</span>
+                <h3 class="category-heading">
+                  Target Scope: <span id="activeExamCategoryDisplay" class="active-category-highlight">Both Groups (All 6 Papers)</span>
+                </h3>
+                <p class="category-subtext">Select the examination group you are appearing for in your next attempt. Your syllabus readiness, progress metrics, and subject tracker will dynamically adapt.</p>
+              </div>
+
+              <!-- 3 CATEGORIES SELECTOR BUTTONS -->
+              <div class="exam-category-toggles" id="examCategoryToggles">
+                <button type="button" class="category-toggle-btn" data-group="G1" onclick="App.setExamGroupCategory('G1')">
+                  <div class="cat-btn-icon"><i class="fa-solid fa-1"></i></div>
+                  <div class="cat-btn-text">
+                    <strong>Group 1</strong>
+                    <span>Papers 1, 2 & 3</span>
+                  </div>
+                </button>
+                <button type="button" class="category-toggle-btn" data-group="G2" onclick="App.setExamGroupCategory('G2')">
+                  <div class="cat-btn-icon"><i class="fa-solid fa-2"></i></div>
+                  <div class="cat-btn-text">
+                    <strong>Group 2</strong>
+                    <span>Papers 4, 5 & 6</span>
+                  </div>
+                </button>
+                <button type="button" class="category-toggle-btn active" data-group="BOTH" onclick="App.setExamGroupCategory('BOTH')">
+                  <div class="cat-btn-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                  <div class="cat-btn-text">
+                    <strong>Both Groups</strong>
+                    <span>All 6 Papers</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- DYNAMIC PREPARATION PROGRESS STATS BAR -->
+            <div class="category-prep-progress-bar">
+              <div class="prep-progress-left">
+                <div class="prep-gauge-ring">
+                  <span id="prepOverallReadinessPct" class="prep-ring-num">0%</span>
+                  <small>Readiness</small>
+                </div>
+                <div class="prep-progress-details">
+                  <div class="prep-details-header">
+                    <span id="prepCategoryScopeText">Target Scope: Both Groups (6 Papers • 0 Chapters)</span>
+                    <strong id="prepLectureRatioText">0 / 0 Chapters Completed</strong>
+                  </div>
+                  <div class="prep-bar-track">
+                    <div id="prepReadinessFillBar" class="prep-bar-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="prep-stages-badges">
+                <div class="prep-stage-badge">
+                  <span class="stage-label">Lectures Done</span>
+                  <strong id="prepBadgeLectures">0%</strong>
+                </div>
+                <div class="prep-stage-badge">
+                  <span class="stage-label">Revision 1 (R1)</span>
+                  <strong id="prepBadgeR1">0%</strong>
+                </div>
+                <div class="prep-stage-badge">
+                  <span class="stage-label">Revision 2 (R2)</span>
+                  <strong id="prepBadgeR2">0%</strong>
+                </div>
+                <div class="prep-stage-badge">
+                  <span class="stage-label">Revision 3 (R3)</span>
+                  <strong id="prepBadgeR3">0%</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Professional Sub-Navigation Pill Bar -->
           <div class="study-subnav-container">
             <div class="study-subnav-pills">
@@ -767,6 +843,15 @@
               <option value="Self-Paced">Self-Paced / Other</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regExamGroup"><i class="fa-solid fa-layer-group"></i> Target Exam Category *</label>
+          <select id="regExamGroup" class="form-control" required>
+            <option value="BOTH" selected>Both Groups (All 6 Papers: FR, AFM, AUDIT, DT, IDT, IBS)</option>
+            <option value="G1">Group 1 Only (Papers 1, 2 & 3: FR, AFM, AUDIT)</option>
+            <option value="G2">Group 2 Only (Papers 4, 5 & 6: DT, IDT, IBS)</option>
+          </select>
         </div>
 
         <div class="form-group">
