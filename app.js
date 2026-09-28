@@ -15,9 +15,22 @@ const App = {
     comparisonPeriod: "today",
     editingChapter: null,
     theme: "light",
+    repositoryState: {
+      activeSubject: "FR",
+      currentCaseIndex: 0,
+      currentQuestionIndex: 0,
+      selectedAnswers: {},
+      submittedAnswers: {},
+      reviewStatus: {},
+      skippedStatus: {},
+      chapterFilter: "ALL",
+      impFilter: "ALL",
+      searchTerm: "",
+      isCaseExpanded: false
+    },
     repositoryFilter: {
       search: "",
-      subject: "ALL",
+      subject: "FR",
       chapter: "ALL",
       source: "ALL",
       difficulty: "ALL",
@@ -41,6 +54,7 @@ const App = {
   init() {
     this.loadTheme();
     this.checkAuthStatus();
+    this.loadCaseAttempts();
     this.loadMCQs();
     this.loadWritingQuestions();
     this.setupEventListeners();
@@ -336,6 +350,12 @@ const App = {
       titleEl.textContent = titles[tabId] || "ICAI CA Final Portal";
     }
 
+    if (tabId === "repository") {
+      this.syncGlobalSubjectHeaderForRepository(true);
+    } else {
+      this.syncGlobalSubjectHeaderForRepository(false);
+    }
+
     this.renderCurrentView();
   },
 
@@ -548,62 +568,46 @@ const App = {
     }
   },
 
-  // ---------------- REPOSITORY (ALL MCQs) ----------------
-  renderRepository() {
-    const listEl = document.getElementById("repositoryList");
-    const countEl = document.getElementById("repoFilteredCount");
-    if (!listEl) return;
-
-    const searchTerm = (this.state.repositoryFilter.search || "").toLowerCase().trim();
-    const filterSub = this.state.repositoryFilter.subject;
-    const filterCh = this.state.repositoryFilter.chapter || "ALL";
-    const filterSrc = this.state.repositoryFilter.source;
-    const filterDiff = this.state.repositoryFilter.difficulty;
-    const filterImp = this.state.repositoryFilter.imp || "ALL";
-
-    const filtered = this.state.allMCQs.filter(q => {
-      if (filterSub !== "ALL" && q.subjectId !== filterSub) return false;
-      if (filterCh !== "ALL" && q.chapter !== filterCh) return false;
-      if (filterSrc !== "ALL" && q.source !== filterSrc) return false;
-      if (filterDiff !== "ALL" && q.difficulty !== filterDiff) return false;
-
-      if (filterImp === "IMP" && !MCQStats.isImp(q.id)) return false;
-      if (filterImp === "WITH_NOTES" && !MCQStats.getNote(q.id)) return false;
-
-      if (searchTerm) {
-        const inStem = (q.question || "").toLowerCase().includes(searchTerm);
-        const inCh = (q.chapter || "").toLowerCase().includes(searchTerm);
-        const inTitle = (q.title || q.caseTitle || "").toLowerCase().includes(searchTerm);
-        const inScenario = (q.scenarioText || "").toLowerCase().includes(searchTerm);
-        const inNote = (MCQStats.getNote(q.id) || "").toLowerCase().includes(searchTerm);
-        const inOpts = q.options ? q.options.some(o => (o.text || "").toLowerCase().includes(searchTerm)) : false;
-        if (!inStem && !inCh && !inTitle && !inScenario && !inOpts && !inNote) return false;
+  // ---------------- REPOSITORY STATE & PERSISTENCE ----------------
+  loadCaseAttempts() {
+    try {
+      const saved = localStorage.getItem("ICAI_MCQ_CASE_ATTEMPTS_V1");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.submittedAnswers) this.state.repositoryState.submittedAnswers = parsed.submittedAnswers;
+        if (parsed.selectedAnswers) this.state.repositoryState.selectedAnswers = parsed.selectedAnswers;
+        if (parsed.reviewStatus) this.state.repositoryState.reviewStatus = parsed.reviewStatus;
+        if (parsed.skippedStatus) this.state.repositoryState.skippedStatus = parsed.skippedStatus;
       }
-      return true;
-    });
-
-    if (filtered.length === 0) {
-      if (countEl) countEl.textContent = "0 MCQs found";
-      listEl.innerHTML = `
-        <div class="empty-state">
-          <i class="fa-solid fa-file-circle-question fa-3x"></i>
-          <h3>No MCQs Match Your Filter</h3>
-          <p>Try clearing filters or search keywords, or switch categories to explore other topics.</p>
-        </div>
-      `;
-      return;
+    } catch (e) {
+      console.warn("Could not load case attempts", e);
     }
+  },
 
-    // Group filtered MCQs by Case Scenario
-    const caseGroups = new Map();
-    filtered.forEach(q => {
+  saveCaseAttempts() {
+    try {
+      localStorage.setItem("ICAI_MCQ_CASE_ATTEMPTS_V1", JSON.stringify({
+        submittedAnswers: this.state.repositoryState.submittedAnswers,
+        selectedAnswers: this.state.repositoryState.selectedAnswers,
+        reviewStatus: this.state.repositoryState.reviewStatus,
+        skippedStatus: this.state.repositoryState.skippedStatus
+      }));
+    } catch (e) {
+      console.warn("Could not save case attempts", e);
+    }
+  },
+
+  getSubjectCaseStudies(subjectId) {
+    const map = new Map();
+    this.state.allMCQs.forEach(q => {
+      if (q.subjectId !== subjectId) return;
       const hasScenario = Boolean(q.scenarioText && q.scenarioText.trim());
       const groupKey = hasScenario
-        ? `${q.subjectId}___${(q.caseTitle || q.chapter || 'Case Scenario').trim()}`
+        ? (q.caseTitle || q.chapter || 'Case Scenario').trim()
         : `standalone___${q.id}`;
 
-      if (!caseGroups.has(groupKey)) {
-        caseGroups.set(groupKey, {
+      if (!map.has(groupKey)) {
+        map.set(groupKey, {
           isCase: hasScenario,
           subjectId: q.subjectId,
           chapter: q.chapter,
@@ -614,203 +618,474 @@ const App = {
           questions: []
         });
       }
-      caseGroups.get(groupKey).questions.push(q);
+      map.get(groupKey).questions.push(q);
     });
+    return Array.from(map.values());
+  },
 
-    const caseCount = Array.from(caseGroups.values()).filter(g => g.isCase).length;
-    if (countEl) {
-      if (caseCount > 0) {
-        countEl.textContent = `${caseCount} Case Scenarios (${filtered.length} MCQs found)`;
+  getFilteredCaseStudies() {
+    const activeSub = this.state.repositoryState.activeSubject || "FR";
+    let cases = this.getSubjectCaseStudies(activeSub);
+
+    const chFilter = this.state.repositoryState.chapterFilter || "ALL";
+    if (chFilter !== "ALL") {
+      cases = cases.filter(c => c.chapter === chFilter || c.questions.some(q => q.chapter === chFilter));
+    }
+
+    const impFilter = this.state.repositoryState.impFilter || "ALL";
+    if (impFilter === "IMP") {
+      cases = cases.filter(c => c.questions.some(q => MCQStats.isImp(q.id)));
+    } else if (impFilter === "WITH_NOTES") {
+      cases = cases.filter(c => c.questions.some(q => Boolean(MCQStats.getNote(q.id))));
+    }
+
+    const term = (this.state.repositoryState.searchTerm || "").toLowerCase().trim();
+    if (term) {
+      cases = cases.filter(c => {
+        const inTitle = (c.caseTitle || "").toLowerCase().includes(term);
+        const inScenario = (c.scenarioText || "").toLowerCase().includes(term);
+        const inChapter = (c.chapter || "").toLowerCase().includes(term);
+        const inQuestions = c.questions.some(q => {
+          const inStem = (q.question || "").toLowerCase().includes(term);
+          const inOpts = (q.options || []).some(o => (o.text || "").toLowerCase().includes(term));
+          const inNote = (MCQStats.getNote(q.id) || "").toLowerCase().includes(term);
+          return inStem || inOpts || inNote;
+        });
+        return inTitle || inScenario || inChapter || inQuestions;
+      });
+    }
+
+    return cases;
+  },
+
+  getActiveCaseData() {
+    const cases = this.getFilteredCaseStudies();
+    if (cases.length === 0) return null;
+    let idx = this.state.repositoryState.currentCaseIndex || 0;
+    if (idx >= cases.length) idx = 0;
+    if (idx < 0) idx = 0;
+    this.state.repositoryState.currentCaseIndex = idx;
+    return cases[idx];
+  },
+
+  formatScenarioText(raw) {
+    if (!raw) return "";
+    let text = this.escapeHTML(raw);
+    text = text.replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹');
+    text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    // Ensure list items start as separate paragraphs
+    text = text.replace(/\n\s*(\([a-zA-Z0-9]+\)|\d+\.|\([ivxlcdmIVXLCDM]+\))\s*/g, "\n\n$1 ");
+    const paras = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+    return paras.map(p => {
+      const cleanP = p.replace(/\s*\n\s*/g, " ").trim();
+      const isList = /^(\([a-zA-Z0-9]+\)|\d+\.|\([ivxlcdmIVXLCDM]+\))/.test(cleanP);
+      if (isList) {
+        return `<p class="case-list-item">${cleanP}</p>`;
+      }
+      return `<p class="case-paragraph">${cleanP}</p>`;
+    }).join("");
+  },
+
+  // ---------------- REPOSITORY (OFFICIAL ICAI MCQ MASTER BANK) ----------------
+  renderRepository() {
+    const listEl = document.getElementById("repositoryList");
+    if (!listEl) return;
+
+    // 1. Sync global header dropdown to strictly subject-wise (no "ALL")
+    this.syncGlobalSubjectHeaderForRepository(true);
+
+    // 2. Render Subject Strip (FR, AFM, AUDIT, DT, IDT, IBS)
+    this.renderRepoSubjectTabs();
+
+    // 3. Populate Chapter Filter Dropdown for the active subject
+    this.populateRepoChapterFilter();
+
+    // 4. Retrieve filtered Case Studies for active subject
+    const cases = this.getFilteredCaseStudies();
+    const totalCases = cases.length;
+    let currentCaseIdx = this.state.repositoryState.currentCaseIndex || 0;
+    if (currentCaseIdx >= totalCases) currentCaseIdx = Math.max(0, totalCases - 1);
+    this.state.repositoryState.currentCaseIndex = currentCaseIdx;
+
+    // 5. Update Navigation Controls (Index chip, Case selector, Prev/Next buttons)
+    const indexChip = document.getElementById("repoCaseIndexChip");
+    if (indexChip) {
+      indexChip.innerHTML = totalCases > 0
+        ? `<i class="fa-solid fa-book-open"></i> Case Scenario ${currentCaseIdx + 1} of ${totalCases}`
+        : `<i class="fa-solid fa-book-open"></i> 0 Cases Found`;
+    }
+
+    const caseSelect = document.getElementById("repoCaseSelect");
+    if (caseSelect) {
+      if (totalCases === 0) {
+        caseSelect.innerHTML = '<option value="-1">No Case Studies matching filters</option>';
+        caseSelect.disabled = true;
       } else {
-        countEl.textContent = `${filtered.length} MCQs found`;
+        caseSelect.disabled = false;
+        caseSelect.innerHTML = cases.map((c, idx) => `
+          <option value="${idx}" ${idx === currentCaseIdx ? 'selected' : ''}>
+            Case ${idx + 1}: ${c.caseTitle.replace(/Case Scenario \d+:\s*/i, '').slice(0, 48)} (${c.questions.length} Qs)
+          </option>
+        `).join("");
       }
     }
 
-    let html = "";
-    caseGroups.forEach((group) => {
-      const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === group.subjectId) : null;
-      const srcMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.sources.find(s => s.id === group.source) : null;
-      const subColor = subMeta ? subMeta.color : "#2563eb";
-      const srcBadgeColor = srcMeta ? srcMeta.badgeColor : "#8b5cf6";
-      const srcLabel = srcMeta ? srcMeta.label : (group.source || "ICAI Material");
+    const btnPrev = document.getElementById("btnPrevCase");
+    if (btnPrev) {
+      btnPrev.disabled = (currentCaseIdx <= 0 || totalCases === 0);
+    }
 
-      if (group.isCase) {
-        // Clean Indian Rupee notation in the narrative text
-        const cleanScenarioText = this.escapeHTML(group.scenarioText)
-          .replace(/`\s*(\d)/g, '₹$1')
-          .replace(/`/g, '₹');
+    const btnNext = document.getElementById("btnNextCase");
+    if (btnNext) {
+      btnNext.disabled = (currentCaseIdx >= totalCases - 1 || totalCases === 0);
+      btnNext.innerHTML = (currentCaseIdx >= totalCases - 1 && totalCases > 0)
+        ? `<span>Last Case</span> <i class="fa-solid fa-flag-checkered"></i>`
+        : `<span>Next Case Study</span> <i class="fa-solid fa-chevron-right"></i>`;
+    }
 
-        html += `
-          <div class="case-study-compilation-group" id="case-group-${group.questions[0].id}">
-            <!-- 1. CASE SCENARIO HERO BOX (Distinctive Background Color, Open & Untruncated) -->
-            <div class="case-scenario-hero-box">
-              <div class="case-hero-header">
-                <div class="case-hero-tagline">
-                  <span class="case-hero-pill-badge" style="background-color: ${subColor};">
-                    <i class="fa-solid fa-graduation-cap"></i> ${group.subjectId}
-                  </span>
-                  <span class="case-hero-source-badge" style="background-color: ${srcBadgeColor};">
-                    <i class="fa-solid fa-book-open"></i> ${srcLabel}
-                  </span>
-                  <span class="case-hero-edition-badge">
-                    <i class="fa-regular fa-calendar-check"></i> ${group.examSession}
-                  </span>
-                </div>
-                <div class="case-hero-count-badge">
-                  <i class="fa-solid fa-layer-group"></i> ${group.questions.length} ${group.questions.length === 1 ? 'MCQ' : 'MCQs'}
-                </div>
-              </div>
+    // 6. Handle Empty State
+    if (totalCases === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-file-circle-question fa-3x"></i>
+          <h3>No Case Scenarios Match Your Filter</h3>
+          <p>No Case Studies in ${this.state.repositoryState.activeSubject} matched your chapter or search criteria.</p>
+          <button class="btn btn-primary" onclick="App.resetRepoFilters()">
+            <i class="fa-solid fa-rotate-left"></i> Reset Subject Filters
+          </button>
+        </div>
+      `;
+      return;
+    }
 
-              <div class="case-hero-title-row">
-                <div class="case-hero-kicker">
-                  <i class="fa-solid fa-scale-balanced"></i> OFFICIAL ICAI CASE SCENARIO
-                </div>
-                <h3 class="case-hero-title">
-                  <i class="fa-solid fa-file-contract"></i> ${group.caseTitle}
-                </h3>
-                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
-                  <i class="fa-regular fa-folder-open"></i> Relevant Chapter: <strong>${group.chapter || 'Comprehensive / Multi-disciplinary'}</strong>
-                </div>
-              </div>
-
-              <!-- Untruncated, fully open case scenario background facts in distinct colored container -->
-              <div class="case-scenario-content-body">
-                <div class="case-narrative-text">${cleanScenarioText}</div>
-              </div>
-            </div>
-
-            <!-- 2. DIVIDER BEFORE ATTACHED SUB-MCQS -->
-            <div class="case-mcqs-divider">
-              <div class="case-mcqs-divider-title">
-                <i class="fa-solid fa-list-check"></i> Questions Based On Above Case Scenario
-              </div>
-              <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">
-                ${group.questions.length} ${group.questions.length === 1 ? 'Question' : 'Questions'}
-              </div>
-            </div>
-
-            <!-- 3. SUB-MCQs ATTACHED TO THIS CASE SCENARIO -->
-            <div class="case-sub-mcqs-list">
-              ${group.questions.map((q, idx) => this.renderRepoCardHTML(q, idx, group.questions.length, true, subColor, srcBadgeColor, srcLabel)).join("")}
-            </div>
-          </div>
-        `;
-      } else {
-        // Standalone question
-        group.questions.forEach((q, idx) => {
-          html += this.renderRepoCardHTML(q, idx, 1, false, subColor, srcBadgeColor, srcLabel);
-        });
-      }
-    });
-
-    listEl.innerHTML = html;
+    // 7. Render Active Case Study & 1-by-1 MCQ
+    this.renderActiveCaseStudy(cases[currentCaseIdx], totalCases);
   },
 
-  renderRepoCardHTML(q, idx, totalInGroup, isSubCard, subColor, srcBadgeColor, srcLabel) {
-    const isStarred = MCQStats.isStarred(q.id);
-    const isImp = MCQStats.isImp(q.id);
-    const userNote = MCQStats.getNote(q.id);
+  renderRepoSubjectTabs() {
+    const tabsContainer = document.getElementById("repoSubjectTabs");
+    if (!tabsContainer || typeof ICAI_METADATA === "undefined") return;
 
-    // Clean Indian Rupee notation in stem
-    const cleanStem = this.escapeHTML(q.question)
+    const activeSub = this.state.repositoryState.activeSubject || "FR";
+    const subjects = ICAI_METADATA.subjects;
+
+    tabsContainer.innerHTML = subjects.map(sub => {
+      const isActive = sub.id === activeSub;
+      const count = this.getSubjectCaseStudies(sub.id).length;
+      return `
+        <button 
+          type="button"
+          class="repo-sub-pill ${isActive ? 'active' : ''}" 
+          style="${isActive ? `background-color: ${sub.color};` : ''}"
+          onclick="App.setRepositorySubject('${sub.id}')"
+          title="${sub.paper}: ${sub.name}">
+          <i class="fa-solid ${sub.icon || 'fa-book'}"></i>
+          <span>${sub.id}</span>
+          <span class="repo-sub-pill-count">${count} Cases</span>
+        </button>
+      `;
+    }).join("");
+  },
+
+  populateRepoChapterFilter() {
+    const sel = document.getElementById("repoChapterFilter");
+    if (!sel || typeof ICAI_METADATA === "undefined") return;
+
+    const activeSub = this.state.repositoryState.activeSubject || "FR";
+    const currentVal = this.state.repositoryState.chapterFilter || "ALL";
+
+    const cases = this.getSubjectCaseStudies(activeSub);
+    const chapters = new Set();
+    cases.forEach(c => {
+      if (c.chapter) chapters.add(c.chapter);
+      c.questions.forEach(q => {
+        if (q.chapter) chapters.add(q.chapter);
+      });
+    });
+
+    sel.innerHTML = '<option value="ALL">All Chapters in Subject</option>';
+    Array.from(chapters).sort().forEach(ch => {
+      sel.innerHTML += `<option value="${this.escapeHTML(ch)}" ${ch === currentVal ? 'selected' : ''}>${this.escapeHTML(ch)}</option>`;
+    });
+  },
+
+  renderActiveCaseStudy(caseData, totalCases) {
+    const listEl = document.getElementById("repositoryList");
+    if (!listEl || !caseData) return;
+
+    const questions = caseData.questions || [];
+    const totalQs = questions.length;
+    let currentQIdx = this.state.repositoryState.currentQuestionIndex || 0;
+    if (currentQIdx >= totalQs) currentQIdx = 0;
+    this.state.repositoryState.currentQuestionIndex = currentQIdx;
+
+    const currentQ = questions[currentQIdx];
+    if (!currentQ) return;
+
+    const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === caseData.subjectId) : null;
+    const subColor = subMeta ? subMeta.color : "#2563eb";
+    const subName = subMeta ? subMeta.name : caseData.subjectId;
+
+    const formattedNarrative = this.formatScenarioText(caseData.scenarioText);
+    const isExpanded = Boolean(this.state.repositoryState.isCaseExpanded);
+
+    const isStarred = MCQStats.isStarred(currentQ.id);
+    const isImp = MCQStats.isImp(currentQ.id);
+    const userNote = MCQStats.getNote(currentQ.id);
+
+    const submission = this.state.repositoryState.submittedAnswers[currentQ.id];
+    const isReview = Boolean(this.state.repositoryState.reviewStatus[currentQ.id]);
+    const selectedAnswer = this.state.repositoryState.selectedAnswers[currentQ.id];
+
+    const cleanStem = this.escapeHTML(currentQ.question)
       .replace(/`\s*(\d)/g, '₹$1')
       .replace(/`/g, '₹');
 
-    return `
-      <div class="mcq-card ${isSubCard ? 'sub-mcq-card' : ''} ${isImp ? 'is-imp-mcq' : ''}" id="card-${q.id}">
-        <div class="mcq-card-header">
-          <div class="tags-group">
-            ${isSubCard ? `
-              <span class="sub-q-number-pill">Question ${idx + 1} of ${totalInGroup}</span>
-            ` : `
-              <span class="badge" style="background-color: ${subColor}; color: white;">
-                ${q.subjectId}
+    listEl.innerHTML = `
+      <div class="case-study-workspace" id="caseStudyWorkspace">
+        <!-- 1. FIXED & SCROLLABLE CASE SCENARIO HERO BOX (No Blank Space, Full Width) -->
+        <div class="case-scenario-hero-box" id="caseScenarioHero">
+          <div class="case-hero-header">
+            <div class="case-hero-tagline">
+              <span class="case-hero-pill-badge" style="background-color: ${subColor};">
+                <i class="fa-solid fa-graduation-cap"></i> ${caseData.subjectId} • ${subName}
               </span>
-              <span class="badge badge-source" style="background-color: ${srcBadgeColor}; color: white;">
-                <i class="fa-solid fa-book-open"></i> ${srcLabel}
+              <span class="case-hero-source-badge">
+                <i class="fa-solid fa-book-open"></i> ${caseData.source || 'ICAI Case Booklet'}
               </span>
-              <span class="badge badge-outline" title="ICAI Material Source / Edition">
-                <i class="fa-regular fa-calendar-check"></i> ${q.examSession || 'May 2026 Edition'}
+              <span class="case-hero-edition-badge">
+                <i class="fa-regular fa-calendar-check"></i> ${caseData.examSession || 'May 2026 Edition'}
               </span>
-            `}
-            <span class="badge badge-marks">${q.marks || 2} Marks</span>
-            ${userNote ? `<span class="badge badge-success badge-note-indicator" title="Personal Note Attached"><i class="fa-solid fa-note-sticky"></i> Note Added</span>` : ''}
-            ${isImp ? `<span class="badge badge-imp-indicator" style="background-color: #f59e0b; color: white;" title="Marked as Important"><i class="fa-solid fa-star"></i> IMP</span>` : ''}
+              <span class="badge badge-outline" title="Chapter / Ind AS Reference">
+                <i class="fa-regular fa-folder-open"></i> ${caseData.chapter || 'Comprehensive'}
+              </span>
+            </div>
+
+            <div class="case-hero-actions">
+              <button 
+                type="button" 
+                class="btn btn-sm btn-outline case-resize-btn" 
+                onclick="App.toggleCaseScenarioHeight()" 
+                id="caseResizeBtn" 
+                title="Expand / Scroll Case Scenario Narrative">
+                <i class="fa-solid ${isExpanded ? 'fa-compress' : 'fa-expand'}"></i>
+                <span>${isExpanded ? 'Scroll View' : 'Full Expand'}</span>
+              </button>
+            </div>
           </div>
-          <div class="card-actions" style="display: flex; gap: 8px; align-items: center;">
-            <button class="imp-toggle-btn ${isImp ? 'imp-active' : ''}" onclick="App.handleToggleImp('${q.id}')" title="${isImp ? 'Marked as Important (Click to unmark)' : 'Mark as Important (IMP)'}">
-              <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
-              <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
-            </button>
-            <button class="icon-btn star-btn ${isStarred ? 'starred' : ''}" onclick="App.handleToggleStar('${q.id}')" title="Star / Bookmark">
-              <i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>
-            </button>
+
+          <div class="case-hero-title-row">
+            <div class="case-hero-kicker">
+              <i class="fa-solid fa-scale-balanced"></i> OFFICIAL ICAI CASE SCENARIO
+            </div>
+            <h3 class="case-hero-title">
+              <i class="fa-solid fa-file-contract"></i> ${caseData.caseTitle}
+            </h3>
+          </div>
+
+          <!-- Untruncated narrative flowing smoothly across full container width -->
+          <div class="case-scenario-content-body ${isExpanded ? 'expanded' : ''}" id="caseNarrativeBody">
+            <div class="case-narrative-text">
+              ${formattedNarrative}
+            </div>
           </div>
         </div>
 
-        ${!isSubCard ? `
-          <div class="mcq-chapter-title">
-            <i class="fa-regular fa-bookmark"></i> ${q.chapter || 'General Topic'}
-          </div>
-        ` : ''}
+        <!-- 2. QUESTION SECTION: 1-BY-1 MCQ BELOW THE CASE SCENARIO -->
+        <div class="case-question-workspace" id="caseQuestionWorkspace">
+          <!-- Question Header & Navigation Pills -->
+          <div class="question-nav-header">
+            <div class="q-progress-info">
+              <span class="sub-q-number-pill">Question ${currentQIdx + 1} of ${totalQs}</span>
+              <span class="badge badge-marks">${currentQ.marks || 2} Marks</span>
+              ${userNote ? '<span class="badge badge-success badge-note-indicator" title="Personal Note Attached"><i class="fa-solid fa-note-sticky"></i> Note Added</span>' : ''}
+              ${isImp ? '<span class="badge badge-imp-indicator" style="background-color: #f59e0b; color: white;" title="Marked as Important"><i class="fa-solid fa-star"></i> IMP</span>' : ''}
+              ${isReview ? '<span class="badge badge-warning" title="Flagged to Review Later"><i class="fa-solid fa-flag"></i> Marked for Review</span>' : ''}
+            </div>
 
-        <div class="mcq-stem">${cleanStem}</div>
-        <div class="mcq-options-grid">
-          ${(q.options || []).map(opt => {
-            const cleanOptText = this.escapeHTML(opt.text)
-              .replace(/`\s*(\d)/g, '₹$1')
-              .replace(/`/g, '₹');
-            return `
-              <div class="mcq-option-item ${opt.id === q.correctAnswer ? 'repo-correct' : ''}">
-                <span class="option-letter">${opt.id}</span>
-                <span class="option-text">${cleanOptText}</span>
+            <div class="question-pill-selector">
+              <span class="q-selector-label">Questions:</span>
+              <div class="q-pills-list">
+                ${questions.map((q, idx) => {
+                  const isCurrent = idx === currentQIdx;
+                  const qSub = this.state.repositoryState.submittedAnswers[q.id];
+                  const qRev = this.state.repositoryState.reviewStatus[q.id];
+                  const qSkip = this.state.repositoryState.skippedStatus[q.id];
+                  let statusClass = "q-pill-unvisited";
+                  if (qSub) statusClass = qSub.isCorrect ? "q-pill-correct" : "q-pill-incorrect";
+                  else if (qRev) statusClass = "q-pill-review";
+                  else if (qSkip) statusClass = "q-pill-skipped";
+
+                  return `
+                    <button 
+                      type="button"
+                      class="q-jump-pill ${statusClass} ${isCurrent ? 'active' : ''}" 
+                      onclick="App.jumpToCaseQuestion(${idx})" 
+                      title="Jump to Question ${idx + 1} (${qSub ? (qSub.isCorrect ? 'Correct' : 'Incorrect') : (qRev ? 'Marked for Review' : (qSkip ? 'Skipped' : 'Pending'))})">
+                      ${idx + 1}
+                    </button>
+                  `;
+                }).join("")}
               </div>
-            `;
-          }).join("")}
-        </div>
-
-        <details class="mcq-explanation-collapsible">
-          <summary><i class="fa-solid fa-lightbulb"></i> View ICAI Official Reasoning & Solution</summary>
-          <div class="explanation-content">
-            <p><strong>Correct Option: (${q.correctAnswer})</strong></p>
-            <p>${this.escapeHTML(q.explanation || 'Refer to the relevant ICAI provisions.').replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹')}</p>
-            ${q.reference ? `<p class="reference-tag"><i class="fa-solid fa-book-bookmark"></i> Source: ${this.escapeHTML(q.reference)}</p>` : ''}
-          </div>
-        </details>
-
-        <!-- STUDENT PERSONAL NOTE SECTION -->
-        <div class="mcq-student-note-card ${userNote ? 'has-note' : ''}" id="note-card-${q.id}">
-          <div class="mcq-note-header" onclick="App.toggleNoteAccordion('${q.id}')">
-            <div class="note-title-left">
-              <i class="fa-solid fa-pen-to-square"></i>
-              <strong>Student Personal Note / Memory Key</strong>
-              ${userNote ? '<span class="note-badge-pill">Saved</span>' : ''}
             </div>
-            <div class="note-expand-indicator">
-              <small class="text-muted">${userNote ? 'View / Edit Note' : 'Add Note'}</small>
-              <i class="fa-solid fa-chevron-down ${userNote ? 'rotated' : ''}" id="note-chevron-${q.id}"></i>
+
+            <div class="q-header-actions">
+              <button 
+                type="button"
+                class="imp-toggle-btn ${isImp ? 'imp-active' : ''}" 
+                onclick="App.handleToggleImp('${currentQ.id}')" 
+                title="${isImp ? 'Unmark IMP' : 'Mark as Important (IMP)'}">
+                <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
+                <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
+              </button>
+              <button 
+                type="button"
+                class="icon-btn star-btn ${isStarred ? 'starred' : ''}" 
+                onclick="App.handleToggleStar('${currentQ.id}')" 
+                title="Star / Bookmark">
+                <i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>
+              </button>
             </div>
           </div>
-          <div class="mcq-note-drawer" id="note-drawer-${q.id}" style="${userNote ? 'display: block;' : 'display: none;'}">
-            <textarea 
-              class="student-note-textarea" 
-              id="student-note-${q.id}" 
-              placeholder="Write your personal tips, memory keys, tricky points, or statutory notes to remember for this question..."
-              oninput="App.handleStudentNoteInput('${q.id}', this.value)"
-            >${this.escapeHTML(userNote || '')}</textarea>
-            <div class="note-drawer-actions">
-              <small class="text-muted note-status-msg" id="note-status-${q.id}">
-                ${userNote ? 'Note saved in your account ✓' : 'Notes auto-save as you type'}
-              </small>
-              <div style="display: flex; gap: 6px;">
-                ${userNote ? `
-                  <button type="button" class="btn btn-sm btn-outline text-danger" onclick="App.handleClearStudentNote('${q.id}')" title="Delete Note">
-                    <i class="fa-regular fa-trash-can"></i> Clear
-                  </button>
-                ` : ''}
-                <button type="button" class="btn btn-sm btn-primary" onclick="App.handleSaveStudentNote('${q.id}')">
-                  <i class="fa-solid fa-floppy-disk"></i> Save Note
+
+          <!-- Question Stem -->
+          <div class="case-active-q-stem">
+            ${cleanStem}
+          </div>
+
+          <!-- Options List (Interactive before submit, evaluated after submit) -->
+          <div class="case-options-container">
+            ${(currentQ.options || []).map(opt => {
+              const cleanOpt = this.escapeHTML(opt.text).replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹');
+              const isSelected = selectedAnswer === opt.id;
+              const isSubmitted = Boolean(submission);
+              let optClass = "";
+
+              if (isSubmitted) {
+                if (opt.id === currentQ.correctAnswer) {
+                  optClass = "opt-correct";
+                } else if (isSelected && !submission.isCorrect) {
+                  optClass = "opt-incorrect";
+                }
+              } else if (isSelected) {
+                optClass = "opt-selected";
+              }
+
+              return `
+                <div 
+                  class="case-option-item ${optClass} ${isSubmitted ? 'opt-disabled' : ''}" 
+                  onclick="${isSubmitted ? '' : `App.selectCaseOption('${currentQ.id}', '${opt.id}')`}">
+                  <span class="option-letter">${opt.id}</span>
+                  <span class="option-text">${cleanOpt}</span>
+                  ${isSubmitted && opt.id === currentQ.correctAnswer ? '<i class="fa-solid fa-circle-check opt-status-icon text-success"></i>' : ''}
+                  ${isSubmitted && isSelected && !submission.isCorrect ? '<i class="fa-solid fa-circle-xmark opt-status-icon text-danger"></i>' : ''}
+                </div>
+              `;
+            }).join("")}
+          </div>
+
+          <!-- THE 3 SPECIFIED ACTION OPTIONS -->
+          <div class="case-q-action-bar">
+            <div class="q-actions-left">
+              <!-- OPTION 1: MARK FOR REVIEW -->
+              <button 
+                type="button" 
+                class="btn btn-warning ${isReview ? 'active' : ''}" 
+                onclick="App.handleCaseMarkForReview('${currentQ.id}')" 
+                title="Flag this question for review">
+                <i class="fa-solid fa-flag"></i> 
+                <span>${isReview ? 'Marked for Review ✓' : 'Mark for Review'}</span>
+              </button>
+
+              <!-- OPTION 2: SKIP -->
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                onclick="App.handleCaseSkip('${currentQ.id}')" 
+                title="Skip this question and move to next">
+                <i class="fa-solid fa-forward"></i> 
+                <span>Skip</span>
+              </button>
+            </div>
+
+            <div class="q-actions-right">
+              <!-- OPTION 3: SUBMIT ANSWER (or Advance to Next Question / Case) -->
+              ${!submission ? `
+                <button 
+                  type="button" 
+                  class="btn btn-primary btn-submit-answer" 
+                  onclick="App.handleCaseSubmitAnswer('${currentQ.id}')">
+                  <i class="fa-solid fa-circle-check"></i> Submit Answer
                 </button>
+              ` : `
+                ${currentQIdx < totalQs - 1 ? `
+                  <button type="button" class="btn btn-primary" onclick="App.jumpToCaseQuestion(${currentQIdx + 1})">
+                    <span>Next Question</span> <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                ` : `
+                  <button type="button" class="btn btn-success" onclick="App.nextCaseStudy()">
+                    <span>Next Case Study</span> <i class="fa-solid fa-forward-step"></i>
+                  </button>
+                `}
+              `}
+            </div>
+          </div>
+
+          <!-- FEEDBACK & SOLUTION (SHOWN ONLY AFTER SUBMISSION) -->
+          ${submission ? `
+            <div class="submission-feedback-card ${submission.isCorrect ? 'feedback-correct' : 'feedback-incorrect'}">
+              <div class="feedback-header">
+                <i class="fa-solid ${submission.isCorrect ? 'fa-circle-check text-success' : 'fa-circle-xmark text-danger'} fa-2x"></i>
+                <div>
+                  <h4>${submission.isCorrect ? 'Correct! (+2 Marks Awarded)' : 'Incorrect Answer'}</h4>
+                  <p>Your Selection: <strong>(${submission.selected})</strong> | ICAI Official Correct Answer: <strong>(${currentQ.correctAnswer})</strong></p>
+                </div>
+              </div>
+
+              <details class="mcq-explanation-collapsible" open>
+                <summary><i class="fa-solid fa-lightbulb"></i> ICAI Official Statutory Reasoning & Solution</summary>
+                <div class="explanation-content">
+                  <p>${this.escapeHTML(currentQ.explanation || 'Refer to relevant statutory provisions.').replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹')}</p>
+                  ${currentQ.reference ? `<p class="reference-tag"><i class="fa-solid fa-book-bookmark"></i> Source: ${this.escapeHTML(currentQ.reference)}</p>` : ''}
+                </div>
+              </details>
+            </div>
+          ` : ''}
+
+          <!-- STUDENT PERSONAL NOTE DRAWER -->
+          <div class="mcq-student-note-card ${userNote ? 'has-note' : ''}" id="note-card-${currentQ.id}">
+            <div class="mcq-note-header" onclick="App.toggleNoteAccordion('${currentQ.id}')">
+              <div class="note-title-left">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <strong>Student Personal Note / Memory Key</strong>
+                ${userNote ? '<span class="note-badge-pill">Saved</span>' : ''}
+              </div>
+              <div class="note-expand-indicator">
+                <small class="text-muted">${userNote ? 'View / Edit Note' : 'Add Note'}</small>
+                <i class="fa-solid fa-chevron-down ${userNote ? 'rotated' : ''}" id="note-chevron-${currentQ.id}"></i>
+              </div>
+            </div>
+            <div class="mcq-note-drawer" id="note-drawer-${currentQ.id}" style="${userNote ? 'display: block;' : 'display: none;'}">
+              <textarea 
+                class="student-note-textarea" 
+                id="student-note-${currentQ.id}" 
+                placeholder="Write your personal tips, memory keys, tricky points, or statutory notes to remember for this question..."
+                oninput="App.handleStudentNoteInput('${currentQ.id}', this.value)"
+              >${this.escapeHTML(userNote || '')}</textarea>
+              <div class="note-drawer-actions">
+                <small class="text-muted note-status-msg" id="note-status-${currentQ.id}">
+                  ${userNote ? 'Note saved in your account ✓' : 'Notes auto-save as you type'}
+                </small>
+                <div style="display: flex; gap: 6px;">
+                  ${userNote ? `
+                    <button type="button" class="btn btn-sm btn-outline text-danger" onclick="App.handleClearStudentNote('${currentQ.id}')" title="Delete Note">
+                      <i class="fa-regular fa-trash-can"></i> Clear
+                    </button>
+                  ` : ''}
+                  <button type="button" class="btn btn-sm btn-primary" onclick="App.handleSaveStudentNote('${currentQ.id}')">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Note
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -819,61 +1094,226 @@ const App = {
     `;
   },
 
+  selectCaseOption(qId, optId) {
+    if (this.state.repositoryState.submittedAnswers[qId]) return;
+    this.state.repositoryState.selectedAnswers[qId] = optId;
+    this.saveCaseAttempts();
+    const caseData = this.getActiveCaseData();
+    this.renderActiveCaseStudy(caseData);
+  },
+
+  handleCaseMarkForReview(qId) {
+    const isRev = !this.state.repositoryState.reviewStatus[qId];
+    this.state.repositoryState.reviewStatus[qId] = isRev;
+    this.saveCaseAttempts();
+
+    const caseData = this.getActiveCaseData();
+    if (caseData && this.state.repositoryState.currentQuestionIndex < caseData.questions.length - 1) {
+      this.state.repositoryState.currentQuestionIndex++;
+    }
+    this.renderActiveCaseStudy(caseData);
+  },
+
+  handleCaseSkip(qId) {
+    this.state.repositoryState.skippedStatus[qId] = true;
+    this.saveCaseAttempts();
+
+    const caseData = this.getActiveCaseData();
+    if (caseData && this.state.repositoryState.currentQuestionIndex < caseData.questions.length - 1) {
+      this.state.repositoryState.currentQuestionIndex++;
+    }
+    this.renderActiveCaseStudy(caseData);
+  },
+
+  handleCaseSubmitAnswer(qId) {
+    const selected = this.state.repositoryState.selectedAnswers[qId];
+    if (!selected) {
+      alert("Please select an option (A, B, C, or D) before submitting your answer.");
+      return;
+    }
+
+    const caseData = this.getActiveCaseData();
+    const q = (caseData ? caseData.questions : []).find(item => item.id === qId);
+    if (!q) return;
+
+    const isCorrect = selected === q.correctAnswer;
+    this.state.repositoryState.submittedAnswers[qId] = {
+      selected,
+      isCorrect,
+      submitted: true,
+      submittedAt: Date.now()
+    };
+    delete this.state.repositoryState.reviewStatus[qId];
+    this.saveCaseAttempts();
+
+    if (typeof MCQStats !== 'undefined' && typeof MCQStats.recordAttempt === 'function') {
+      MCQStats.recordAttempt(qId, selected, isCorrect);
+    }
+
+    this.renderActiveCaseStudy(caseData);
+  },
+
+  nextCaseStudy() {
+    const cases = this.getFilteredCaseStudies();
+    if (this.state.repositoryState.currentCaseIndex < cases.length - 1) {
+      this.state.repositoryState.currentCaseIndex++;
+      this.state.repositoryState.currentQuestionIndex = 0;
+      this.renderRepository();
+      const hero = document.getElementById("caseScenarioHero");
+      if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  },
+
+  prevCaseStudy() {
+    if (this.state.repositoryState.currentCaseIndex > 0) {
+      this.state.repositoryState.currentCaseIndex--;
+      this.state.repositoryState.currentQuestionIndex = 0;
+      this.renderRepository();
+      const hero = document.getElementById("caseScenarioHero");
+      if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  },
+
+  jumpToCaseQuestion(idx) {
+    const caseData = this.getActiveCaseData();
+    if (!caseData) return;
+    if (idx >= 0 && idx < caseData.questions.length) {
+      this.state.repositoryState.currentQuestionIndex = idx;
+      this.renderActiveCaseStudy(caseData);
+      const qWorkspace = document.getElementById("caseQuestionWorkspace");
+      if (qWorkspace) qWorkspace.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  },
+
+  handleCaseSelectChange(idx) {
+    const parsed = parseInt(idx, 10);
+    if (!isNaN(parsed) && parsed >= 0) {
+      this.state.repositoryState.currentCaseIndex = parsed;
+      this.state.repositoryState.currentQuestionIndex = 0;
+      this.renderRepository();
+      const hero = document.getElementById("caseScenarioHero");
+      if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  },
+
+  handleRepoChapterFilterChange(val) {
+    this.state.repositoryState.chapterFilter = val;
+    this.state.repositoryState.currentCaseIndex = 0;
+    this.state.repositoryState.currentQuestionIndex = 0;
+    this.renderRepository();
+  },
+
+  handleRepoImpFilterChange(val) {
+    this.state.repositoryState.impFilter = val;
+    this.state.repositoryState.currentCaseIndex = 0;
+    this.state.repositoryState.currentQuestionIndex = 0;
+    this.renderRepository();
+  },
+
+  handleRepoSearch(keyword) {
+    this.state.repositoryState.searchTerm = keyword;
+    this.state.repositoryState.currentCaseIndex = 0;
+    this.state.repositoryState.currentQuestionIndex = 0;
+    this.renderRepository();
+  },
+
+  toggleCaseScenarioHeight() {
+    this.state.repositoryState.isCaseExpanded = !this.state.repositoryState.isCaseExpanded;
+    const body = document.getElementById("caseNarrativeBody");
+    const btn = document.getElementById("caseResizeBtn");
+    if (body) {
+      body.classList.toggle("expanded", this.state.repositoryState.isCaseExpanded);
+    }
+    if (btn) {
+      btn.innerHTML = `
+        <i class="fa-solid ${this.state.repositoryState.isCaseExpanded ? 'fa-compress' : 'fa-expand'}"></i>
+        <span>${this.state.repositoryState.isCaseExpanded ? 'Scroll View' : 'Full Expand'}</span>
+      `;
+    }
+  },
+
+  setRepositorySubject(subjectId) {
+    this.state.repositoryState.activeSubject = subjectId;
+    this.state.repositoryState.currentCaseIndex = 0;
+    this.state.repositoryState.currentQuestionIndex = 0;
+    this.state.repositoryState.chapterFilter = "ALL";
+    this.state.repositoryState.searchTerm = "";
+
+    // Sync global filter
+    const globalSel = document.getElementById("globalSubjectFilter");
+    if (globalSel) globalSel.value = subjectId;
+
+    this.renderRepository();
+  },
+
+  resetRepoFilters() {
+    this.state.repositoryState.chapterFilter = "ALL";
+    this.state.repositoryState.impFilter = "ALL";
+    this.state.repositoryState.searchTerm = "";
+    this.state.repositoryState.currentCaseIndex = 0;
+    this.state.repositoryState.currentQuestionIndex = 0;
+    const chSelect = document.getElementById("repoChapterFilter");
+    if (chSelect) chSelect.value = "ALL";
+    const impSelect = document.getElementById("repoImpFilter");
+    if (impSelect) impSelect.value = "ALL";
+    const sInput = document.getElementById("repoSearchInput");
+    if (sInput) sInput.value = "";
+    this.renderRepository();
+  },
+
+  syncGlobalSubjectHeaderForRepository(isRepo) {
+    const globalSelect = document.getElementById("globalSubjectFilter");
+    if (!globalSelect || typeof ICAI_METADATA === "undefined") return;
+
+    if (isRepo) {
+      // Remove "ALL" option in repository mode
+      globalSelect.innerHTML = ICAI_METADATA.subjects.map(s => 
+        `<option value="${s.id}">${s.paper}: ${s.name}</option>`
+      ).join("");
+      globalSelect.value = this.state.repositoryState.activeSubject || "FR";
+    } else {
+      // Restore "ALL" option in other modes
+      globalSelect.innerHTML = '<option value="ALL">All CA Final Subjects</option>' + 
+        ICAI_METADATA.subjects.map(s => `<option value="${s.id}">${s.paper}: ${s.name}</option>`).join("");
+    }
+  },
+
   handleToggleStar(qId) {
     const isStarred = MCQStats.toggleStar(qId);
-    const card = document.getElementById(`card-${qId}`);
-    if (card) {
-      const starBtn = card.querySelector(".star-btn");
-      if (starBtn) {
-        starBtn.classList.toggle("starred", isStarred);
-        starBtn.innerHTML = `<i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>`;
-      }
-    } else {
-      this.renderCurrentView();
+    const starBtn = document.querySelector(".star-btn");
+    if (starBtn) {
+      starBtn.classList.toggle("starred", isStarred);
+      starBtn.innerHTML = `<i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>`;
     }
   },
 
   handleToggleImp(qId) {
     const isImp = MCQStats.toggleImp(qId);
-
-    // If filtering specifically by IMP or WITH_NOTES, re-render to update the view
-    if (this.state.repositoryFilter && this.state.repositoryFilter.imp !== "ALL") {
-      this.renderCurrentView();
-      return;
+    const impBtn = document.querySelector(".imp-toggle-btn");
+    if (impBtn) {
+      impBtn.classList.toggle("imp-active", isImp);
+      impBtn.title = isImp ? "Marked as Important (Click to unmark)" : "Mark as Important (IMP)";
+      impBtn.innerHTML = `
+        <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
+        <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
+      `;
     }
 
-    // In-place smooth update without jumping scroll position
-    const card = document.getElementById(`card-${qId}`);
-    if (card) {
-      card.classList.toggle("is-imp-mcq", isImp);
-      const impBtn = card.querySelector(".imp-toggle-btn");
-      if (impBtn) {
-        impBtn.classList.toggle("imp-active", isImp);
-        impBtn.title = isImp ? "Marked as Important (Click to unmark)" : "Mark as Important (IMP)";
-        impBtn.innerHTML = `
-          <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
-          <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
-        `;
-      }
-
-      const tagsGroup = card.querySelector(".tags-group");
-      if (tagsGroup) {
-        let impBadge = tagsGroup.querySelector(".badge-imp-indicator");
-        if (isImp) {
-          if (!impBadge) {
-            impBadge = document.createElement("span");
-            impBadge.className = "badge badge-imp-indicator";
-            impBadge.style.cssText = "background-color: #f59e0b; color: white;";
-            impBadge.title = "Marked as Important";
-            impBadge.innerHTML = '<i class="fa-solid fa-star"></i> IMP';
-            tagsGroup.appendChild(impBadge);
-          }
-        } else if (impBadge) {
-          impBadge.remove();
+    const progressInfo = document.querySelector(".q-progress-info");
+    if (progressInfo) {
+      let impBadge = progressInfo.querySelector(".badge-imp-indicator");
+      if (isImp) {
+        if (!impBadge) {
+          impBadge = document.createElement("span");
+          impBadge.className = "badge badge-imp-indicator";
+          impBadge.style.cssText = "background-color: #f59e0b; color: white;";
+          impBadge.title = "Marked as Important";
+          impBadge.innerHTML = '<i class="fa-solid fa-star"></i> IMP';
+          progressInfo.appendChild(impBadge);
         }
+      } else if (impBadge) {
+        impBadge.remove();
       }
-    } else {
-      this.renderCurrentView();
     }
   },
 
@@ -909,7 +1349,6 @@ const App = {
     const statusEl = document.getElementById(`note-status-${qId}`);
     if (statusEl) statusEl.textContent = "Saved successfully! ✓";
 
-    // In-place update of note card & badges
     const noteCard = document.getElementById(`note-card-${qId}`);
     if (noteCard) {
       noteCard.classList.toggle("has-note", Boolean(val.trim()));
@@ -929,27 +1368,20 @@ const App = {
       }
     }
 
-    const mcqCard = document.getElementById(`card-${qId}`);
-    if (mcqCard) {
-      const tagsGroup = mcqCard.querySelector(".tags-group");
-      if (tagsGroup) {
-        let noteBadge = tagsGroup.querySelector(".badge-note-indicator");
-        if (val.trim()) {
-          if (!noteBadge) {
-            noteBadge = document.createElement("span");
-            noteBadge.className = "badge badge-success badge-note-indicator";
-            noteBadge.title = "Personal Note Attached";
-            noteBadge.innerHTML = '<i class="fa-solid fa-note-sticky"></i> Note Added';
-            tagsGroup.appendChild(noteBadge);
-          }
-        } else if (noteBadge) {
-          noteBadge.remove();
+    const progressInfo = document.querySelector(".q-progress-info");
+    if (progressInfo) {
+      let noteBadge = progressInfo.querySelector(".badge-note-indicator");
+      if (val.trim()) {
+        if (!noteBadge) {
+          noteBadge = document.createElement("span");
+          noteBadge.className = "badge badge-success badge-note-indicator";
+          noteBadge.title = "Personal Note Attached";
+          noteBadge.innerHTML = '<i class="fa-solid fa-note-sticky"></i> Note Added';
+          progressInfo.appendChild(noteBadge);
         }
+      } else if (noteBadge) {
+        noteBadge.remove();
       }
-    }
-
-    if (this.state.repositoryFilter && this.state.repositoryFilter.imp === "WITH_NOTES") {
-      this.renderCurrentView();
     }
   },
 
@@ -1682,11 +2114,13 @@ const App = {
     if (globalSub) {
       globalSub.addEventListener("change", (e) => {
         const val = e.target.value;
-        App.state.repositoryFilter.subject = val;
-        App.state.practiceFilter.subject = val;
-        const repoSub = document.getElementById("repoSubjectFilter");
-        if (repoSub) repoSub.value = val;
-        App.renderCurrentView();
+        if (App.state.currentTab === "repository") {
+          App.setRepositorySubject(val);
+        } else {
+          App.state.repositoryFilter.subject = val;
+          App.state.practiceFilter.subject = val;
+          App.renderCurrentView();
+        }
       });
     }
 

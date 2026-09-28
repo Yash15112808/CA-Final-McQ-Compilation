@@ -459,43 +459,54 @@
 
 
 
-        <!-- TAB 2: REPOSITORY (ALL MCQs) -->
+        <!-- TAB 2: REPOSITORY (OFFICIAL ICAI MCQ MASTER BANK) -->
         <section id="tab-repository" class="tab-pane">
-          <div class="filter-toolbar">
-            <div class="search-box">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="repoSearchInput" placeholder="Search MCQs by concept, section, keyword, or text...">
+          <!-- 1. STRICTLY SUBJECT-WISE TABS (NO "ALL SUBJECTS") -->
+          <div class="repo-subject-strip">
+            <div class="repo-strip-label">
+              <i class="fa-solid fa-graduation-cap"></i> Select Subject:
+            </div>
+            <div class="repo-subject-pills" id="repoSubjectTabs"></div>
+          </div>
+
+          <!-- 2. CASE STUDY NAVIGATION & CONTROLS TOOLBAR -->
+          <div class="case-nav-toolbar">
+            <div class="case-nav-left">
+              <span class="case-index-chip" id="repoCaseIndexChip">
+                <i class="fa-solid fa-book-open"></i> Case Scenario 1 of 53
+              </span>
+              <select id="repoCaseSelect" class="form-control case-dropdown-select" onchange="App.handleCaseSelectChange(this.value)" title="Jump Directly to Case Study">
+              </select>
             </div>
 
-            <div class="filter-dropdowns">
-              <select id="repoSubjectFilter" class="form-control" style="width: auto;">
-                <option value="ALL">All Subjects</option>
+            <div class="case-nav-center">
+              <select id="repoChapterFilter" class="form-control case-filter-select" onchange="App.handleRepoChapterFilterChange(this.value)" title="Filter by Chapter / Ind AS">
+                <option value="ALL">All Chapters in Subject</option>
               </select>
 
-              <select id="repoChapterFilter" class="form-control" style="width: auto; max-width: 250px;">
-                <option value="ALL">All Chapters</option>
+              <select id="repoImpFilter" class="form-control case-filter-select" onchange="App.handleRepoImpFilterChange(this.value)" title="Filter Questions by Status">
+                <option value="ALL">All Case Studies</option>
+                <option value="IMP">⭐ With IMP Questions Only</option>
+                <option value="WITH_NOTES">📝 With Personal Notes Only</option>
               </select>
 
-              <select id="repoSourceFilter" class="form-control" style="width: auto;">
-                <option value="ALL">All Sources</option>
-              </select>
+              <div class="search-box case-search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="repoSearchInput" placeholder="Search case or MCQ..." oninput="App.handleRepoSearch(this.value)">
+              </div>
+            </div>
 
-              <select id="repoImpFilter" class="form-control" style="width: auto;">
-                <option value="ALL">All Questions</option>
-                <option value="IMP">⭐ Important (IMP) Only</option>
-                <option value="WITH_NOTES">📝 With Personal Notes</option>
-              </select>
-
-              <button class="btn btn-outline" onclick="window.print()" title="Print Current View / Save as PDF">
-                <i class="fa-solid fa-print"></i> Print / PDF
+            <div class="case-nav-right">
+              <button class="btn btn-outline" id="btnPrevCase" onclick="App.prevCaseStudy()" title="Previous Case Study">
+                <i class="fa-solid fa-chevron-left"></i> Prev Case
+              </button>
+              <button class="btn btn-primary" id="btnNextCase" onclick="App.nextCaseStudy()" title="Next Case Study">
+                <span>Next Case Study</span> <i class="fa-solid fa-chevron-right"></i>
               </button>
             </div>
           </div>
 
-          <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-            <span id="repoFilteredCount" class="text-muted" style="font-size: 0.85rem; font-weight: 600;">0 MCQs found</span>
-          </div>
-
+          <!-- 3. ACTIVE CASE STUDY & 1-BY-1 MCQ WORKSPACE -->
           <div id="repositoryList"></div>
         </section>
 
