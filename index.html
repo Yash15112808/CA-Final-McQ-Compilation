@@ -484,10 +484,12 @@
                 <option value="ALL">All Chapters in Subject</option>
               </select>
 
-              <select id="repoImpFilter" class="form-control case-filter-select" onchange="App.handleRepoImpFilterChange(this.value)" title="Filter Questions by Status">
-                <option value="ALL">All Case Studies</option>
-                <option value="IMP">⭐ With IMP Questions Only</option>
-                <option value="WITH_NOTES">📝 With Personal Notes Only</option>
+              <select id="repoStatusFilter" class="form-control case-filter-select" onchange="App.handleRepoStatusFilterChange(this.value)" title="Filter Case Scenarios & MCQs">
+                <option value="ALL">All Case Scenarios</option>
+                <option value="COMPLETED">✅ Completed Cases</option>
+                <option value="PENDING">⏳ Pending / Incomplete Cases</option>
+                <option value="IMP">⭐ With IMP Questions</option>
+                <option value="WITH_NOTES">📝 With Personal Notes</option>
               </select>
 
               <div class="search-box case-search-box">

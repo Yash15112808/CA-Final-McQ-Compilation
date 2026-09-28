@@ -21,9 +21,11 @@ const App = {
       currentQuestionIndex: 0,
       selectedAnswers: {},
       submittedAnswers: {},
+      submittedCases: {},
       reviewStatus: {},
       skippedStatus: {},
       chapterFilter: "ALL",
+      statusFilter: "ALL",
       impFilter: "ALL",
       searchTerm: "",
       isCaseExpanded: false
@@ -576,6 +578,7 @@ const App = {
         const parsed = JSON.parse(saved);
         if (parsed.submittedAnswers) this.state.repositoryState.submittedAnswers = parsed.submittedAnswers;
         if (parsed.selectedAnswers) this.state.repositoryState.selectedAnswers = parsed.selectedAnswers;
+        if (parsed.submittedCases) this.state.repositoryState.submittedCases = parsed.submittedCases;
         if (parsed.reviewStatus) this.state.repositoryState.reviewStatus = parsed.reviewStatus;
         if (parsed.skippedStatus) this.state.repositoryState.skippedStatus = parsed.skippedStatus;
       }
@@ -589,12 +592,39 @@ const App = {
       localStorage.setItem("ICAI_MCQ_CASE_ATTEMPTS_V1", JSON.stringify({
         submittedAnswers: this.state.repositoryState.submittedAnswers,
         selectedAnswers: this.state.repositoryState.selectedAnswers,
+        submittedCases: this.state.repositoryState.submittedCases || {},
         reviewStatus: this.state.repositoryState.reviewStatus,
         skippedStatus: this.state.repositoryState.skippedStatus
       }));
     } catch (e) {
       console.warn("Could not save case attempts", e);
     }
+  },
+
+  getCaseKey(caseData) {
+    if (!caseData) return "";
+    return `${caseData.subjectId}___${(caseData.caseTitle || caseData.chapter || '').trim()}`;
+  },
+
+  isCaseCompleted(caseData) {
+    if (!caseData || !caseData.questions || caseData.questions.length === 0) return false;
+    const caseKey = this.getCaseKey(caseData);
+    if (this.state.repositoryState.submittedCases && this.state.repositoryState.submittedCases[caseKey]?.submitted) {
+      return true;
+    }
+    return caseData.questions.every(q => Boolean(this.state.repositoryState.submittedAnswers[q.id]));
+  },
+
+  formatExplanationText(raw) {
+    if (!raw) return "<p>Refer to relevant statutory provisions and ICAI study guidelines.</p>";
+    let text = this.escapeHTML(raw);
+    text = text.replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹');
+    text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    const paras = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+    if (paras.length <= 1) {
+      return `<p>${text.replace(/\n/g, "<br>")}</p>`;
+    }
+    return paras.map(p => `<p class="explanation-paragraph">${p.replace(/\n/g, "<br>")}</p>`).join("");
   },
 
   getSubjectCaseStudies(subjectId) {
@@ -608,6 +638,7 @@ const App = {
 
       if (!map.has(groupKey)) {
         map.set(groupKey, {
+          caseKey: groupKey,
           isCase: hasScenario,
           subjectId: q.subjectId,
           chapter: q.chapter,
@@ -632,10 +663,14 @@ const App = {
       cases = cases.filter(c => c.chapter === chFilter || c.questions.some(q => q.chapter === chFilter));
     }
 
-    const impFilter = this.state.repositoryState.impFilter || "ALL";
-    if (impFilter === "IMP") {
+    const statusFilter = this.state.repositoryState.statusFilter || this.state.repositoryState.impFilter || "ALL";
+    if (statusFilter === "COMPLETED") {
+      cases = cases.filter(c => this.isCaseCompleted(c));
+    } else if (statusFilter === "PENDING") {
+      cases = cases.filter(c => !this.isCaseCompleted(c));
+    } else if (statusFilter === "IMP") {
       cases = cases.filter(c => c.questions.some(q => MCQStats.isImp(q.id)));
-    } else if (impFilter === "WITH_NOTES") {
+    } else if (statusFilter === "WITH_NOTES") {
       cases = cases.filter(c => c.questions.some(q => Boolean(MCQStats.getNote(q.id))));
     }
 
@@ -701,6 +736,17 @@ const App = {
     this.populateRepoChapterFilter();
 
     // 4. Retrieve filtered Case Studies for active subject
+    const activeSub = this.state.repositoryState.activeSubject || "FR";
+    const allSubjectCases = this.getSubjectCaseStudies(activeSub);
+    const completedSubjectCases = allSubjectCases.filter(c => this.isCaseCompleted(c)).length;
+    const pendingSubjectCases = allSubjectCases.length - completedSubjectCases;
+
+    const statusFilter = this.state.repositoryState.statusFilter || this.state.repositoryState.impFilter || "ALL";
+    const statusSelect = document.getElementById("repoStatusFilter") || document.getElementById("repoImpFilter");
+    if (statusSelect) {
+      statusSelect.value = statusFilter;
+    }
+
     const cases = this.getFilteredCaseStudies();
     const totalCases = cases.length;
     let currentCaseIdx = this.state.repositoryState.currentCaseIndex || 0;
@@ -710,9 +756,19 @@ const App = {
     // 5. Update Navigation Controls (Index chip, Case selector, Prev/Next buttons)
     const indexChip = document.getElementById("repoCaseIndexChip");
     if (indexChip) {
-      indexChip.innerHTML = totalCases > 0
-        ? `<i class="fa-solid fa-book-open"></i> Case Scenario ${currentCaseIdx + 1} of ${totalCases}`
-        : `<i class="fa-solid fa-book-open"></i> 0 Cases Found`;
+      if (totalCases > 0) {
+        let filterSuffix = "";
+        if (statusFilter === "COMPLETED") {
+          filterSuffix = ` <span class="case-chip-filter-tag font-bold text-success">• Completed (${completedSubjectCases})</span>`;
+        } else if (statusFilter === "PENDING") {
+          filterSuffix = ` <span class="case-chip-filter-tag font-bold text-warning">• Pending (${pendingSubjectCases})</span>`;
+        } else {
+          filterSuffix = ` <span class="case-chip-stats text-muted">(${completedSubjectCases} Completed / ${pendingSubjectCases} Pending)</span>`;
+        }
+        indexChip.innerHTML = `<i class="fa-solid fa-book-open"></i> Case Scenario ${currentCaseIdx + 1} of ${totalCases} ${filterSuffix}`;
+      } else {
+        indexChip.innerHTML = `<i class="fa-solid fa-book-open"></i> 0 Cases Found`;
+      }
     }
 
     const caseSelect = document.getElementById("repoCaseSelect");
@@ -722,11 +778,15 @@ const App = {
         caseSelect.disabled = true;
       } else {
         caseSelect.disabled = false;
-        caseSelect.innerHTML = cases.map((c, idx) => `
-          <option value="${idx}" ${idx === currentCaseIdx ? 'selected' : ''}>
-            Case ${idx + 1}: ${c.caseTitle.replace(/Case Scenario \d+:\s*/i, '').slice(0, 48)} (${c.questions.length} Qs)
-          </option>
-        `).join("");
+        caseSelect.innerHTML = cases.map((c, idx) => {
+          const isDone = this.isCaseCompleted(c);
+          const statusTag = isDone ? "✓ Completed" : "⏳ Pending";
+          return `
+            <option value="${idx}" ${idx === currentCaseIdx ? 'selected' : ''}>
+              Case ${idx + 1}: ${c.caseTitle.replace(/Case Scenario \d+:\s*/i, '').slice(0, 42)} [${statusTag}] (${c.questions.length} Qs)
+            </option>
+          `;
+        }).join("");
       }
     }
 
@@ -833,9 +893,35 @@ const App = {
     const isImp = MCQStats.isImp(currentQ.id);
     const userNote = MCQStats.getNote(currentQ.id);
 
+    const isCaseCompleted = this.isCaseCompleted(caseData);
+    const caseKey = this.getCaseKey(caseData);
+
     const submission = this.state.repositoryState.submittedAnswers[currentQ.id];
     const isReview = Boolean(this.state.repositoryState.reviewStatus[currentQ.id]);
     const selectedAnswer = this.state.repositoryState.selectedAnswers[currentQ.id];
+
+    // Compute case scorecard marks according to ICAI scheme
+    let caseTotalMarks = 0;
+    let caseMarksObtained = 0;
+    let caseCorrectCount = 0;
+    let caseWrongCount = 0;
+    let caseSkippedCount = 0;
+
+    questions.forEach(q => {
+      const qMarks = q.marks || 2;
+      caseTotalMarks += qMarks;
+      const sub = this.state.repositoryState.submittedAnswers[q.id];
+      if (sub && sub.isCorrect) {
+        caseMarksObtained += qMarks;
+        caseCorrectCount++;
+      } else if (sub && sub.selected) {
+        caseWrongCount++;
+      } else {
+        caseSkippedCount++;
+      }
+    });
+
+    const casePct = caseTotalMarks > 0 ? Math.round((caseMarksObtained / caseTotalMarks) * 100) : 0;
 
     const cleanStem = this.escapeHTML(currentQ.question)
       .replace(/`\s*(\d)/g, '₹$1')
@@ -851,14 +937,20 @@ const App = {
                 <i class="fa-solid fa-graduation-cap"></i> ${caseData.subjectId} • ${subName}
               </span>
               <span class="case-hero-source-badge">
-                <i class="fa-solid fa-book-open"></i> ${caseData.source || 'ICAI Case Booklet'}
-              </span>
-              <span class="case-hero-edition-badge">
-                <i class="fa-regular fa-calendar-check"></i> ${caseData.examSession || 'May 2026 Edition'}
+                <i class="fa-solid fa-book-open"></i> ${caseData.source || 'ICAI Case Scenario'}
               </span>
               <span class="badge badge-outline" title="Chapter / Ind AS Reference">
                 <i class="fa-regular fa-folder-open"></i> ${caseData.chapter || 'Comprehensive'}
               </span>
+              ${isCaseCompleted ? `
+                <span class="badge badge-success" style="font-weight: 800; font-size: 0.72rem;">
+                  <i class="fa-solid fa-circle-check"></i> Whole Case Submitted
+                </span>
+              ` : `
+                <span class="badge badge-warning" style="font-weight: 700; font-size: 0.72rem;">
+                  <i class="fa-solid fa-clock"></i> In Progress
+                </span>
+              `}
             </div>
 
             <div class="case-hero-actions">
@@ -891,16 +983,67 @@ const App = {
           </div>
         </div>
 
-        <!-- 2. QUESTION SECTION: 1-BY-1 MCQ BELOW THE CASE SCENARIO -->
+        <!-- 2. WHOLE CASE SCENARIO SCORECARD & ICAI EVALUATION REPORT (SHOWN WHEN SUBMITTED) -->
+        ${isCaseCompleted ? `
+          <div class="case-whole-scorecard" id="caseScenarioScorecard">
+            <div class="scorecard-top-row">
+              <div class="scorecard-title-group">
+                <div class="scorecard-kicker"><i class="fa-solid fa-award"></i> ICAI CASE SCENARIO EVALUATION REPORT</div>
+                <h3 class="scorecard-heading">Score: ${caseMarksObtained} / ${caseTotalMarks} Marks <span class="scorecard-pct">(${casePct}%)</span></h3>
+              </div>
+              <div class="scorecard-badge-wrap">
+                <span class="scorecard-eval-badge ${casePct >= 70 ? 'badge-distinction' : (casePct >= 50 ? 'badge-pass' : 'badge-revision')}">
+                  ${casePct >= 70 ? '★ Distinction Standard (≥ 70%)' : (casePct >= 50 ? '✓ ICAI Passing Standard (≥ 50%)' : '⚠ Revision Recommended (< 50%)')}
+                </span>
+              </div>
+              <div class="scorecard-actions">
+                <button type="button" class="btn btn-sm btn-outline" onclick="App.reattemptCaseScenario('${this.escapeHTML(caseKey)}')" title="Reset and re-attempt this Case Scenario">
+                  <i class="fa-solid fa-rotate-left"></i> Re-attempt Case
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="App.nextCaseStudy()" title="Proceed to Next Case Study">
+                  <span>Next Case Study</span> <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="scorecard-stats-grid">
+              <div class="scorecard-kpi-card kpi-correct">
+                <div class="kpi-num">${caseCorrectCount} / ${totalQs}</div>
+                <div class="kpi-lbl">Correct Answers</div>
+              </div>
+              <div class="scorecard-kpi-card kpi-incorrect">
+                <div class="kpi-num">${caseWrongCount} / ${totalQs}</div>
+                <div class="kpi-lbl">Incorrect Answers</div>
+              </div>
+              <div class="scorecard-kpi-card kpi-skipped">
+                <div class="kpi-num">${caseSkippedCount} / ${totalQs}</div>
+                <div class="kpi-lbl">Unattempted</div>
+              </div>
+              <div class="scorecard-kpi-card kpi-total">
+                <div class="kpi-num">${caseMarksObtained} / ${caseTotalMarks}</div>
+                <div class="kpi-lbl">Marks (ICAI Scheme)</div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- 3. QUESTION SECTION: 1-BY-1 MCQ BELOW THE CASE SCENARIO -->
         <div class="case-question-workspace" id="caseQuestionWorkspace">
           <!-- Question Header & Navigation Pills -->
           <div class="question-nav-header">
             <div class="q-progress-info">
               <span class="sub-q-number-pill">Question ${currentQIdx + 1} of ${totalQs}</span>
-              <span class="badge badge-marks">${currentQ.marks || 2} Marks</span>
+              ${isCaseCompleted ? `
+                ${submission && submission.isCorrect
+                  ? `<span class="badge badge-success" style="font-weight: 800;"><i class="fa-solid fa-circle-check"></i> +${currentQ.marks || 2} / ${currentQ.marks || 2} Marks Awarded</span>`
+                  : `<span class="badge badge-danger" style="font-weight: 800;"><i class="fa-solid fa-circle-xmark"></i> 0 / ${currentQ.marks || 2} Marks</span>`
+                }
+              ` : `
+                <span class="badge badge-marks">${currentQ.marks || 2} Marks</span>
+              `}
               ${userNote ? '<span class="badge badge-success badge-note-indicator" title="Personal Note Attached"><i class="fa-solid fa-note-sticky"></i> Note Added</span>' : ''}
               ${isImp ? '<span class="badge badge-imp-indicator" style="background-color: #f59e0b; color: white;" title="Marked as Important"><i class="fa-solid fa-star"></i> IMP</span>' : ''}
-              ${isReview ? '<span class="badge badge-warning" title="Flagged to Review Later"><i class="fa-solid fa-flag"></i> Marked for Review</span>' : ''}
+              ${!isCaseCompleted && isReview ? '<span class="badge badge-warning" title="Flagged to Review Later"><i class="fa-solid fa-flag"></i> Marked for Review</span>' : ''}
             </div>
 
             <div class="question-pill-selector">
@@ -908,20 +1051,28 @@ const App = {
               <div class="q-pills-list">
                 ${questions.map((q, idx) => {
                   const isCurrent = idx === currentQIdx;
-                  const qSub = this.state.repositoryState.submittedAnswers[q.id];
-                  const qRev = this.state.repositoryState.reviewStatus[q.id];
-                  const qSkip = this.state.repositoryState.skippedStatus[q.id];
                   let statusClass = "q-pill-unvisited";
-                  if (qSub) statusClass = qSub.isCorrect ? "q-pill-correct" : "q-pill-incorrect";
-                  else if (qRev) statusClass = "q-pill-review";
-                  else if (qSkip) statusClass = "q-pill-skipped";
+
+                  if (isCaseCompleted) {
+                    const qSub = this.state.repositoryState.submittedAnswers[q.id];
+                    if (qSub && qSub.isCorrect) statusClass = "q-pill-correct";
+                    else if (qSub && qSub.selected) statusClass = "q-pill-incorrect";
+                    else statusClass = "q-pill-skipped";
+                  } else {
+                    const isSel = Boolean(this.state.repositoryState.selectedAnswers[q.id]);
+                    const isRev = Boolean(this.state.repositoryState.reviewStatus[q.id]);
+                    const isSkip = Boolean(this.state.repositoryState.skippedStatus[q.id]);
+                    if (isRev) statusClass = "q-pill-review";
+                    else if (isSel) statusClass = "q-pill-answered";
+                    else if (isSkip) statusClass = "q-pill-skipped";
+                  }
 
                   return `
                     <button 
                       type="button"
                       class="q-jump-pill ${statusClass} ${isCurrent ? 'active' : ''}" 
                       onclick="App.jumpToCaseQuestion(${idx})" 
-                      title="Jump to Question ${idx + 1} (${qSub ? (qSub.isCorrect ? 'Correct' : 'Incorrect') : (qRev ? 'Marked for Review' : (qSkip ? 'Skipped' : 'Pending'))})">
+                      title="Jump to Question ${idx + 1}">
                       ${idx + 1}
                     </button>
                   `;
@@ -931,7 +1082,7 @@ const App = {
 
             <div class="q-header-actions">
               <button 
-                type="button"
+                type="button" 
                 class="imp-toggle-btn ${isImp ? 'imp-active' : ''}" 
                 onclick="App.handleToggleImp('${currentQ.id}')" 
                 title="${isImp ? 'Unmark IMP' : 'Mark as Important (IMP)'}">
@@ -939,7 +1090,7 @@ const App = {
                 <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
               </button>
               <button 
-                type="button"
+                type="button" 
                 class="icon-btn star-btn ${isStarred ? 'starred' : ''}" 
                 onclick="App.handleToggleStar('${currentQ.id}')" 
                 title="Star / Bookmark">
@@ -953,19 +1104,23 @@ const App = {
             ${cleanStem}
           </div>
 
-          <!-- Options List (Interactive before submit, evaluated after submit) -->
+          <!-- Options List (Interactive during attempt, evaluated after whole case submit) -->
           <div class="case-options-container">
             ${(currentQ.options || []).map(opt => {
               const cleanOpt = this.escapeHTML(opt.text).replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹');
               const isSelected = selectedAnswer === opt.id;
-              const isSubmitted = Boolean(submission);
               let optClass = "";
+              let optBadge = "";
 
-              if (isSubmitted) {
+              if (isCaseCompleted) {
                 if (opt.id === currentQ.correctAnswer) {
                   optClass = "opt-correct";
-                } else if (isSelected && !submission.isCorrect) {
+                  optBadge = isSelected
+                    ? '<span class="opt-verdict-badge verdict-student-right"><i class="fa-solid fa-circle-check"></i> Your Choice & Official Answer ✓</span>'
+                    : '<span class="opt-verdict-badge verdict-official"><i class="fa-solid fa-circle-check"></i> ICAI Official Answer ✓</span>';
+                } else if (isSelected) {
                   optClass = "opt-incorrect";
+                  optBadge = '<span class="opt-verdict-badge verdict-student-wrong"><i class="fa-solid fa-circle-xmark"></i> Your Choice ✗</span>';
                 }
               } else if (isSelected) {
                 optClass = "opt-selected";
@@ -973,83 +1128,149 @@ const App = {
 
               return `
                 <div 
-                  class="case-option-item ${optClass} ${isSubmitted ? 'opt-disabled' : ''}" 
-                  onclick="${isSubmitted ? '' : `App.selectCaseOption('${currentQ.id}', '${opt.id}')`}">
+                  class="case-option-item ${optClass} ${isCaseCompleted ? 'opt-disabled' : ''}" 
+                  onclick="${isCaseCompleted ? '' : `App.selectCaseOption('${currentQ.id}', '${opt.id}')`}">
                   <span class="option-letter">${opt.id}</span>
                   <span class="option-text">${cleanOpt}</span>
-                  ${isSubmitted && opt.id === currentQ.correctAnswer ? '<i class="fa-solid fa-circle-check opt-status-icon text-success"></i>' : ''}
-                  ${isSubmitted && isSelected && !submission.isCorrect ? '<i class="fa-solid fa-circle-xmark opt-status-icon text-danger"></i>' : ''}
+                  ${optBadge}
                 </div>
               `;
             }).join("")}
           </div>
 
-          <!-- THE 3 SPECIFIED ACTION OPTIONS -->
+          <!-- ACTION BUTTONS: ATTENDEE MODE VS SUBMITTED REVIEW MODE -->
           <div class="case-q-action-bar">
-            <div class="q-actions-left">
-              <!-- OPTION 1: MARK FOR REVIEW -->
-              <button 
-                type="button" 
-                class="btn btn-warning ${isReview ? 'active' : ''}" 
-                onclick="App.handleCaseMarkForReview('${currentQ.id}')" 
-                title="Flag this question for review">
-                <i class="fa-solid fa-flag"></i> 
-                <span>${isReview ? 'Marked for Review ✓' : 'Mark for Review'}</span>
-              </button>
-
-              <!-- OPTION 2: SKIP -->
-              <button 
-                type="button" 
-                class="btn btn-secondary" 
-                onclick="App.handleCaseSkip('${currentQ.id}')" 
-                title="Skip this question and move to next">
-                <i class="fa-solid fa-forward"></i> 
-                <span>Skip</span>
-              </button>
-            </div>
-
-            <div class="q-actions-right">
-              <!-- OPTION 3: SUBMIT ANSWER (or Advance to Next Question / Case) -->
-              ${!submission ? `
+            ${!isCaseCompleted ? `
+              <div class="q-actions-left">
+                <!-- OPTION 1: MARK FOR REVIEW -->
                 <button 
                   type="button" 
-                  class="btn btn-primary btn-submit-answer" 
-                  onclick="App.handleCaseSubmitAnswer('${currentQ.id}')">
-                  <i class="fa-solid fa-circle-check"></i> Submit Answer
+                  class="btn btn-warning ${isReview ? 'active' : ''}" 
+                  onclick="App.handleCaseMarkForReview('${currentQ.id}')" 
+                  title="Flag this question for review">
+                  <i class="fa-solid fa-flag"></i> 
+                  <span>${isReview ? 'Marked for Review ✓' : 'Mark for Review'}</span>
                 </button>
-              ` : `
+
+                <!-- OPTION 2: SKIP -->
+                <button 
+                  type="button" 
+                  class="btn btn-secondary" 
+                  onclick="App.handleCaseSkip('${currentQ.id}')" 
+                  title="Skip this question and move to next">
+                  <i class="fa-solid fa-forward"></i> 
+                  <span>Skip</span>
+                </button>
+              </div>
+
+              <div class="q-actions-right">
+                ${currentQIdx < totalQs - 1 ? `
+                  <button type="button" class="btn btn-outline" onclick="App.handleCaseNextQuestion()">
+                    <span>Save & Next Question</span> <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                ` : ''}
+
+                <!-- PROMINENT BUTTON: SUBMIT WHOLE CASE SCENARIO -->
+                <button 
+                  type="button" 
+                  class="btn btn-success btn-submit-whole-case" 
+                  onclick="App.submitWholeCaseScenario()" 
+                  title="Submit all answers for this Case Scenario and evaluate marks according to ICAI scheme">
+                  <i class="fa-solid fa-paper-plane"></i> Submit Whole Case Scenario
+                </button>
+              </div>
+            ` : `
+              <div class="q-actions-left">
+                ${currentQIdx > 0 ? `
+                  <button type="button" class="btn btn-outline" onclick="App.jumpToCaseQuestion(${currentQIdx - 1})">
+                    <i class="fa-solid fa-chevron-left"></i> Previous Question
+                  </button>
+                ` : ''}
+              </div>
+
+              <div class="q-actions-right">
                 ${currentQIdx < totalQs - 1 ? `
                   <button type="button" class="btn btn-primary" onclick="App.jumpToCaseQuestion(${currentQIdx + 1})">
-                    <span>Next Question</span> <i class="fa-solid fa-arrow-right"></i>
+                    <span>Next Question Solution</span> <i class="fa-solid fa-chevron-right"></i>
                   </button>
                 ` : `
                   <button type="button" class="btn btn-success" onclick="App.nextCaseStudy()">
                     <span>Next Case Study</span> <i class="fa-solid fa-forward-step"></i>
                   </button>
                 `}
-              `}
-            </div>
+              </div>
+            `}
           </div>
 
-          <!-- FEEDBACK & SOLUTION (SHOWN ONLY AFTER SUBMISSION) -->
-          ${submission ? `
-            <div class="submission-feedback-card ${submission.isCorrect ? 'feedback-correct' : 'feedback-incorrect'}">
-              <div class="feedback-header">
-                <i class="fa-solid ${submission.isCorrect ? 'fa-circle-check text-success' : 'fa-circle-xmark text-danger'} fa-2x"></i>
-                <div>
-                  <h4>${submission.isCorrect ? 'Correct! (+2 Marks Awarded)' : 'Incorrect Answer'}</h4>
-                  <p>Your Selection: <strong>(${submission.selected})</strong> | ICAI Official Correct Answer: <strong>(${currentQ.correctAnswer})</strong></p>
+          ${!isCaseCompleted ? `
+            <div class="case-attempt-note">
+              <i class="fa-solid fa-circle-info"></i> Answer questions in this case scenario, then click <strong>Submit Whole Case Scenario</strong> to evaluate your marks and reveal full official ICAI statutory explanations.
+            </div>
+          ` : ''}
+
+          <!-- 4. FULL ICAI OFFICIAL LOGIC & STATUTORY EXPLANATION (SHOWN ONLY AFTER WHOLE CASE SUBMISSION) -->
+          ${isCaseCompleted ? `
+            <div class="case-full-icai-explanation-card">
+              <div class="explanation-card-header">
+                <div class="explanation-header-title">
+                  <i class="fa-solid fa-scale-balanced text-primary"></i>
+                  <h4>Full ICAI Official Logic & Statutory Rationale</h4>
+                </div>
+                <div class="explanation-verdict-chip">
+                  ${submission && submission.isCorrect
+                    ? `<span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> +${currentQ.marks || 2} Marks Awarded (Correct)</span>`
+                    : `<span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> 0 / ${currentQ.marks || 2} Marks • Official: Option (${currentQ.correctAnswer})</span>`
+                  }
                 </div>
               </div>
 
-              <details class="mcq-explanation-collapsible" open>
-                <summary><i class="fa-solid fa-lightbulb"></i> ICAI Official Statutory Reasoning & Solution</summary>
-                <div class="explanation-content">
-                  <p>${this.escapeHTML(currentQ.explanation || 'Refer to relevant statutory provisions.').replace(/`\s*(\d)/g, '₹$1').replace(/`/g, '₹')}</p>
-                  ${currentQ.reference ? `<p class="reference-tag"><i class="fa-solid fa-book-bookmark"></i> Source: ${this.escapeHTML(currentQ.reference)}</p>` : ''}
+              <div class="explanation-card-body">
+                <div class="explanation-student-choice-banner">
+                  <div class="choice-col">Your Selection: <strong>Option (${selectedAnswer || 'Not Answered'})</strong></div>
+                  <div class="choice-col official-col">ICAI Official Answer: <strong>Option (${currentQ.correctAnswer})</strong></div>
                 </div>
-              </details>
+
+                <div class="explanation-statutory-text">
+                  <div class="statutory-logic-title"><i class="fa-solid fa-landmark"></i> Official Statutory Logic & Working:</div>
+                  ${this.formatExplanationText(currentQ.explanation)}
+                </div>
+
+                ${currentQ.reference ? `
+                  <div class="statutory-reference-callout">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span><strong>Statutory Citation / Standard Reference:</strong> ${this.escapeHTML(currentQ.reference)}</span>
+                  </div>
+                ` : ''}
+              </div>
             </div>
+
+            <!-- COMPREHENSIVE CASE REVIEW (ALL QUESTIONS & ICAI EXPLANATIONS TOGETHER) -->
+            <details class="full-case-summary-accordion">
+              <summary><i class="fa-solid fa-list-check"></i> View Full Case Scenario Analysis & Logic (All ${totalQs} Questions Together)</summary>
+              <div class="full-case-summary-content">
+                ${questions.map((q, idx) => {
+                  const qSub = this.state.repositoryState.submittedAnswers[q.id];
+                  const isCorr = qSub && qSub.isCorrect;
+                  return `
+                    <div class="case-summary-q-row ${isCorr ? 'summary-corr' : 'summary-incorr'}">
+                      <div class="summary-q-header">
+                        <span class="badge ${isCorr ? 'badge-success' : 'badge-danger'}">Question ${idx + 1} • ${isCorr ? `+${q.marks || 2} Marks` : '0 Marks'}</span>
+                        <span class="summary-q-stem">${this.escapeHTML(q.question).slice(0, 160)}...</span>
+                      </div>
+                      <div class="summary-q-ans">
+                        <span>Your Choice: <strong>(${qSub?.selected || 'Not Attempted'})</strong></span> | 
+                        <span>ICAI Official Answer: <strong>Option (${q.correctAnswer})</strong></span>
+                      </div>
+                      <div class="summary-q-expl">
+                        <div class="summary-expl-label"><i class="fa-solid fa-scale-balanced"></i> Statutory Reasoning:</div>
+                        ${this.formatExplanationText(q.explanation)}
+                      </div>
+                      ${q.reference ? `<div class="summary-q-ref"><i class="fa-solid fa-book-bookmark"></i> Reference: ${this.escapeHTML(q.reference)}</div>` : ''}
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </details>
           ` : ''}
 
           <!-- STUDENT PERSONAL NOTE DRAWER -->
@@ -1095,10 +1316,11 @@ const App = {
   },
 
   selectCaseOption(qId, optId) {
-    if (this.state.repositoryState.submittedAnswers[qId]) return;
-    this.state.repositoryState.selectedAnswers[qId] = optId;
-    this.saveCaseAttempts();
     const caseData = this.getActiveCaseData();
+    if (this.isCaseCompleted(caseData)) return; // Locked once case is submitted
+    this.state.repositoryState.selectedAnswers[qId] = optId;
+    delete this.state.repositoryState.skippedStatus[qId];
+    this.saveCaseAttempts();
     this.renderActiveCaseStudy(caseData);
   },
 
@@ -1125,32 +1347,134 @@ const App = {
     this.renderActiveCaseStudy(caseData);
   },
 
+  handleCaseNextQuestion() {
+    const caseData = this.getActiveCaseData();
+    if (!caseData) return;
+    if (this.state.repositoryState.currentQuestionIndex < caseData.questions.length - 1) {
+      this.state.repositoryState.currentQuestionIndex++;
+      this.renderActiveCaseStudy(caseData);
+      const qWorkspace = document.getElementById("caseQuestionWorkspace");
+      if (qWorkspace) qWorkspace.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  },
+
   handleCaseSubmitAnswer(qId) {
     const selected = this.state.repositoryState.selectedAnswers[qId];
     if (!selected) {
-      alert("Please select an option (A, B, C, or D) before submitting your answer.");
+      alert("Please select an option (A, B, C, or D) before proceeding.");
       return;
     }
-
     const caseData = this.getActiveCaseData();
-    const q = (caseData ? caseData.questions : []).find(item => item.id === qId);
-    if (!q) return;
+    if (!caseData) return;
+    if (this.state.repositoryState.currentQuestionIndex < caseData.questions.length - 1) {
+      this.handleCaseNextQuestion();
+    } else {
+      this.submitWholeCaseScenario();
+    }
+  },
 
-    const isCorrect = selected === q.correctAnswer;
-    this.state.repositoryState.submittedAnswers[qId] = {
-      selected,
-      isCorrect,
-      submitted: true,
-      submittedAt: Date.now()
-    };
-    delete this.state.repositoryState.reviewStatus[qId];
-    this.saveCaseAttempts();
+  submitWholeCaseScenario() {
+    const caseData = this.getActiveCaseData();
+    if (!caseData || !caseData.questions || caseData.questions.length === 0) return;
 
-    if (typeof MCQStats !== 'undefined' && typeof MCQStats.recordAttempt === 'function') {
-      MCQStats.recordAttempt(qId, selected, isCorrect);
+    const questions = caseData.questions;
+    const answeredCount = questions.filter(q => Boolean(this.state.repositoryState.selectedAnswers[q.id])).length;
+    const unattemptedCount = questions.length - answeredCount;
+
+    if (unattemptedCount > 0) {
+      const confirmSubmit = confirm(`You have answered ${answeredCount} of ${questions.length} questions (${unattemptedCount} unattempted).\n\nDo you want to submit the whole Case Scenario now and evaluate your marks with full official ICAI solutions?`);
+      if (!confirmSubmit) return;
     }
 
-    this.renderActiveCaseStudy(caseData);
+    let totalMarks = 0;
+    let marksObtained = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let skippedCount = 0;
+
+    questions.forEach(q => {
+      const qMarks = q.marks || 2;
+      totalMarks += qMarks;
+      const selected = this.state.repositoryState.selectedAnswers[q.id];
+
+      if (selected) {
+        const isCorrect = (selected === q.correctAnswer);
+        if (isCorrect) {
+          marksObtained += qMarks;
+          correctCount++;
+        } else {
+          wrongCount++;
+        }
+        this.state.repositoryState.submittedAnswers[q.id] = {
+          selected,
+          isCorrect,
+          marks: isCorrect ? qMarks : 0,
+          submitted: true,
+          submittedAt: Date.now()
+        };
+      } else {
+        skippedCount++;
+        this.state.repositoryState.submittedAnswers[q.id] = {
+          selected: null,
+          isCorrect: false,
+          marks: 0,
+          submitted: true,
+          submittedAt: Date.now()
+        };
+      }
+      delete this.state.repositoryState.reviewStatus[q.id];
+      delete this.state.repositoryState.skippedStatus[q.id];
+
+      if (typeof MCQStats !== 'undefined' && typeof MCQStats.recordAttempt === 'function') {
+        MCQStats.recordAttempt(q.id, selected || "SKIPPED", selected === q.correctAnswer);
+      }
+    });
+
+    const percentage = totalMarks > 0 ? Math.round((marksObtained / totalMarks) * 100) : 0;
+    const caseKey = this.getCaseKey(caseData);
+
+    if (!this.state.repositoryState.submittedCases) {
+      this.state.repositoryState.submittedCases = {};
+    }
+    this.state.repositoryState.submittedCases[caseKey] = {
+      submitted: true,
+      submittedAt: Date.now(),
+      totalMarks,
+      marksObtained,
+      percentage,
+      correctCount,
+      wrongCount,
+      skippedCount,
+      totalQuestions: questions.length
+    };
+
+    this.saveCaseAttempts();
+    this.renderRepository();
+
+    const scorecardEl = document.getElementById("caseScenarioScorecard") || document.getElementById("caseQuestionWorkspace");
+    if (scorecardEl) {
+      scorecardEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  },
+
+  reattemptCaseScenario(caseKey) {
+    if (!confirm("Are you sure you want to re-attempt this Case Scenario? Your previous selections for this case will be reset.")) return;
+    const caseData = this.getActiveCaseData();
+    if (!caseData) return;
+
+    if (this.state.repositoryState.submittedCases) {
+      delete this.state.repositoryState.submittedCases[caseKey];
+    }
+    (caseData.questions || []).forEach(q => {
+      delete this.state.repositoryState.submittedAnswers[q.id];
+      delete this.state.repositoryState.selectedAnswers[q.id];
+      delete this.state.repositoryState.reviewStatus[q.id];
+      delete this.state.repositoryState.skippedStatus[q.id];
+    });
+
+    this.state.repositoryState.currentQuestionIndex = 0;
+    this.saveCaseAttempts();
+    this.renderRepository();
   },
 
   nextCaseStudy() {
@@ -1203,11 +1527,16 @@ const App = {
     this.renderRepository();
   },
 
-  handleRepoImpFilterChange(val) {
+  handleRepoStatusFilterChange(val) {
+    this.state.repositoryState.statusFilter = val;
     this.state.repositoryState.impFilter = val;
     this.state.repositoryState.currentCaseIndex = 0;
     this.state.repositoryState.currentQuestionIndex = 0;
     this.renderRepository();
+  },
+
+  handleRepoImpFilterChange(val) {
+    this.handleRepoStatusFilterChange(val);
   },
 
   handleRepoSearch(keyword) {
@@ -1248,14 +1577,15 @@ const App = {
 
   resetRepoFilters() {
     this.state.repositoryState.chapterFilter = "ALL";
+    this.state.repositoryState.statusFilter = "ALL";
     this.state.repositoryState.impFilter = "ALL";
     this.state.repositoryState.searchTerm = "";
     this.state.repositoryState.currentCaseIndex = 0;
     this.state.repositoryState.currentQuestionIndex = 0;
     const chSelect = document.getElementById("repoChapterFilter");
     if (chSelect) chSelect.value = "ALL";
-    const impSelect = document.getElementById("repoImpFilter");
-    if (impSelect) impSelect.value = "ALL";
+    const statusSelect = document.getElementById("repoStatusFilter") || document.getElementById("repoImpFilter");
+    if (statusSelect) statusSelect.value = "ALL";
     const sInput = document.getElementById("repoSearchInput");
     if (sInput) sInput.value = "";
     this.renderRepository();
@@ -3549,6 +3879,8 @@ const App = {
     }
   }
 };
+
+window.App = App;
 
 // Bootstrap application on window load
 window.addEventListener("DOMContentLoaded", () => {
