@@ -798,7 +798,7 @@
   </div>
 
   <!-- STUDENT PROFILE DETAILS MODAL -->
-  <div id="studentProfileModal" class="modal-backdrop" style="display: none;">
+  <div id="studentProfileModal" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) App.closeProfileModal()">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3><i class="fa-solid fa-user-graduate"></i> ICAI Student Profile</h3>

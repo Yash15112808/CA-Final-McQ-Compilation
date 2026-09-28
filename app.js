@@ -1751,6 +1751,11 @@ const App = {
     if (modal) modal.style.display = "flex";
   },
 
+  closeProfileModal() {
+    const modal = document.getElementById("studentProfileModal");
+    if (modal) modal.style.display = "none";
+  },
+
   // ================= STUDY MANAGEMENT CONTROLLER =================
   renderStudyView() {
     this.switchStudySubtab(this.state.studySubtab || "countdown-calendar");
@@ -2714,4 +2719,19 @@ window.addEventListener("DOMContentLoaded", () => {
     purgeNetlifyBadge();
   });
   netlifyObserver.observe(document.body, { childList: true, subtree: true });
+
+  // Global close on backdrop click and Escape key for modal dialogs
+  window.addEventListener("click", (e) => {
+    if (e.target && e.target.classList && e.target.classList.contains("modal-backdrop")) {
+      e.target.style.display = "none";
+    }
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      document.querySelectorAll(".modal-backdrop").forEach(m => {
+        m.style.display = "none";
+      });
+    }
+  });
 });
