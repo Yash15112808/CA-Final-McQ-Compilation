@@ -20,7 +20,8 @@ const App = {
       subject: "ALL",
       chapter: "ALL",
       source: "ALL",
-      difficulty: "ALL"
+      difficulty: "ALL",
+      imp: "ALL"
     },
     writingFilter: {
       search: "",
@@ -32,6 +33,7 @@ const App = {
       subject: "ALL",
       source: "ALL",
       starredOnly: false,
+      impOnly: false,
       incorrectOnly: false
     }
   },
@@ -101,6 +103,14 @@ const App = {
 
   // MCQ Data Loading
   loadMCQs() {
+    // Purge legacy demo questions to ensure fresh official May 2026 Case Scenario MCQs
+    const versionKey = "ICAI_MCQ_BANK_VERSION";
+    const currentVersion = "MAY_2026_CSB_V1";
+    if (localStorage.getItem(versionKey) !== currentVersion) {
+      localStorage.setItem(versionKey, currentVersion);
+      localStorage.removeItem(STORAGE_KEY_CUSTOM_MCQS);
+    }
+
     let customItems = [];
     try {
       const stored = localStorage.getItem(STORAGE_KEY_CUSTOM_MCQS);
@@ -110,6 +120,9 @@ const App = {
     } catch (e) {
       console.error("Error loading custom MCQs", e);
     }
+
+    const legacyDemoIds = ["FR-001", "FR-002", "FR-003", "FR-004", "AFM-001", "AFM-002", "AUDIT-001", "AUDIT-002", "DT-001", "DT-002", "IDT-001", "IDT-002", "CASE-001", "CASE-002"];
+    customItems = customItems.filter(item => !legacyDemoIds.includes(item.id));
 
     const defaultItems = typeof DEFAULT_MCQS !== "undefined" ? DEFAULT_MCQS : [];
     
@@ -538,6 +551,7 @@ const App = {
     const filterCh = this.state.repositoryFilter.chapter || "ALL";
     const filterSrc = this.state.repositoryFilter.source;
     const filterDiff = this.state.repositoryFilter.difficulty;
+    const filterImp = this.state.repositoryFilter.imp || "ALL";
 
     const filtered = this.state.allMCQs.filter(q => {
       if (filterSub !== "ALL" && q.subjectId !== filterSub) return false;
@@ -545,13 +559,17 @@ const App = {
       if (filterSrc !== "ALL" && q.source !== filterSrc) return false;
       if (filterDiff !== "ALL" && q.difficulty !== filterDiff) return false;
 
+      if (filterImp === "IMP" && !MCQStats.isImp(q.id)) return false;
+      if (filterImp === "WITH_NOTES" && !MCQStats.getNote(q.id)) return false;
+
       if (searchTerm) {
         const inStem = (q.question || "").toLowerCase().includes(searchTerm);
         const inCh = (q.chapter || "").toLowerCase().includes(searchTerm);
-        const inTitle = (q.title || "").toLowerCase().includes(searchTerm);
+        const inTitle = (q.title || q.caseTitle || "").toLowerCase().includes(searchTerm);
         const inScenario = (q.scenarioText || "").toLowerCase().includes(searchTerm);
+        const inNote = (MCQStats.getNote(q.id) || "").toLowerCase().includes(searchTerm);
         const inOpts = q.options ? q.options.some(o => (o.text || "").toLowerCase().includes(searchTerm)) : false;
-        if (!inStem && !inCh && !inTitle && !inScenario && !inOpts) return false;
+        if (!inStem && !inCh && !inTitle && !inScenario && !inOpts && !inNote) return false;
       }
       return true;
     });
@@ -563,7 +581,7 @@ const App = {
         <div class="empty-state">
           <i class="fa-solid fa-file-circle-question fa-3x"></i>
           <h3>No MCQs Match Your Filter</h3>
-          <p>Try clearing filters or search keywords, or add new MCQs in the Add & Import section.</p>
+          <p>Try clearing filters or search keywords, or switch categories to explore other topics.</p>
         </div>
       `;
       return;
@@ -571,6 +589,8 @@ const App = {
 
     listEl.innerHTML = filtered.map(q => {
       const isStarred = MCQStats.isStarred(q.id);
+      const isImp = MCQStats.isImp(q.id);
+      const userNote = MCQStats.getNote(q.id);
       const isCase = q.type === "case_scenario";
 
       const subMeta = typeof ICAI_METADATA !== "undefined" ? ICAI_METADATA.subjects.find(s => s.id === q.subjectId) : null;
@@ -578,33 +598,29 @@ const App = {
       const isOfficialAttemptSource = ["RTP", "MTP", "PYQ"].includes(q.source);
 
       return `
-        <div class="mcq-card ${isCase ? 'case-card' : ''}" id="card-${q.id}">
+        <div class="mcq-card ${isCase ? 'case-card' : ''} ${isImp ? 'is-imp-mcq' : ''}" id="card-${q.id}">
           <div class="mcq-card-header">
             <div class="tags-group">
               <span class="badge" style="background-color: ${subMeta ? subMeta.color : '#2563eb'}; color: white;">
                 ${q.subjectId}
               </span>
-              <span class="badge badge-source" style="background-color: ${srcMeta ? srcMeta.badgeColor : '#64748b'}; color: white;">
-                ${srcMeta ? srcMeta.label : q.source}
+              <span class="badge badge-source" style="background-color: ${srcMeta ? srcMeta.badgeColor : '#8b5cf6'}; color: white;">
+                <i class="fa-solid fa-book-open"></i> ${srcMeta ? srcMeta.label : q.source}
               </span>
-              ${isOfficialAttemptSource ? `
-                <span class="badge badge-attempt" title="ICAI Exam Attempt / Edition">
-                  <i class="fa-regular fa-calendar-check"></i> ${q.examSession || 'Session Specified'}
-                </span>
-              ` : `
-                <span class="badge badge-outline" title="Edition / Source Detail">
-                  <i class="fa-solid fa-book"></i> ${q.examSession || 'ICAI Edition'}
-                </span>
-              `}
+              <span class="badge badge-outline" title="ICAI Material Source / Edition">
+                <i class="fa-regular fa-calendar-check"></i> ${q.examSession || 'May 2026 Edition'}
+              </span>
               <span class="badge badge-marks">${q.marks || 2} Marks</span>
-              ${isCase ? `<span class="badge badge-case"><i class="fa-solid fa-layer-group"></i> Case Scenario (${q.subQuestions ? q.subQuestions.length : 0} MCQs)</span>` : ''}
+              ${userNote ? `<span class="badge badge-success" title="Personal Note Attached"><i class="fa-solid fa-note-sticky"></i> Note Added</span>` : ''}
+              ${isImp ? `<span class="badge" style="background-color: #f59e0b; color: white;" title="Marked as Important"><i class="fa-solid fa-star"></i> IMP</span>` : ''}
             </div>
-            <div class="card-actions">
+            <div class="card-actions" style="display: flex; gap: 8px; align-items: center;">
+              <button class="imp-toggle-btn ${isImp ? 'imp-active' : ''}" onclick="App.handleToggleImp('${q.id}')" title="${isImp ? 'Marked as Important (Click to unmark)' : 'Mark as Important (IMP)'}">
+                <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
+                <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
+              </button>
               <button class="icon-btn star-btn ${isStarred ? 'starred' : ''}" onclick="App.handleToggleStar('${q.id}')" title="Star / Bookmark">
                 <i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>
-              </button>
-              <button class="icon-btn delete-btn" onclick="App.deleteMCQ('${q.id}')" title="Delete MCQ">
-                <i class="fa-regular fa-trash-can"></i>
               </button>
             </div>
           </div>
@@ -613,34 +629,71 @@ const App = {
             <i class="fa-regular fa-bookmark"></i> ${q.chapter || 'General Topic'}
           </div>
 
-          ${isCase ? `
-            <div class="case-header-box">
-              <h4 class="case-title">${q.title || 'Integrated Case Study'}</h4>
-              <p class="case-preview">${(q.scenarioText || '').substring(0, 220)}...</p>
-              <button class="btn btn-sm btn-secondary" onclick="App.openCaseStudy('${q.id}')">
-                <i class="fa-solid fa-book-open"></i> Read Full Case & Solve Sub-MCQs
-              </button>
-            </div>
-          ` : `
-            <div class="mcq-stem">${q.question}</div>
-            <div class="mcq-options-grid">
-              ${(q.options || []).map(opt => `
-                <div class="mcq-option-item ${opt.id === q.correctAnswer ? 'repo-correct' : ''}">
-                  <span class="option-letter">${opt.id}</span>
-                  <span class="option-text">${opt.text}</span>
-                </div>
-              `).join("")}
-            </div>
-
-            <details class="mcq-explanation-collapsible">
-              <summary><i class="fa-solid fa-lightbulb"></i> View ICAI Statutory Rationale & Reference</summary>
-              <div class="explanation-content">
-                <p><strong>Correct Option: (${q.correctAnswer})</strong></p>
-                <p>${q.explanation || 'No explanation provided.'}</p>
-                ${q.reference ? `<p class="reference-tag"><i class="fa-solid fa-book-bookmark"></i> Reference: ${q.reference}</p>` : ''}
-              </div>
+          ${q.scenarioText ? `
+            <details class="case-preview-drawer" style="margin-bottom: 12px; background: rgba(0,0,0,0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-color); padding: 8px 12px;">
+              <summary style="font-weight: 600; font-size: 0.82rem; cursor: pointer; color: var(--primary);">
+                <i class="fa-solid fa-file-lines"></i> ${q.caseTitle || 'View Scenario Background Facts'}
+              </summary>
+              <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); margin-top: 8px; white-space: pre-line;">${q.scenarioText}</p>
             </details>
-          `}
+          ` : ''}
+
+          <div class="mcq-stem">${q.question}</div>
+          <div class="mcq-options-grid">
+            ${(q.options || []).map(opt => `
+              <div class="mcq-option-item ${opt.id === q.correctAnswer ? 'repo-correct' : ''}">
+                <span class="option-letter">${opt.id}</span>
+                <span class="option-text">${opt.text}</span>
+              </div>
+            `).join("")}
+          </div>
+
+          <details class="mcq-explanation-collapsible">
+            <summary><i class="fa-solid fa-lightbulb"></i> View ICAI Official Reasoning & Solution</summary>
+            <div class="explanation-content">
+              <p><strong>Correct Option: (${q.correctAnswer})</strong></p>
+              <p>${q.explanation || 'Refer to the relevant ICAI provisions.'}</p>
+              ${q.reference ? `<p class="reference-tag"><i class="fa-solid fa-book-bookmark"></i> Source: ${q.reference}</p>` : ''}
+            </div>
+          </details>
+
+          <!-- STUDENT PERSONAL NOTE SECTION -->
+          <div class="mcq-student-note-card ${userNote ? 'has-note' : ''}" id="note-card-${q.id}">
+            <div class="mcq-note-header" onclick="App.toggleNoteAccordion('${q.id}')">
+              <div class="note-title-left">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <strong>Student Personal Note / Memory Key</strong>
+                ${userNote ? '<span class="note-badge-pill">Saved</span>' : ''}
+              </div>
+              <div class="note-expand-indicator">
+                <small class="text-muted">${userNote ? 'View / Edit Note' : 'Add Note'}</small>
+                <i class="fa-solid fa-chevron-down ${userNote ? 'rotated' : ''}" id="note-chevron-${q.id}"></i>
+              </div>
+            </div>
+            <div class="mcq-note-drawer" id="note-drawer-${q.id}" style="${userNote ? 'display: block;' : 'display: none;'}">
+              <textarea 
+                class="student-note-textarea" 
+                id="student-note-${q.id}" 
+                placeholder="Write your personal tips, memory keys, tricky points, or statutory notes to remember for this question..."
+                oninput="App.handleStudentNoteInput('${q.id}', this.value)"
+              >${userNote}</textarea>
+              <div class="note-drawer-actions">
+                <small class="text-muted note-status-msg" id="note-status-${q.id}">
+                  ${userNote ? 'Note saved in your account' : 'Notes auto-save as you type'}
+                </small>
+                <div style="display: flex; gap: 6px;">
+                  ${userNote ? `
+                    <button type="button" class="btn btn-sm btn-outline text-danger" onclick="App.handleClearStudentNote('${q.id}')" title="Delete Note">
+                      <i class="fa-regular fa-trash-can"></i> Clear
+                    </button>
+                  ` : ''}
+                  <button type="button" class="btn btn-sm btn-primary" onclick="App.handleSaveStudentNote('${q.id}')">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Note
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       `;
     }).join("");
@@ -649,6 +702,52 @@ const App = {
   handleToggleStar(qId) {
     MCQStats.toggleStar(qId);
     this.renderCurrentView();
+  },
+
+  handleToggleImp(qId) {
+    MCQStats.toggleImp(qId);
+    this.renderCurrentView();
+  },
+
+  toggleNoteAccordion(qId) {
+    const drawer = document.getElementById(`note-drawer-${qId}`);
+    const chevron = document.getElementById(`note-chevron-${qId}`);
+    if (!drawer) return;
+    const isHidden = drawer.style.display === "none";
+    drawer.style.display = isHidden ? "block" : "none";
+    if (chevron) chevron.classList.toggle("rotated", isHidden);
+    if (isHidden) {
+      const textarea = document.getElementById(`student-note-${qId}`);
+      if (textarea) textarea.focus();
+    }
+  },
+
+  handleStudentNoteInput(qId, val) {
+    MCQStats.saveNote(qId, val);
+    const statusEl = document.getElementById(`note-status-${qId}`);
+    if (statusEl) statusEl.textContent = val.trim() ? "Saving note..." : "Note cleared";
+    if (this._noteTimer) clearTimeout(this._noteTimer);
+    this._noteTimer = setTimeout(() => {
+      if (statusEl) statusEl.textContent = val.trim() ? "Note saved in your account ✓" : "Notes auto-save as you type";
+      const card = document.getElementById(`note-card-${qId}`);
+      if (card) card.classList.toggle("has-note", Boolean(val.trim()));
+    }, 400);
+  },
+
+  handleSaveStudentNote(qId) {
+    const textarea = document.getElementById(`student-note-${qId}`);
+    const val = textarea ? textarea.value : "";
+    MCQStats.saveNote(qId, val);
+    const statusEl = document.getElementById(`note-status-${qId}`);
+    if (statusEl) statusEl.textContent = "Saved successfully! ✓";
+    this.renderCurrentView();
+  },
+
+  handleClearStudentNote(qId) {
+    if (confirm("Are you sure you want to clear your personal note for this question?")) {
+      MCQStats.saveNote(qId, "");
+      this.renderCurrentView();
+    }
   },
 
   // ---------------- PRACTICE MODE ----------------
@@ -679,18 +778,24 @@ const App = {
     const selectedOption = QuizEngine.practiceState.selectedAnswers[currentIdx];
     const isRevealed = Boolean(QuizEngine.practiceState.revealed[currentIdx]);
     const isStarred = MCQStats.isStarred(currentQ.id);
+    const isImp = MCQStats.isImp(currentQ.id);
     const userNote = MCQStats.getNote(currentQ.id);
 
     practiceView.innerHTML = `
-      <div class="practice-card">
+      <div class="practice-card ${isImp ? 'is-imp-mcq' : ''}">
         <div class="practice-top-bar">
           <div class="practice-progress-info">
             <span class="badge badge-primary">Question ${currentIdx + 1} of ${totalQ}</span>
             <span class="badge badge-source">${currentQ.source} • ${currentQ.examSession || ''}</span>
             <span class="badge badge-marks">${currentQ.marks || 2} Marks</span>
             <span class="badge badge-chapter"><i class="fa-regular fa-bookmark"></i> ${currentQ.chapter}</span>
+            ${isImp ? `<span class="badge" style="background-color: #f59e0b; color: white;"><i class="fa-solid fa-star"></i> IMP</span>` : ''}
           </div>
-          <div class="practice-actions">
+          <div class="practice-actions" style="display: flex; gap: 8px; align-items: center;">
+            <button class="imp-toggle-btn ${isImp ? 'imp-active' : ''}" onclick="App.handleToggleImp('${currentQ.id}')" title="Mark as Important (IMP)">
+              <i class="fa-${isImp ? 'solid' : 'regular'} fa-bookmark"></i>
+              <span>${isImp ? '★ IMP' : 'Mark IMP'}</span>
+            </button>
             <button class="icon-btn star-btn ${isStarred ? 'starred' : ''}" onclick="App.togglePracticeStar('${currentQ.id}')" title="Star / Bookmark">
               <i class="fa-${isStarred ? 'solid' : 'regular'} fa-star"></i>
             </button>
@@ -1378,6 +1483,14 @@ const App = {
     if (repoSrcFilter) {
       repoSrcFilter.addEventListener("change", (e) => {
         App.state.repositoryFilter.source = e.target.value;
+        App.renderRepository();
+      });
+    }
+
+    const repoImpFilter = document.getElementById("repoImpFilter");
+    if (repoImpFilter) {
+      repoImpFilter.addEventListener("change", (e) => {
+        App.state.repositoryFilter.imp = e.target.value;
         App.renderRepository();
       });
     }

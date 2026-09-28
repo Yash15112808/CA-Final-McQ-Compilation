@@ -11,13 +11,18 @@ const MCQStats = {
   getUserData() {
     try {
       const data = localStorage.getItem(this.getStorageKey());
-      if (data) return JSON.parse(data);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (!parsed.impList) parsed.impList = [];
+        return parsed;
+      }
     } catch (e) {
       console.error("Error reading user data", e);
     }
     return {
       history: {}, // qId -> { attempts: number, correctCount: number, lastAttempted: string, lastSelected: string }
       starred: [], // [qId]
+      impList: [], // [qId] marked as important
       notes: {},   // qId -> string
       examHistory: [] // [{ date, score, totalMarks, percentage, subject, durationSeconds }]
     };
@@ -73,8 +78,35 @@ const MCQStats = {
     return data.starred.includes(questionId);
   },
 
+  toggleImp(questionId) {
+    const data = this.getUserData();
+    if (!Array.isArray(data.impList)) data.impList = [];
+    const idx = data.impList.indexOf(questionId);
+    let isImp = false;
+    if (idx > -1) {
+      data.impList.splice(idx, 1);
+      isImp = false;
+    } else {
+      data.impList.push(questionId);
+      isImp = true;
+    }
+    this.saveUserData(data);
+    return isImp;
+  },
+
+  isImp(questionId) {
+    const data = this.getUserData();
+    return Array.isArray(data.impList) && data.impList.includes(questionId);
+  },
+
+  getImpList() {
+    const data = this.getUserData();
+    return Array.isArray(data.impList) ? data.impList : [];
+  },
+
   saveNote(questionId, noteText) {
     const data = this.getUserData();
+    if (!data.notes) data.notes = {};
     if (!noteText || !noteText.trim()) {
       delete data.notes[questionId];
     } else {
