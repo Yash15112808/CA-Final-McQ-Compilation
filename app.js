@@ -3605,7 +3605,7 @@ const App = {
   // ================= WRITING QUESTIONS CONTROLLER =================
   loadWritingQuestions() {
     const versionKey = "ICAI_WRITING_QUESTIONS_VERSION";
-    const currentVersion = "ICAI_BOS_V2";
+    const currentVersion = "ICAI_CSP_4028_V1";
     const key = "ICAI_WRITING_QUESTIONS_V1";
     if (localStorage.getItem(versionKey) !== currentVersion) {
       localStorage.setItem(versionKey, currentVersion);
@@ -3651,24 +3651,7 @@ const App = {
         this.state.allQuestions = data;
         const desc = data.filter(q => q.type === "Descriptive");
         if (desc.length > 0 && desc.length >= (this.state.allWritingQuestions ? this.state.allWritingQuestions.length : 0)) {
-          const map = new Map();
-          desc.forEach(d => {
-            map.set(d.id, {
-              id: d.id,
-              subjectId: d.subjectId,
-              chapter: d.chapter,
-              source: d.source || "SM",
-              examSession: d.examSession || "Official ICAI",
-              pageNo: d.pageNo || "",
-              itemRef: d.itemRef || "",
-              marks: d.marks || 10,
-              title: d.title || `${d.subjectId} - ${d.chapter}`,
-              question: d.question,
-              solution: d.explanation,
-              reference: d.reference || ""
-            });
-          });
-          this.state.allWritingQuestions = Array.from(map.values());
+          this.state.allWritingQuestions = desc;
         }
       }
     } catch (e) {
@@ -3867,19 +3850,44 @@ const App = {
     const isSM = (currentWQ.source === "SM");
     const isAnswerHidden = Boolean(this.state.writingHiddenAnswers && this.state.writingHiddenAnswers.has(currentWQ.id));
 
-    // Jump Pills HTML
-    const jumpPillsHtml = filtered.map((wq, i) => {
-      const isActive = i === currentIdx;
-      return `
+    // Jump Pills HTML with smart sliding window for large datasets
+    let startPill = 0;
+    let endPill = totalQs;
+    const maxPills = 36;
+    if (totalQs > maxPills) {
+      startPill = Math.max(0, currentIdx - Math.floor(maxPills / 2));
+      endPill = Math.min(totalQs, startPill + maxPills);
+      if (endPill - startPill < maxPills) {
+        startPill = Math.max(0, endPill - maxPills);
+      }
+    }
+
+    let pillsList = [];
+    if (startPill > 0) {
+      pillsList.push(`
+        <button type="button" class="q-jump-pill" onclick="App.jumpToWritingQuestion(0)" title="Go to First Question">1</button>
+        ${startPill > 1 ? '<span style="color: var(--text-muted); font-size: 0.8rem; padding: 0 4px; align-self: center;">...</span>' : ''}
+      `);
+    }
+    for (let i = startPill; i < endPill; i++) {
+      const isActive = (i === currentIdx);
+      pillsList.push(`
         <button 
           type="button" 
           class="q-jump-pill ${isActive ? 'active' : ''}" 
           onclick="App.jumpToWritingQuestion(${i})" 
-          title="Jump to Question ${i + 1}: ${this.escapeHTML(wq.title || '')}">
+          title="Jump to Question ${i + 1}: ${this.escapeHTML(filtered[i].title || '')}">
           ${i + 1}
         </button>
-      `;
-    }).join("");
+      `);
+    }
+    if (endPill < totalQs) {
+      pillsList.push(`
+        ${endPill < totalQs - 1 ? '<span style="color: var(--text-muted); font-size: 0.8rem; padding: 0 4px; align-self: center;">...</span>' : ''}
+        <button type="button" class="q-jump-pill" onclick="App.jumpToWritingQuestion(${totalQs - 1})" title="Go to Last Question">${totalQs}</button>
+      `);
+    }
+    const jumpPillsHtml = pillsList.join("");
 
     workspace.innerHTML = `
       <!-- TOP QUESTION JUMP PILLS STRIP -->
