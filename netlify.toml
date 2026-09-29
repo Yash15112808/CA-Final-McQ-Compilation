@@ -1,6 +1,7 @@
 # Netlify Configuration for ICAI CA Final MCQ Portal
 
 [build]
+  command = "echo 'Static build ready'"
   publish = "."
 
 [[redirects]]
